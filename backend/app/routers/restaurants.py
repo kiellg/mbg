@@ -1,3 +1,5 @@
+"""Router for restaurant endpoints"""
+
 from fastapi import APIRouter
 
 from backend.app.schemas.restaurant import RestaurantOut

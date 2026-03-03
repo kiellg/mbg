@@ -1,3 +1,5 @@
+"""Service layer for restaurant-related business logic"""
+
 from fastapi import HTTPException
 
 from backend.app.schemas.restaurant import RestaurantOut

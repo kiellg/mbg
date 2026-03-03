@@ -1,3 +1,7 @@
+"""
+This module simulates a database of restaurant records. In a real application, this would be replaced by actual database queries.
+"""
+
 from typing import Dict, Any, Optional
 
 _DB: Dict[int, Dict[str, Any]] = {

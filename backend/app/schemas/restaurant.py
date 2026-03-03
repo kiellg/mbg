@@ -1,3 +1,5 @@
+"""Schemas for restaurant data"""
+
 from typing import List
 from pydantic import BaseModel, Field
 from backend.app.schemas.menu import MenuItemOut
