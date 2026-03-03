@@ -23,17 +23,17 @@ def get_restaurant_menu(restaurant_id: int) -> RestaurantOut:
 
         if not (visible and active):
             item["display_price"] = None
-            item["price_status"] = PriceStatus.ok
+            item["price_status"] = PriceStatus.OK
             continue
 
         if cents is None:
             item["display_price"] = None
-            item["price_status"] = PriceStatus.missing
+            item["price_status"] = PriceStatus.MISSING
         elif cents < 0:
             item["display_price"] = None
-            item["price_status"] = PriceStatus.invalid
+            item["price_status"] = PriceStatus.INVALID
         else:
             item["display_price"] = format_cad_from_cents(cents)
-            item["price_status"] = PriceStatus.ok
+            item["price_status"] = PriceStatus.OK
 
     return RestaurantOut(**record)

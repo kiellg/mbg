@@ -1,6 +1,4 @@
-"""
-This module simulates a database of restaurant records. In a real application, this would be replaced by actual database queries.
-"""
+"""This module simulates a database of restaurant records"""
 
 from typing import Dict, Any, Optional
 

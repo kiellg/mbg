@@ -6,9 +6,9 @@ from pydantic import BaseModel
 
 class PriceStatus(str, Enum):
     """Enum for price status of menu items"""
-    ok = "ok"
-    missing = "missing"
-    invalid = "invalid"
+    OK = "ok"
+    MISSING = "missing"
+    INVALID = "invalid"
 
 class MenuCategory(BaseModel):
     """Schema for menu item categories"""
@@ -22,7 +22,7 @@ class MenuItemOut(BaseModel):
 
     price_cents: Optional[int] = None
     display_price: Optional[str] = None
-    price_status: PriceStatus = PriceStatus.ok
+    price_status: PriceStatus = PriceStatus.OK
 
     description: str = ""
     dietary_tag: str = ""
@@ -32,5 +32,3 @@ class MenuItemOut(BaseModel):
     is_available: bool = True
 
     category: Optional[MenuCategory] = None
-
-
