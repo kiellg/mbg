@@ -1,3 +1,5 @@
+"""Tests for the menu service"""
+
 import pytest
 from fastapi import HTTPException
 from backend.app.services.restaurants_service import (get_restaurant_menu,format_cad_from_cents)

@@ -1,3 +1,5 @@
+"""Tests for the restaurant menu endpoint"""
+
 from fastapi.testclient import TestClient
 from backend.main import app
 
