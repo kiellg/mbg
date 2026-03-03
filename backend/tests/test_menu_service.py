@@ -30,14 +30,14 @@ def test_service_hides_price_for_hidden_item():
     assert hidden.display_price is None
 
 def test_service_flags_invalid_price():
-    """Test that visible items with negative price are flagged as invalid and have no display price"""
+    """Test that visible items with negative price are flagged as invalid"""
     restaurant = get_restaurant_menu(1)
     invalid = next(i for i in restaurant.menu if i.id == 3)
     assert invalid.price_status.value == "invalid"
     assert invalid.display_price is None
 
 def test_service_flags_missing_price():
-    """Test that visible items with missing price are flagged as missing and have no display price"""
+    """Test that visible items with missing price are flagged as missing"""
     restaurant = get_restaurant_menu(1)
     missing = next(i for i in restaurant.menu if i.id == 4)
     assert missing.price_status.value == "missing"
