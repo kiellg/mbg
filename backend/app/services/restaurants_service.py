@@ -7,9 +7,11 @@ from backend.app.schemas.menu import PriceStatus
 from backend.app.data.restaurants_data import get_restaurant_record
 
 def format_cad_from_cents(price_cents: int) -> str:
+    """Convert price in cents to a formatted CAD string"""
     return f"${price_cents / 100:.2f}"
 
 def get_restaurant_menu(restaurant_id: int) -> RestaurantOut:
+    """Fetch restaurant data and process menu items for display"""
     record = get_restaurant_record(restaurant_id)
     if record is None:
         raise HTTPException(status_code=404, detail="Restaurant not found")

@@ -9,4 +9,5 @@ router = APIRouter(prefix="/restaurants", tags=["restaurants"])
 
 @router.get("/{restaurant_id}/menu", response_model=RestaurantOut)
 def read_restaurant_menu(restaurant_id: int):
+    """Endpoint to get a restaurant menu with price formatting and status"""
     return get_restaurant_menu(restaurant_id)

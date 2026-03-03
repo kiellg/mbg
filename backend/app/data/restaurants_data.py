@@ -61,4 +61,5 @@ _DB: Dict[int, Dict[str, Any]] = {
 }
 
 def get_restaurant_record(restaurant_id: int) -> Optional[Dict[str, Any]]:
+    """Simulate fetching a restaurant record from the database"""
     return _DB.get(restaurant_id)
