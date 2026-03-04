@@ -11,7 +11,7 @@ def setup_function():
 
 def test_carts_starts_empty():
     """Ensure the cart database starts empty."""
-    assert _CARTDB == {}
+    assert not _CARTDB
 
 
 def test_cart_record_shape():

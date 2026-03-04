@@ -1,6 +1,6 @@
 """This module simulates a database of restaurant records"""
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 _CARTDB: Dict[int, Dict[str, Any]] = {}
 
