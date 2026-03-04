@@ -2,7 +2,7 @@
 
 from typing import Dict, Any, Optional
 
-_CartDB: Dict[int, Dict[str, Any]] = {}
+_CARTDB: Dict[int, Dict[str, Any]] = {}
 
-next_cart_id: int = 1
-_next_item_id: int = 1
+NEXT_CART_ID: int = 1
+NEXT_ITEM_ID: int = 1
