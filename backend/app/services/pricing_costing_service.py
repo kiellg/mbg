@@ -14,13 +14,13 @@ class PricingService:
     DEFAULT_TAX_RATE = Decimal("0.10")
 
     @staticmethod
-    def calculateTotals(order) -> None:
+    def calculate_totals(order) -> None:
         """Mutate order fields with recalculated totals."""
         subtotal = Decimal("0.00")
 
         for item in order.items:
             quantity = item.quantity
-            price = item.itemPrice
+            price = item.item_price
 
             if quantity < 0:
                 raise ValueError("Order item quantity cannot be negative")
@@ -31,12 +31,12 @@ class PricingService:
             subtotal += line_total
 
         subtotal = subtotal.quantize(TWOPLACES, rounding=ROUND_HALF_UP)
-        delivery_fee = _to_money(getattr(order, "deliveryFee", 0))
-        tax_rate = Decimal(str(getattr(order, "taxRate", PricingService.DEFAULT_TAX_RATE)))
+        delivery_fee = _to_money(getattr(order, "delivery_fee", 0))
+        tax_rate = Decimal(str(getattr(order, "tax_rate", PricingService.DEFAULT_TAX_RATE)))
         tax = (subtotal * tax_rate).quantize(TWOPLACES, rounding=ROUND_HALF_UP)
         total = (subtotal + delivery_fee + tax).quantize(TWOPLACES, rounding=ROUND_HALF_UP)
 
         order.subtotal = subtotal
-        order.deliveryFee = delivery_fee
+        order.delivery_fee = delivery_fee
         order.tax = tax
         order.total = total

@@ -11,83 +11,83 @@ TWOPLACES = Decimal("0.01")
 
 @dataclass
 class OrderItem:
-    orderItemId: int
-    orderId: int
+    order_item_id: int
+    order_id: int
     quantity: int
-    itemPrice: object
+    item_price: object
 
-    def getLineTotal(self) -> Decimal:
-        return (Decimal(str(self.itemPrice)) * Decimal(self.quantity)).quantize(
+    def get_line_total(self) -> Decimal:
+        return (Decimal(str(self.item_price)) * Decimal(self.quantity)).quantize(
             TWOPLACES, rounding=ROUND_HALF_UP
         )
 
 
 @dataclass
 class Order:
-    orderId: int
+    order_id: int
     status: str
     items: list[OrderItem]
-    deliveryAddress: str
+    delivery_address: str
     subtotal: Decimal = Decimal("0.00")
     tax: Decimal = Decimal("0.00")
-    deliveryFee: object = Decimal("0.00")
+    delivery_fee: object = Decimal("0.00")
     total: Decimal = Decimal("0.00")
 
     def cancel(self):
         self.status = "Cancelled"
 
-    def updateStatus(self, status: str):
+    def update_status(self, status: str):
         self.status = status
 
 
 def test_calculate_totals_basic():
-    """Test that calculateTotals correctly computes subtotal, tax, and total for a simple order."""
+    """Test that calculate_totals correctly computes subtotal, tax, and total for a simple order."""
     order = Order(
-        orderId=1,
+        order_id=1,
         status="Pending",
         items=[
-            OrderItem(orderItemId=1, orderId=1, quantity=2, itemPrice="10.00"),
-            OrderItem(orderItemId=2, orderId=1, quantity=1, itemPrice="3.50"),
+            OrderItem(order_item_id=1, order_id=1, quantity=2, item_price="10.00"),
+            OrderItem(order_item_id=2, order_id=1, quantity=1, item_price="3.50"),
         ],
-        deliveryAddress="123 Main St",
-        deliveryFee="2.00",
+        delivery_address="123 Main St",
+        delivery_fee="2.00",
     )
 
-    PricingService.calculateTotals(order)
+    PricingService.calculate_totals(order)
 
     assert order.subtotal == Decimal("23.50")
-    assert order.deliveryFee == Decimal("2.00")
+    assert order.delivery_fee == Decimal("2.00")
     assert order.tax == Decimal("2.35")
     assert order.total == Decimal("27.85")
 
 
 def test_calculate_totals_empty_order():
     order = Order(
-        orderId=2,
+        order_id=2,
         status="Pending",
         items=[],
-        deliveryAddress="123 Main St",
-        deliveryFee="4.99",
+        delivery_address="123 Main St",
+        delivery_fee="4.99",
     )
 
-    PricingService.calculateTotals(order)
+    PricingService.calculate_totals(order)
 
     assert order.subtotal == Decimal("0.00")
-    assert order.deliveryFee == Decimal("4.99")
+    assert order.delivery_fee == Decimal("4.99")
     assert order.tax == Decimal("0.00")
     assert order.total == Decimal("4.99")
 
 
 def test_calculate_totals_rounding_half_up():
     order = Order(
-        orderId=3,
+        order_id=3,
         status="Pending",
-        items=[OrderItem(orderItemId=3, orderId=3, quantity=1, itemPrice="0.05")],
-        deliveryAddress="123 Main St",
-        deliveryFee="0.00",
+        items=[OrderItem(order_item_id=3, order_id=3, quantity=1, item_price="0.05")],
+        delivery_address="123 Main St",
+        delivery_fee="0.00",
     )
 
-    PricingService.calculateTotals(order)
+    PricingService.calculate_totals(order)
 
     assert order.subtotal == Decimal("0.05")
     assert order.tax == Decimal("0.01")
@@ -96,25 +96,25 @@ def test_calculate_totals_rounding_half_up():
 
 def test_calculate_totals_negative_quantity_raises():
     order = Order(
-        orderId=4,
+        order_id=4,
         status="Pending",
-        items=[OrderItem(orderItemId=4, orderId=4, quantity=-1, itemPrice="1.00")],
-        deliveryAddress="123 Main St",
-        deliveryFee="0.00",
+        items=[OrderItem(order_item_id=4, order_id=4, quantity=-1, item_price="1.00")],
+        delivery_address="123 Main St",
+        delivery_fee="0.00",
     )
 
     with pytest.raises(ValueError, match="quantity"):
-        PricingService.calculateTotals(order)
+        PricingService.calculate_totals(order)
 
 
 def test_calculate_totals_negative_price_raises():
     order = Order(
-        orderId=5,
+        order_id=5,
         status="Pending",
-        items=[OrderItem(orderItemId=5, orderId=5, quantity=1, itemPrice="-1.00")],
-        deliveryAddress="123 Main St",
-        deliveryFee="0.00",
+        items=[OrderItem(order_item_id=5, order_id=5, quantity=1, item_price="-1.00")],
+        delivery_address="123 Main St",
+        delivery_fee="0.00",
     )
 
     with pytest.raises(ValueError, match="price"):
-        PricingService.calculateTotals(order)
+        PricingService.calculate_totals(order)
