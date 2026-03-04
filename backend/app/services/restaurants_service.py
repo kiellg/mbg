@@ -17,6 +17,8 @@ def get_restaurant_menu(restaurant_id: int) -> RestaurantOut:
         raise HTTPException(status_code=404, detail="Restaurant not found")
 
     for item in record.get("menu", []):
+        item["restaurant_id"] = restaurant_id  
+
         visible = item.get("is_visible", True)
         active = item.get("is_active", True)
         cents = item.get("price_cents", None)
