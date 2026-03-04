@@ -2,31 +2,32 @@
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
 
-import pytest
-
 from backend.app.services.pricing_costing_service import PricingService
 
 
 TWOPLACES = Decimal("0.01")
 
 
-"""Data classes for testing the PricingService."""
 @dataclass
 class OrderItem:
+    """Minimal order item model used by pricing service tests."""
+
     order_item_id: int
     order_id: int
     quantity: int
     item_price: object
 
-    """Calculate line total for an order item."""
     def get_line_total(self) -> Decimal:
+        """Return line total rounded to two decimal places."""
         return (Decimal(str(self.item_price)) * Decimal(self.quantity)).quantize(
             TWOPLACES, rounding=ROUND_HALF_UP
         )
 
-"""Data class for representing an order in tests."""
+
 @dataclass
-class Order: # pylint: disable=too-many-instance-attributes
+class Order:  # pylint: disable=too-many-instance-attributes
+    """Minimal order model with pricing fields mutated by PricingService."""
+
     order_id: int
     status: str
     items: list[OrderItem]
@@ -36,13 +37,14 @@ class Order: # pylint: disable=too-many-instance-attributes
     delivery_fee: object = Decimal("0.00")
     total: Decimal = Decimal("0.00")
 
-    """Cancel the order by setting its status to 'Cancelled'."""
     def cancel(self):
+        """Set order status to cancelled."""
         self.status = "Cancelled"
 
-    """Update the order status to a new value."""
     def update_status(self, status: str):
+        """Set order status to the provided value."""
         self.status = status
+
 
 def test_calculate_totals_basic():
     """Test that calculate_totals correctly computes subtotal, tax, and total for a simple order."""
@@ -64,8 +66,9 @@ def test_calculate_totals_basic():
     assert order.tax == Decimal("2.35")
     assert order.total == Decimal("27.85")
 
-"""Test that calculate_totals handles an empty order with no items."""
+
 def test_calculate_totals_empty_order():
+    """Test that calculate_totals handles an empty order with no items."""
     order = Order(
         order_id=2,
         status="Pending",

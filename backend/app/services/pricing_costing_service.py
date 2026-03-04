@@ -14,6 +14,11 @@ class PricingService:
     DEFAULT_TAX_RATE = Decimal("0.10")
 
     @staticmethod
+    def calculate_tax(subtotal: Decimal, tax_rate: Decimal) -> Decimal:
+        """Calculate tax for a subtotal at a given tax rate."""
+        return (subtotal * tax_rate).quantize(TWOPLACES, rounding=ROUND_HALF_UP)
+
+    @staticmethod
     def calculate_totals(order) -> None:
         """Mutate order fields with recalculated totals."""
         subtotal = Decimal("0.00")
@@ -33,7 +38,7 @@ class PricingService:
         subtotal = subtotal.quantize(TWOPLACES, rounding=ROUND_HALF_UP)
         delivery_fee = _to_money(getattr(order, "delivery_fee", 0))
         tax_rate = Decimal(str(getattr(order, "tax_rate", PricingService.DEFAULT_TAX_RATE)))
-        tax = (subtotal * tax_rate).quantize(TWOPLACES, rounding=ROUND_HALF_UP)
+        tax = PricingService.calculate_tax(subtotal, tax_rate)
         total = (subtotal + delivery_fee + tax).quantize(TWOPLACES, rounding=ROUND_HALF_UP)
 
         order.subtotal = subtotal
