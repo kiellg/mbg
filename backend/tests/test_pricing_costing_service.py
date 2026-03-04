@@ -41,6 +41,7 @@ class Order:
 
 
 def test_calculate_totals_basic():
+    """Test that calculateTotals correctly computes subtotal, tax, and total for a simple order."""
     order = Order(
         orderId=1,
         status="Pending",
