@@ -1,17 +1,17 @@
 """Unit tests for cart_data simulated database structure."""
 
 from datetime import datetime
-from backend.app.data import cart_data
+from backend.app.data.cart_data import _CARTDB, _NEXT_CART_ID, _NEXT_ITEM_ID
 
 def setup_function():
     """Clear _CARTDB before each test to ensure a clean state."""
-    cart_data._CARTDB.clear()
-    cart_data.NEXT_CART_ID = 1
-    cart_data.NEXT_ITEM_ID = 1
+    _CARTDB.clear()
+    _NEXT_CART_ID = 1
+    _NEXT_ITEM_ID = 1
 
 def test_carts_starts_empty():
     """Ensure the cart database starts empty."""
-    assert not cart_data._CARTDB
+    assert not _CARTDB
 
 def test_cart_record_shape():
     """Manually insert a cart record and verify it matches the expected shape."""
@@ -29,11 +29,11 @@ def test_cart_record_shape():
         ]
     }
 
-    cart_data._CARTDB[1] = mock_cart
+    _CARTDB[1] = mock_cart
 
-    assert 1 in cart_data._CARTDB
+    assert 1 in _CARTDB
 
-    cart = cart_data._CARTDB[1]
+    cart = _CARTDB[1]
     assert "id" in cart
     assert "customer_id" in cart
     assert "restaurant_id" in cart
@@ -59,13 +59,13 @@ def test_cart_record_shape():
 
 def test_multiple_carts_stored_independently():
     """Verify multiple carts can coexist without overwriting each other."""
-    cart_data._CARTDB[1] = {
+    _CARTDB[1] = {
         "id": 1, 
         "customer_id": 10, 
         "restaurant_id": 1, 
         "created_at": datetime.utcnow().isoformat(), 
         "items": [{"id": 1, "menu_item_id": 7,"quantity": 2}]}
-    cart_data._CARTDB[2] = {
+    _CARTDB[2] = {
         "id": 2, 
         "customer_id": 20, 
         "restaurant_id": 2, 
@@ -73,6 +73,6 @@ def test_multiple_carts_stored_independently():
         "items": [{"id": 1, "menu_item_id": 7,"quantity": 2}]
     }
 
-    assert len(cart_data._CARTDB) == 2
-    assert cart_data._CARTDB[1]["customer_id"] == 10
-    assert cart_data._CARTDB[2]["customer_id"] == 20
+    assert len(_CARTDB) == 2
+    assert _CARTDB[1]["customer_id"] == 10
+    assert _CARTDB[2]["customer_id"] == 20
