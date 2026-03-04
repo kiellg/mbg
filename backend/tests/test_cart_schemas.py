@@ -5,7 +5,7 @@ from datetime import datetime
 import pytest
 from pydantic import ValidationError
 
-from app.schemas.cart import CartItemCreate, CartItemUpdate, CartItemResponse, CartResponse
+from backend.app.schemas.cart import CartItemCreate, CartItemUpdate, CartItemResponse, CartResponse
 
 def test_cart_item_create_valid():
     """Valid input should create a CartItemCreate without errors."""
@@ -16,7 +16,7 @@ def test_cart_item_create_valid():
 def test_cart_item_create_rejects_zero_quantity():
     """Zero quantity should raise a ValidationError."""
     with pytest.raises(ValidationError):
-        CartItemCreate(menu_item_id=5, quantity=0)  
+        CartItemCreate(menu_item_id=5, quantity=0)
 
 def test_cart_item_create_rejects_negative_quantity():
     """Negative quantity should raise a ValidationError."""
