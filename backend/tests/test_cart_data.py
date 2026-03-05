@@ -1,7 +1,7 @@
 """Unit tests for cart_data simulated database structure."""
 
 from datetime import datetime
-from backend.app.data import cart_data
+import backend.app.data.cart_data as cart_data
 
 def setup_function():
     """Clear _CARTDB before each test to ensure a clean state."""
