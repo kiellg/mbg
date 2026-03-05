@@ -19,7 +19,7 @@ def register_user(name: str, email: str, password: str, role: str):
     """Register a user if the email doesn't already exist"""
     if get_user_by_email(email):
         raise HTTPException(status_code=400, detail="Email already exists")
-    
+
     password_hash = hash_password(password)
 
     user = create_user(name, email, password_hash)
