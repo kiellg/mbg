@@ -19,6 +19,7 @@ class MenuItemOut(BaseModel):
     """Schema for menu items with price status and display price"""
     id: int
     name: str
+    restaurant_id: int
 
     price_cents: Optional[int] = None
     display_price: Optional[str] = None

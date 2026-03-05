@@ -42,3 +42,16 @@ def test_service_flags_missing_price():
     missing = next(i for i in restaurant.menu if i.id == 4)
     assert missing.price_status.value == "missing"
     assert missing.display_price is None
+
+def test_service_links_all_items_to_restaurant():
+    """Test that all menu items have the correct restaurant_id set"""
+    restaurant = get_restaurant_menu(1)
+    for item in restaurant.menu:
+        assert item.restaurant_id == 1
+
+def test_service_does_not_mix_items_across_restaurants():
+    """Test that items from restaurant 2 must not carry restaurant 1 id"""
+    restaurant = get_restaurant_menu(2)
+    for item in restaurant.menu:
+        assert item.restaurant_id == 2
+        assert item.restaurant_id != 1

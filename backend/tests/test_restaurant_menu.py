@@ -40,3 +40,20 @@ def test_visible_missing_price_is_flagged():
     item = next(i for i in data["menu"] if i["id"] == 4)
     assert item["price_status"] == "missing"
     assert item["display_price"] is None
+
+def test_all_items_linked_to_correct_restaurant():
+    """Test that all menu items have the correct restaurant_id set"""
+    r = client.get("/restaurants/1/menu")
+    data = r.json()
+
+    for item in data["menu"]:
+        assert item["restaurant_id"] == 1
+
+def test_items_are_not_shared_across_restaurants():
+    """Test that menu items returned for restaurant 2 must not be linked to restaurant 1"""
+    r = client.get("/restaurants/2/menu")
+    data = r.json()
+
+    for item in data["menu"]:
+        assert item["restaurant_id"] == 2
+        assert item["restaurant_id"] != 1
