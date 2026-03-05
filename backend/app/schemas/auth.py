@@ -1,4 +1,4 @@
-"""Schemas for user account registration"""
+"""Schemas for authentication requests and responses"""
 
 from pydantic import BaseModel, EmailStr
 from typing import Literal

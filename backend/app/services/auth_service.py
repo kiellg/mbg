@@ -1,3 +1,5 @@
+"""Service layer containing business logic for user registration"""
+
 import hashlib
 from fastapi import HTTPException
 
