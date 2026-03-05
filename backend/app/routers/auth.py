@@ -9,6 +9,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register", response_model=RegisterResponse)
 def register(payload: RegisterRequest):
+    """Register a new user account"""
     user = register_user(
         payload.name,
         payload.email,

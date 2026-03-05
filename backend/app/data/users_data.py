@@ -15,7 +15,7 @@ def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
 
 def create_user(name: str, email: str, password_hash: str) -> Dict[str, Any]:
     """Create a new user"""
-    global _NEXT_USER_ID
+    global _NEXT_USER_ID  # pylint: disable=global-statement
 
     user = {
         "user_id": _NEXT_USER_ID,
@@ -53,7 +53,7 @@ def create_driver(user_id: int, vehicle_type: str = "", is_available: bool = Tru
 
 def reset_users():
     """Reset the simulated user db"""
-    global _USERS, _CUSTOMERS, _MANAGERS, _DRIVERS, _NEXT_USER_ID
+    global _USERS, _CUSTOMERS, _MANAGERS, _DRIVERS, _NEXT_USER_ID  # pylint: disable=global-statement
     _USERS = {}
     _CUSTOMERS = {}
     _MANAGERS = {}

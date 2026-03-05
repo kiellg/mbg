@@ -7,9 +7,11 @@ from backend.app.data.users_data import reset_users
 client = TestClient(app)
 
 def setup_function():
+    """Reset db before each test"""
     reset_users()
 
 def test_register_customer():
+    """Registering a user should succeed"""
     response = client.post(
         "/auth/register",
         json={
