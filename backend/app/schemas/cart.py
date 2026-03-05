@@ -20,7 +20,7 @@ class CartItemResponse(BaseModel):
     id: int
     cart_id: int
     menu_item_id: int
-    quantity: int
+    quantity: int = Field(..., gt=0, description="Quantity must be greater than 0")
     item_name: str
     unit_price_cents: int
     subtotal_cents: int
