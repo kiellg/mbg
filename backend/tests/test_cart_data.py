@@ -1,5 +1,6 @@
 """Unit tests for cart_data simulated database structure."""
 
+#pylint: disable=protected-access
 from datetime import datetime
 from backend.app.data import cart_data
 
