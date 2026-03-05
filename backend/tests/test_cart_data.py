@@ -1,13 +1,13 @@
 """Unit tests for cart_data simulated database structure."""
 
 from datetime import datetime
-import backend.app.data.cart_data as cart_data
+from backend.app.data import cart_data
 
 def setup_function():
     """Clear _CARTDB before each test to ensure a clean state."""
     cart_data._CARTDB.clear()
-    cart_data._NEXT_CART_ID = 1
-    cart_data._NEXT_ITEM_ID = 1
+    cart_data.NEXT_CART_ID = 1
+    cart_data.NEXT_ITEM_ID = 1
 
 def test_carts_starts_empty():
     """Ensure the cart database starts empty."""

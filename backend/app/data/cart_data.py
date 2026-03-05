@@ -4,5 +4,5 @@ from typing import Dict, Any
 
 _CARTDB: Dict[int, Dict[str, Any]] = {}
 
-_NEXT_CART_ID: int = 1
-_NEXT_ITEM_ID: int = 1
+NEXT_CART_ID: int = 1
+NEXT_ITEM_ID: int = 1
