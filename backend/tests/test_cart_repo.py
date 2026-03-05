@@ -1,7 +1,8 @@
 """Unit tests for cart_repo.py"""
 
-import backend.app.data.cart_data as cart_data
-import backend.app.repositories.cart_repo as cart_repo
+#pylint: disable=protected-access
+from backend.app.data import cart_data
+from backend.app.repositories import cart_repo
 
 def setup_function():
     """Reset cart data before each test."""
@@ -17,7 +18,7 @@ def test_create_cart():
     assert cart["id"] == 1
     assert cart["customer_id"] == 1
     assert cart["restaurant_id"] == 2
-    assert cart["items"] == []
+    assert not cart["items"]
     assert 1 in cart_data._CARTDB
 
 def test_create_cart_increments_counter():

@@ -1,10 +1,12 @@
 """Handles all read and write data. No business logic."""
 
+#pylint: disable=protected-access
 from typing import Any, Dict, List, Optional
 from datetime import datetime
-import backend.app.data.cart_data as cart_data
+from backend.app.data import cart_data
 
-def get_cart_by_customer_and_restaurant(customer_id: int, restaurant_id: int) -> Optional[Dict[str, Any]]:
+def get_cart_by_customer_and_restaurant(customer_id: int, 
+                                        restaurant_id: int) -> Optional[Dict[str, Any]]:
     """Search for a cart matching the given customer and restaurant IDs."""
     for cart in cart_data._CARTDB.values():
         if cart["customer_id"] == customer_id and cart["restaurant_id"] == restaurant_id:
