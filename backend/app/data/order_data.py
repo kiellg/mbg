@@ -20,17 +20,15 @@ def list_order_records() -> List[Dict[str, Any]]:
 
 def _alloc_order_id() -> int:
     """Allocate and return the next order_id."""
-    global NEXT_ORDER_ID
     order_id = NEXT_ORDER_ID
-    NEXT_ORDER_ID += 1
+    globals()["NEXT_ORDER_ID"] = NEXT_ORDER_ID + 1
     return order_id
 
 
 def _alloc_order_item_id() -> int:
     """Allocate and return the next order_item_id."""
-    global NEXT_ORDER_ITEM_ID
     item_id = NEXT_ORDER_ITEM_ID
-    NEXT_ORDER_ITEM_ID += 1
+    globals()["NEXT_ORDER_ITEM_ID"] = NEXT_ORDER_ITEM_ID + 1
     return item_id
 
 
