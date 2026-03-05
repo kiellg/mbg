@@ -48,3 +48,10 @@ def test_service_links_all_items_to_restaurant():
     restaurant = get_restaurant_menu(1)
     for item in restaurant.menu:
         assert item.restaurant_id == 1
+
+def test_service_does_not_mix_items_across_restaurants():
+    """Test that items from restaurant 2 must not carry restaurant 1 id"""
+    restaurant = get_restaurant_menu(2)
+    for item in restaurant.menu:
+        assert item.restaurant_id == 2
+        assert item.restaurant_id != 1

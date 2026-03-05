@@ -55,7 +55,38 @@ _DB: Dict[int, Dict[str, Any]] = {
                 "category": {"id": 30, "name": "Starters"},
             },
         ],
-    }
+    },
+    2: {
+        "id": 2,
+        "name": "Sushi World",
+        "address": "123 Sushi St, Vancouver, BC",
+        "rating": 5,
+        "opening_hours": "Mon-Sun 12:00-23:00",
+        "menu": [
+            {
+                "id": 1,
+                "name": "California Roll",
+                "price_cents": 899,
+                "description": "Crab, avocado, cucumber, and mayo",
+                "dietary_tag": "",
+                "is_visible": True,
+                "is_active": True,
+                "is_available": True,
+                "category": {"id": 10, "name": "Mains"},
+            },
+            {
+                "id": 2,
+                "name": "Spicy Tuna Roll",
+                "price_cents": 999,
+                "description": "Tuna mixed with spicy mayo",
+                "dietary_tag": "",
+                "is_visible": True,
+                "is_active": True,
+                "is_available": True,
+                "category": {"id": 10, "name": "Mains"},
+            },
+        ],
+    },
 }
 
 def get_restaurant_record(restaurant_id: int) -> Optional[Dict[str, Any]]:
