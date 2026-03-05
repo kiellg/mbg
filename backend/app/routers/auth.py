@@ -2,8 +2,8 @@
 
 from fastapi import APIRouter
 
-from app.schemas.auth import RegisterRequest, RegisterResponse
-from app.services.auth_service import register_user
+from backend.app.schemas.auth import RegisterRequest, RegisterResponse
+from backend.app.services.auth_service import register_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
