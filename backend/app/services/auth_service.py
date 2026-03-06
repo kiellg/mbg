@@ -54,7 +54,7 @@ def authenticate_user(email: str, password: str):
             status_code=401,
             detail="Incorrect email or password",
         )
-    
+
     lock_until = get_lock_until(email)
 
     if lock_until and datetime.now() < lock_until:
@@ -62,7 +62,7 @@ def authenticate_user(email: str, password: str):
             status_code=401,
             detail="Account is locked. Please try again later.",
         )
-    
+
     password_hash = hash_password(password)
 
     if user["password_hash"] != password_hash:
@@ -76,12 +76,12 @@ def authenticate_user(email: str, password: str):
                 status_code=401,
                 detail="Account is locked. Please try again later.",
             )
-        
+
         raise HTTPException(
             status_code=401,
             detail="Incorrect email or password",
         )
-    
+
     reset_failed_login_attempts(email)
     set_lock_until(email, None)
 
