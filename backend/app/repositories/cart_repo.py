@@ -32,7 +32,7 @@ def create_cart(customer_id: int, restaurant_id: int) -> Dict[str, Any]:
     return new_cart
 
 def add_item_to_cart(cart_id: int, menu_item_id: int, quantity: int) -> Optional[Dict[str, Any]]:
-    """""Add a new item to the specified cart."""
+    """Add a new item to the specified cart."""
     cart = get_cart_by_id(cart_id)
     if not cart:
         return None
@@ -42,6 +42,7 @@ def add_item_to_cart(cart_id: int, menu_item_id: int, quantity: int) -> Optional
 
     new_item = {
         "id": item_id,
+        "cart_id": cart_id,
         "menu_item_id": menu_item_id,
         "quantity": quantity
     }
