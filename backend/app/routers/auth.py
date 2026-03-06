@@ -39,7 +39,7 @@ def login(payload: LoginRequest, response: Response):
     session_token = create_session(user["user_id"])
 
     response.set_cookie(
-        key=session_token,
+        key="session_token",
         value=session_token,
         httponly=True,
     )

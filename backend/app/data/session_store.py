@@ -12,6 +12,7 @@ def create_session(user_id: int) -> str:
     _SESSIONS[session_token] = {
         "user_id": user_id,
     }
+    return session_token
 
 def get_session(session_token: str) -> Optional[Dict[str, Any]]:
     """Return a session by token"""
@@ -21,4 +22,3 @@ def reset_session():
     """Reset all sessions"""
     global _SESSIONS  # pylint: disable=global-statement
     _SESSIONS = {}
-    
