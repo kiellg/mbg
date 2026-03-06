@@ -28,4 +28,46 @@ def test_register_customer():
 
     assert data["email"] == "john@test.com"
     assert "user_id" in data
+
+def test_Register_duplicate_email():
+    """Registering with a duplicate email should fail"""
+
+    # first registration
+    client.post(
+        "/auth/register",
+        json={
+            "name": "John",
+            "email": "john@test.com",
+            "password": "password123",
+            "role": "customer",
+        },
+    )
+
+    # second registration with same email
+    response = client.post(
+        "/auth/register",
+        json={
+            "name": "Jane",
+            "email": "john@test.com",
+            "password": "password123",
+            "role": "customer",
+        },
+    )
+
+    assert response.status_code == 400
+
+def test_register_invalid_email():
+    """Registering with an invalid email format should fail"""
+
+    response = client.post(
+        "/auth/register",
+        json={
+            "name": "John",
+            "email": "not_email",
+            "password": "password123",
+            "role": "customer",
+        },
+    )
+
+    assert response.status_code == 422
     
