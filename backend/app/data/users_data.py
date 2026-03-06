@@ -68,13 +68,13 @@ def get_user_role(user_id: int) -> Optional[str]:
     """Return the role for a user"""
     if is_customer(user_id):
         return "customer"
-    
+
     if is_manager(user_id):
         return "manager"
-    
+
     if is_driver(user_id):
         return "driver"
-    
+
     return None
 
 def increment_failed_login_attempts(email: str):
@@ -90,7 +90,7 @@ def reset_failed_login_attempts(email: str):
 
     if not user:
         return 0
-    
+
     return user.get("failed_login_attempts", 0)
 
 def get_failed_login_attempts(email: str) -> int:
@@ -99,7 +99,7 @@ def get_failed_login_attempts(email: str) -> int:
 
     if not user:
         return 0
-    
+
     return user.get("failed_login_attempts", 0)
 
 def set_lock_until(email: str, lock_until: Optional[datetime]):
@@ -115,7 +115,7 @@ def get_lock_until(email: str) -> Optional[datetime]:
 
     if not user:
         return None
-    
+
     return user.get("lock_until")
 
 def reset_users():
