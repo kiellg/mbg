@@ -1,5 +1,6 @@
 """Simulated user database for registration"""
 
+from datetime import datetime
 from typing import Dict, Any, Optional
 
 _USERS: Dict[str, Dict[str, Any]] = {}
@@ -50,6 +51,63 @@ def create_driver(user_id: int, vehicle_type: str = "", is_available: bool = Tru
         "vehicle_type": vehicle_type,
         "is_available": is_available,
     }
+
+def is_customer(user_id: int) -> bool:
+    """Return whether a user is a customer"""
+    return user_id in _CUSTOMERS
+
+def is_manager(user_id: int) -> bool:
+    """Return whether a user is a manager"""
+    return user_id in _MANAGERS
+
+def is_driver(user_id: int) -> bool:
+    """Return whether a user is a driver"""
+    return user_id in _DRIVERS
+
+def get_user_role(user_id: int) -> Optional[str]:
+    """Return the role for a user"""
+    if is_customer(user_id):
+        return "customer"
+    
+    if is_manager(user_id):
+        return "manager"
+    
+    if is_driver(user_id):
+        return "driver"
+    
+    return None
+
+def increment_failed_login_attempts(email: str):
+    """Increase failed login attempts for a user"""
+    user = _USERS.get(email)
+
+    if user:
+        user["failed_login_attempts"] = user.get("failed_login_attempts", 0) + 1
+
+def reset_failed_login_attempts(email: str):
+    """Reset failed login attempts for a user"""
+    user = _USERS.get(email)
+
+    if not user:
+        return 0
+    
+    return user.get("failed_login_attempts", 0)
+
+def set_lock_until(email: str, lock_until: Optional[datetime]):
+    """Set account lock time for a user"""
+    user = _USERS.get(email)
+
+    if user:
+        user["lock_until"] = lock_until
+
+def get_lock_until(email: str) -> Optional[datetime]:
+    """Return account lock time for a user"""
+    user = _USERS.get(email)
+
+    if not user:
+        return None
+    
+    return user.get("lock_until")
 
 def reset_users():
     """Reset the simulated user db"""
