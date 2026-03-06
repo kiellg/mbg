@@ -24,6 +24,7 @@ def test_cart_record_shape():
         "items": [
             {
                 "id": 1,
+                "cart_id": 1,
                 "menu_item_id": 7,
                 "quantity": 2
             }
@@ -54,6 +55,7 @@ def test_cart_record_shape():
     assert "quantity" in item
 
     assert item["id"] == 1
+    assert item["cart_id"] == 1
     assert item["menu_item_id"] == 7
     assert item["quantity"] == 2
 
@@ -65,13 +67,13 @@ def test_multiple_carts_stored_independently():
         "customer_id": 10, 
         "restaurant_id": 1, 
         "created_at": datetime.utcnow().isoformat(), 
-        "items": [{"id": 1, "menu_item_id": 7,"quantity": 2}]}
+        "items": [{"id": 1, "cart_id": 1, "menu_item_id": 7,"quantity": 2}]}
     cart_data._CARTDB[2] = {
         "id": 2, 
         "customer_id": 20, 
         "restaurant_id": 2, 
         "created_at": datetime.utcnow().isoformat(), 
-        "items": [{"id": 1, "menu_item_id": 7,"quantity": 2}]
+        "items": [{"id": 1, "cart_id": 2, "menu_item_id": 7,"quantity": 2}]
     }
 
     assert len(cart_data._CARTDB) == 2
