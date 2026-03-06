@@ -88,10 +88,8 @@ def reset_failed_login_attempts(email: str):
     """Reset failed login attempts for a user"""
     user = _USERS.get(email)
 
-    if not user:
-        return 0
-
-    return user.get("failed_login_attempts", 0)
+    if user:
+        user["failed_login_attempts"] = 0
 
 def get_failed_login_attempts(email: str) -> int:
     """Return failed login attempts for a user"""
