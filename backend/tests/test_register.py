@@ -29,7 +29,7 @@ def test_register_customer():
     assert data["email"] == "john@test.com"
     assert "user_id" in data
 
-def test_Register_duplicate_email():
+def test_register_duplicate_email():
     """Registering with a duplicate email should fail"""
 
     # first registration
