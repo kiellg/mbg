@@ -1,6 +1,6 @@
 """Schemas for authentication requests and responses"""
 
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel, EmailStr
 
@@ -15,3 +15,15 @@ class RegisterResponse(BaseModel):
     """Response schema returned after registration"""
     user_id: int
     email: EmailStr
+
+class LoginRequest(BaseModel):
+    """Request schema for user login"""
+    email: EmailStr
+    password: str
+
+class LoginResponse(BaseModel):
+    """Response schema returned after succcessful login"""
+    message: str
+    user_id: int
+    email: EmailStr
+    role: Optional[str]
