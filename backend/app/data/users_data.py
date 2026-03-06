@@ -93,6 +93,15 @@ def reset_failed_login_attempts(email: str):
     
     return user.get("failed_login_attempts", 0)
 
+def get_failed_login_attempts(email: str) -> int:
+    """Return failed login attempts for a user"""
+    user = _USERS.get(email)
+
+    if not user:
+        return 0
+    
+    return user.get("failed_login_attempts", 0)
+
 def set_lock_until(email: str, lock_until: Optional[datetime]):
     """Set account lock time for a user"""
     user = _USERS.get(email)
