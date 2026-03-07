@@ -1,27 +1,29 @@
+# pylint: disable=global-statement,unused-argument
 from datetime import datetime, timezone
-import pytest
 import copy
-import backend.app.services.cart_service as cart_service
-import backend.app.repositories.cart_repo as cart_repo
-from backend.app.schemas.cart import CartItemCreate, CartItemUpdate
+import pytest
 from fastapi import HTTPException
+from backend.app.services import cart_service
+from backend.app.repositories import cart_repo
+from backend.app.schemas.cart import CartItemCreate, CartItemUpdate
 
-_orig_db = None
+_ORIG_DB = None
 
 def setup_function():
     """Clear the restaurant database before each test to ensure isolation."""
-    global _orig_db
-    _orig_db = copy.deepcopy(cart_service.RESTAURANT_DB)
+    global _ORIG_DB
+    _ORIG_DB = copy.deepcopy(cart_service.RESTAURANT_DB)
     cart_service.RESTAURANT_DB.clear()
 
 def teardown_function():
     """Restore the original restaurant database after each test."""
     cart_service.RESTAURANT_DB.clear()
-    if _orig_db is not None:
-        cart_service.RESTAURANT_DB.update(_orig_db)
+    if _ORIG_DB is not None:
+        cart_service.RESTAURANT_DB.update(_ORIG_DB)
 
 def test_add_item_creates_cart_and_returns_cart_response(monkeypatch):
-    """Test that adding an item to a non-existent cart creates the cart and returns the correct response."""
+    """Test that adding an item to a non-existent cart
+    creates the cart and returns the correct response."""
     restaurant_id = 1
     menu_item_id = 7
     cart_service.RESTAURANT_DB[restaurant_id] = {
@@ -29,7 +31,8 @@ def test_add_item_creates_cart_and_returns_cart_response(monkeypatch):
         "menu": [{"id": menu_item_id, "name": "Taco", "price_cents": 500, "is_available": True}]
     }
 
-    created_cart = {"id": 1, "customer_id": 42, "restaurant_id": restaurant_id, "created_at": datetime.now(timezone.utc).isoformat(), "items": []}
+    created_cart = {"id": 1, "customer_id": 42, "restaurant_id": restaurant_id,
+                    "created_at": datetime.now(timezone.utc).isoformat(), "items": []}
 
     monkeypatch.setattr(cart_repo, "get_cart_by_customer_and_restaurant", lambda cid, rid: None)
     monkeypatch.setattr(cart_repo, "create_cart", lambda cid, rid: created_cart)
@@ -83,7 +86,8 @@ def test_update_item_cart_not_found_raises(monkeypatch):
 
 def test_remove_item_not_found_raises(monkeypatch):
     """Test that trying to remove an item that doesn't exist in the cart raises an HTTPException."""
-    cart = {"id": 5, "customer_id": 7, "restaurant_id": 1, "created_at": datetime.now(timezone.utc).isoformat(), "items": []}
+    cart = {"id": 5, "customer_id": 7, "restaurant_id": 1,
+            "created_at": datetime.now(timezone.utc).isoformat(), "items": []}
     monkeypatch.setattr(cart_repo, "get_cart_by_id", lambda cart_id: cart)
     monkeypatch.setattr(cart_repo, "remove_item_from_cart", lambda cart_id, item_id: False)
 
