@@ -52,7 +52,7 @@ def test_logout_ends_the_session():
     )
 
     assert logout_response.status_code == 200
-    assert logout_response.json == {
+    assert logout_response.json() == {
         "message": "Logout successful",
     }
     assert get_session(session_token) is None
@@ -80,7 +80,7 @@ def test_protected_route_requires_login_after_logout():
     )
 
     assert protected_before_logout.status_code == 200
-    assert protected_before_logout.json == {
+    assert protected_before_logout.json() == {
         "user_id": 1,
     }
 
