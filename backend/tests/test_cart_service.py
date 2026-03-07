@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import copy
 import pytest
 from fastapi import HTTPException
-from backend.app.services import cart_service
+from backend.app.services import cart_service as cart_service
 from backend.app.repositories import cart_repo
 from backend.app.schemas.cart import CartItemCreate, CartItemUpdate
 

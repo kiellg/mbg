@@ -75,7 +75,7 @@ def update_item(customer_id: int, restaurant_id: int, item_id: int,
     updated_item = cart_repo.update_item_quantity(cart["id"], item_id, payload.quantity)
     if updated_item is None:
         raise HTTPException(status_code=404,
-                            detail=f"Cart item {item_id} is not found in cart {cart["id"]}")
+                            detail=f"Cart item {item_id} is not found in cart {cart['id']}")
     updated_cart = cart_repo.get_cart_by_id(cart["id"])
     return _build_cart_response(updated_cart)
 
@@ -88,7 +88,7 @@ def remove_item(customer_id: int, restaurant_id: int, item_id: int) -> None:
     removed = cart_repo.remove_item_from_cart(cart["id"], item_id)
     if not removed:
         raise HTTPException(status_code=404,
-                            detail=f"Cart item {item_id} is not found in cart {cart["id"]}")
+                            detail=f"Cart item {item_id} is not found in cart {cart['id']}")
 
 def get_cart(customer_id: int, restaurant_id: int) -> CartResponse:
     """Retrieve the customer's cart for a specific restaurant."""
