@@ -1,14 +1,15 @@
+#pylint: disable=unused-argument, unused-import
 """Unit tests for the cart router endpoints."""
 
+from unittest.mock import patch
+from datetime import datetime, timezone
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from unittest.mock import patch
 from fastapi import HTTPException
 
 from backend.app.routers.carts import router
 from backend.app.schemas.cart import CartResponse, CartItemResponse
-from datetime import datetime, timezone
 
 app = FastAPI()
 app.include_router(router)
