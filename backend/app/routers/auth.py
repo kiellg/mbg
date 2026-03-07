@@ -9,7 +9,7 @@ from backend.app.schemas.auth import (
     LoginResponse,
 )
 from backend.app.services.auth_service import register_user, authenticate_user
-from backend.app.data.session_store import create_session
+from backend.app.repositories.session_repo import create_session
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
