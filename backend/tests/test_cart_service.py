@@ -1,4 +1,5 @@
 # pylint: disable=global-statement,unused-argument
+"""Unit tests for the cart_service module, covering key functionalities and edge cases."""
 from datetime import datetime, timezone
 import copy
 import pytest
