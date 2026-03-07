@@ -64,7 +64,7 @@ def logout(request: Request, response: Response):
 
     if not session_token:
         raise HTTPException(status_code=401, detail="Login required")
-    
+
     result = logout_user(session_token)
 
     response.delete_cookie(key="session_token")
@@ -78,7 +78,7 @@ def get_current_user(request: Request):
 
     if not session_token:
         raise HTTPException(status_code=401, detail="Login required")
-    
+
     session = get_current_user_session(session_token)
 
     return{
