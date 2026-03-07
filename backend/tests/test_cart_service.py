@@ -23,7 +23,8 @@ def teardown_function():
         cart_service.RESTAURANT_DB.update(_ORIG_DB)
 
 def test_add_item_creates_cart_and_returns_cart_response(monkeypatch):
-    """Test that adding an item to a non-existent cart creates the cart and returns the correct response."""
+    """Test that adding an item to a non-existent cart 
+    creates the cart and returns the correct response."""
     restaurant_id = 1
     menu_item_id = 7
     cart_service.RESTAURANT_DB[restaurant_id] = {
