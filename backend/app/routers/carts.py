@@ -44,13 +44,9 @@ def update_cart_item(
     current_user: dict = Depends(get_current_user),
 ):
     """Update the quantity of an existing cart item."""
-    cart = cart_service.get_cart(
-        customer_id=current_user["id"],
-        restaurant_id=restaurant_id,
-    )
     return cart_service.update_item(
         customer_id=current_user["id"],
-        cart_id=cart.id,
+        restaurant_id=restaurant_id,
         item_id=item_id,
         payload=payload,
     )
@@ -66,12 +62,8 @@ def remove_cart_item(
     current_user: dict = Depends(get_current_user),
 ):
     """Remove an item from the cart."""
-    cart = cart_service.get_cart(
-        customer_id=current_user["id"],
-        restaurant_id=restaurant_id,
-    )
     cart_service.remove_item(
         customer_id=current_user["id"],
-        cart_id=cart.id,
+        restaurant_id=restaurant_id,
         item_id=item_id,
     )

@@ -9,15 +9,14 @@ from fastapi.testclient import TestClient
 from fastapi import HTTPException
 
 from backend.app.routers.carts import router
-from backend.app.schemas.cart import CartResponse, CartItemResponse
+from backend.app.schemas.cart import CartItemCreate, CartItemUpdate, CartResponse, CartItemResponse
 
 app = FastAPI()
 app.include_router(router)
 
 client = TestClient(app)
 
-_SVC = "backend.app.services.cart_service"
-_DEP = "backend.app.dependencies.get_current_user"
+_SVC = "backend.app.routers.carts.cart_service"
 
 AUTH_HEADER = {"fake-user-id": "7"}
 
@@ -70,6 +69,7 @@ def test_add_item_returns_201(mock_add_item):
     response = client.post("/cart/1/items", json=payload, headers=AUTH_HEADER)
     assert response.status_code == 201
     assert response.json()["total_cents"] == 9998
+    mock_add_item.assert_called_once()
 
 @patch(f"{_SVC}.add_item",
        side_effect=HTTPException(status_code=400, detail="Menu item not available"))
@@ -90,30 +90,32 @@ def test_add_item_returns_404_when_item_not_found(mock_add_item):
     assert response.status_code == 404
 
 #for update cart item
-@patch(f"{_SVC}.get_cart", return_value=MOCK_CART_RESPONSE)
 @patch(f"{_SVC}.update_item", return_value=MOCK_CART_RESPONSE)
-def test_update_cart_item_returns_200(mock_update, mock_get_cart):
+def test_update_cart_item_returns_200(mock_update):
     """Test that PUT /cart/{restaurant_id}/items/{item_id} 
     returns 200 with valid data."""
     payload = {"quantity": 3}
     response = client.put("/cart/1/items/1", json=payload, headers=AUTH_HEADER)
     assert response.status_code == 200
-    mock_get_cart.assert_called_once_with(customer_id=7, restaurant_id=1)
-    mock_update.assert_called_once()
+    mock_update.assert_called_once_with(
+        customer_id=7,
+        restaurant_id=1,
+        item_id=1,
+        payload=CartItemUpdate(quantity=3),
+    )
 
-@patch(f"{_SVC}.get_cart",
+@patch(f"{_SVC}.update_item",
        side_effect=HTTPException(status_code=404, detail="Cart not found"))
-def test_update_cart_item_returns_404_when_cart_not_found(mock_get_cart):
+def test_update_cart_item_returns_404_when_cart_not_found(mock_update):
     """Test that PUT /cart/{restaurant_id}/items/{item_id} 
     returns 404 when cart is not found."""
     payload = {"quantity": 3}
     response = client.put("/cart/1/items/1", json=payload, headers=AUTH_HEADER)
     assert response.status_code == 404
 
-@patch(f"{_SVC}.get_cart", return_value=MOCK_CART_RESPONSE)
 @patch(f"{_SVC}.update_item",
        side_effect=HTTPException(status_code=404, detail="Item not found"))
-def test_update_cart_item_returns_404_when_item_not_found(mock_update, mock_get_cart):
+def test_update_cart_item_returns_404_when_item_not_found(mock_update):
     """Test that PUT /cart/{restaurant_id}/items/{item_id} 
     returns 404 when item is not found."""
     payload = {"quantity": 3}
@@ -121,29 +123,29 @@ def test_update_cart_item_returns_404_when_item_not_found(mock_update, mock_get_
     assert response.status_code == 404
 
 # for remove cart item
-
-@patch(f"{_SVC}.get_cart", return_value=MOCK_CART_RESPONSE)
 @patch(f"{_SVC}.remove_item", return_value=None)
-def test_remove_cart_item_returns_204(mock_remove, mock_get_cart):
+def test_remove_cart_item_returns_204(mock_remove):
     """Test that DELETE /cart/{restaurant_id}/items/{item_id} 
     returns 204 with valid data."""
     response = client.delete("/cart/1/items/1", headers=AUTH_HEADER)
     assert response.status_code == 204
-    mock_get_cart.assert_called_once_with(customer_id=7, restaurant_id=1)
-    mock_remove.assert_called_once()
+    mock_remove.assert_called_once_with(
+        customer_id=7,
+        restaurant_id=1,
+        item_id=1,
+    )
 
-@patch(f"{_SVC}.get_cart",
+@patch(f"{_SVC}.remove_item",
        side_effect=HTTPException(status_code=404, detail="Cart not found"))
-def test_remove_cart_item_returns_404_when_cart_not_found(mock_get_cart):
+def test_remove_cart_item_returns_404_when_cart_not_found(mock_remove):
     """Test that DELETE /cart/{restaurant_id}/items/{item_id} 
     returns 404 when cart is not found."""
     response = client.delete("/cart/1/items/1", headers=AUTH_HEADER)
     assert response.status_code == 404
 
-@patch(f"{_SVC}.get_cart", return_value=MOCK_CART_RESPONSE)
 @patch(f"{_SVC}.remove_item",
        side_effect=HTTPException(status_code=404, detail="Item not found"))
-def test_remove_cart_item_returns_404_when_item_not_found(mock_remove, mock_get_cart):
+def test_remove_cart_item_returns_404_when_item_not_found(mock_remove):
     """Test that DELETE /cart/{restaurant_id}/items/{item_id} 
     returns 404 when item is not found."""
     response = client.delete("/cart/1/items/999", headers=AUTH_HEADER)
