@@ -70,7 +70,7 @@ def update_item(customer_id: int, restaurant_id: int, item_id: int,
 
     cart = cart_repo.get_cart_by_customer_and_restaurant(customer_id, restaurant_id)
     if cart is None:
-        raise HTTPException(status_code=404, detail=f"Cart not found")
+        raise HTTPException(status_code=404, detail="Cart not found")
 
     updated_item = cart_repo.update_item_quantity(cart["id"], item_id, payload.quantity)
     if updated_item is None:
@@ -83,7 +83,7 @@ def remove_item(customer_id: int, restaurant_id: int, item_id: int) -> None:
     """Remove an item from the customer's cart."""
     cart = cart_repo.get_cart_by_customer_and_restaurant(customer_id, restaurant_id)
     if cart is None:
-        raise HTTPException(status_code=404, detail=f"Cart not found")
+        raise HTTPException(status_code=404, detail="Cart not found")
 
     removed = cart_repo.remove_item_from_cart(cart["id"], item_id)
     if not removed:
