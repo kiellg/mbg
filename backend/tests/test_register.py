@@ -2,7 +2,7 @@
 
 from fastapi.testclient import TestClient
 from backend.main import app
-from backend.app.data.users_data import reset_users
+from backend.app.repositories.user_repo import reset_users
 
 client = TestClient(app)
 
@@ -70,4 +70,3 @@ def test_register_invalid_email():
     )
 
     assert response.status_code == 422
-    

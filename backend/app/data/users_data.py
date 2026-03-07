@@ -2,9 +2,9 @@
 
 from typing import Dict, Any
 
-_USERS: Dict[str, Dict[str, Any]] = {}
-_CUSTOMERS: Dict[int, Dict[str, Any]] = {}
-_MANAGERS: Dict[int, Dict[str, Any]] = {}
-_DRIVERS: Dict[int, Dict[str, Any]] = {}
+USERS: Dict[str, Dict[str, Any]] = {}
+CUSTOMERS: Dict[int, Dict[str, Any]] = {}
+MANAGERS: Dict[int, Dict[str, Any]] = {}
+DRIVERS: Dict[int, Dict[str, Any]] = {}
 
-_NEXT_USER_ID = 1
+NEXT_USER_ID = 1

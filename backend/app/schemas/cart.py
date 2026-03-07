@@ -33,4 +33,3 @@ class CartResponse(BaseModel):
     created_at: datetime
     items: List[CartItemResponse] = []
     total_cents: int
-    

@@ -2,4 +2,4 @@
 
 from typing import Dict, Any
 
-_SESSIONS: Dict[str, Dict[str, Any]] = {}
+SESSIONS: Dict[str, Dict[str, Any]] = {}
