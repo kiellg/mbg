@@ -49,7 +49,7 @@ def _build_cart_response(cart: dict) -> CartResponse:
         total_cents=total
     )
 
-def add_item(customer_id: int, restaurant_id: int, payload: CartItemCreate) -> CartItemResponse:
+def add_item(customer_id: int, restaurant_id: int, payload: CartItemCreate) -> CartResponse:
     """Add an item to the customer's cart, creating a cart if necessary."""
     menu_item = _get_menu_item(restaurant_id, payload.menu_item_id)
     if not menu_item.get("is_available", False):
