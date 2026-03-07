@@ -2,6 +2,7 @@
 
 import hashlib
 from datetime import datetime, timedelta
+from typing import Dict, Any
 from fastapi import HTTPException
 
 from backend.app.repositories.user_repo import(
@@ -16,6 +17,11 @@ from backend.app.repositories.user_repo import(
     get_failed_login_attempts,
     set_lock_until,
     get_lock_until,
+)
+
+from backend.app.repositories.session_repo import(
+    get_session,
+    delete_session,
 )
 
 MAX_FAILED_LOGIN_ATTEMPTS = 5
@@ -93,3 +99,23 @@ def authenticate_user(email: str, password: str):
         "email": user["email"],
         "role": role,
     }
+
+def logout_user(session_token: str):
+    """Log out a user by deleting the session"""
+    deleted = delete_session(session_token)
+
+    if not deleted:
+        raise HTTPException(status_code=401, detail="Invalid session")
+
+    return{
+        "message": "Logout successful",
+    }
+
+def get_current_user_session(session_token: str) -> Dict[str, Any]:
+    """Return the current user session"""
+    session = get_session(session_token)
+
+    if not session:
+        raise HTTPException(status_code=401, detail="Login required")
+
+    return session

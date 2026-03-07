@@ -111,8 +111,8 @@ def get_lock_until(email: str) -> Optional[datetime]:
 
 def reset_users():
     """Reset the simulated user db"""
-    users_data.USERS = {}
-    users_data.CUSTOMERS = {}
-    users_data.MANAGERS = {}
-    users_data.DRIVERS = {}
+    users_data.USERS.clear()
+    users_data.CUSTOMERS.clear()
+    users_data.MANAGERS.clear()
+    users_data.DRIVERS.clear()
     users_data.NEXT_USER_ID = 1
