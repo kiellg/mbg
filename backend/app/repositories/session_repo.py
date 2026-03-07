@@ -22,7 +22,7 @@ def delete_session(session_token: str) -> bool:
     """Delete a session by token"""
     if session_token not in session_store.SESSIONS:
         return False
-    
+
     del session_store.SESSIONS[session_token]
     return True
 

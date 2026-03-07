@@ -106,7 +106,7 @@ def logout_user(session_token: str):
 
     if not deleted:
         raise HTTPException(status_code=401, detail="Invalid session")
-    
+
     return{
         "message": "Logout successful",
     }
@@ -117,5 +117,5 @@ def get_current_user_session(session_token: str) -> Dict[str, Any]:
 
     if not session:
         raise HTTPException(status_code=401, detail="Login required")
-    
+
     return session
