@@ -4,7 +4,7 @@ import hashlib
 from datetime import datetime, timedelta
 from fastapi import HTTPException
 
-from backend.app.data.users_data import(
+from backend.app.repositories.user_repo import(
     get_user_by_email,
     create_user,
     create_customer,

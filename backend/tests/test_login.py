@@ -3,12 +3,12 @@
 from fastapi.testclient import TestClient
 
 from backend.main import app
-from backend.app.data.users_data import(
+from backend.app.repositories.user_repo import(
     reset_users,
     create_user,
     create_customer,
 )
-from backend.app.data.session_store import reset_session
+from backend.app.repositories.session_repo import reset_session
 from backend.app.services.auth_service import hash_password
 
 client = TestClient(app)
