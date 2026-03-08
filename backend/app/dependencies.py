@@ -1,13 +1,14 @@
 """Shared FastAPI dependencies."""
 
-from fastapi import HTTPException, Header
+from fastapi import HTTPException, Request
+from backend.app.repositories.session_repo import get_session
 
 
-def get_current_user(fake_user_id: int = Header(...)) -> dict:
-    """
-    Temporary auth stub — expects fake-user-id header.
-    Replace this with real JWT verification when auth is implemented.
-    """
-    if fake_user_id is None:
-        raise HTTPException(status_code=401, detail="Not authenticated.")
-    return {"id": fake_user_id}
+def get_current_user(request: Request) -> dict:
+    session_token = request.cookies.get("session_token")
+    if not session_token:
+        raise HTTPException(status_code=401, detail="Login required")
+    session = get_session(session_token)
+    if not session:
+        raise HTTPException(status_code=401, detail="Login required")
+    return {"id": session["user_id"]}
