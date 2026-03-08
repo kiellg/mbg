@@ -1,11 +1,8 @@
-"""Unit tests for the PricingService class in pricing_costing_service.py."""
+"""Unit tests for the PricingService class in pricing_service.py."""
 from dataclasses import dataclass
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal
 
 from backend.app.services.pricing_service import PricingService
-
-
-TWOPLACES = Decimal("0.01")
 
 
 @dataclass
@@ -16,12 +13,6 @@ class OrderItem:
     order_id: int
     quantity: int
     item_price: object
-
-    def get_line_total(self) -> Decimal:
-        """Return line total rounded to two decimal places."""
-        return (Decimal(str(self.item_price)) * Decimal(self.quantity)).quantize(
-            TWOPLACES, rounding=ROUND_HALF_UP
-        )
 
 
 @dataclass
@@ -36,14 +27,6 @@ class Order:  # pylint: disable=too-many-instance-attributes
     tax: Decimal = Decimal("0.00")
     delivery_fee: object = Decimal("0.00")
     total: Decimal = Decimal("0.00")
-
-    def cancel(self):
-        """Set order status to cancelled."""
-        self.status = "Cancelled"
-
-    def update_status(self, status: str):
-        """Set order status to the provided value."""
-        self.status = status
 
 
 def test_calculate_totals_basic():
