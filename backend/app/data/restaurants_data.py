@@ -1,6 +1,6 @@
 """This module simulates a database of restaurant records"""
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, List, Optional
 
 _DB: Dict[int, Dict[str, Any]] = {
     1: {
@@ -102,7 +102,7 @@ def delete_menu_item(restaurant_id: int, item_id: int) -> bool:
     restaurant["menu"] = [i for i in restaurant["menu"] if i["id"] != item_id]
     return len(restaurant["menu"]) < original_len
 
-def get_active_menu_items(restaurant_id: int) -> list:
+def get_active_menu_items(restaurant_id: int) -> List[Dict[str, Any]]:
     """Return all active menu items for a restaurant"""
     restaurant = _DB.get(restaurant_id)
     if not restaurant:
