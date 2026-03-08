@@ -21,49 +21,48 @@ class PricingService:  # pylint: disable=too-few-public-methods
         return (subtotal * tax_rate).quantize(TWOPLACES, rounding=ROUND_HALF_UP)
 
     @staticmethod
-    def calculate_totals(order) -> None:
-        """Mutate order fields with recalculated totals."""
+    def _validate_order(order) -> None:
+        """Validate required order-level fields."""
         if order is None:
             raise ValueError("Order is required")
 
         if not hasattr(order, "items") or order.items is None:
             raise ValueError("Order items are required")
 
-        subtotal = Decimal("0.00")
+    @staticmethod
+    def _validate_item(item) -> tuple[int, Decimal]:
+        """Validate an order item and return quantity and decimal price."""
+        if item is None:
+            raise ValueError("Order item is required")
 
-        for item in order.items:
-            if item is None:
-                raise ValueError("Order item is required")
+        if not hasattr(item, "quantity"):
+            raise ValueError("Order item quantity is required")
+        if not hasattr(item, "item_price"):
+            raise ValueError("Order item price is required")
 
-            if not hasattr(item, "quantity"):
-                raise ValueError("Order item quantity is required")
-            if not hasattr(item, "item_price"):
-                raise ValueError("Order item price is required")
+        quantity = item.quantity
+        if quantity is None:
+            raise ValueError("Order item quantity is required")
+        if quantity <= 0:
+            raise ValueError("Order item quantity must be greater than zero")
 
-            quantity = item.quantity
-            price = item.item_price
+        price = item.item_price
+        if price is None:
+            raise ValueError("Order item price is required")
 
-            if quantity is None:
-                raise ValueError("Order item quantity is required")
-            if quantity <= 0:
-                raise ValueError("Order item quantity must be greater than zero")
+        try:
+            price_decimal = Decimal(str(price))
+        except (InvalidOperation, ValueError, TypeError) as exc:
+            raise ValueError("Order item price must be a valid number") from exc
 
-            if price is None:
-                raise ValueError("Order item price is required")
+        if price_decimal < 0:
+            raise ValueError("Order item price cannot be negative")
 
-            try:
-                price_decimal = Decimal(str(price))
-            except (InvalidOperation, ValueError, TypeError) as exc:
-                raise ValueError("Order item price must be a valid number") from exc
+        return quantity, price_decimal
 
-            if price_decimal < 0:
-                raise ValueError("Order item price cannot be negative")
-
-            line_total = _to_money(price_decimal) * Decimal(quantity)
-            subtotal += line_total
-
-        subtotal = _to_money(subtotal)
-
+    @staticmethod
+    def _validate_delivery_fee(order) -> Decimal:
+        """Validate and normalize delivery fee."""
         delivery_fee_raw = getattr(order, "delivery_fee", 0)
         try:
             delivery_fee = _to_money(delivery_fee_raw)
@@ -73,6 +72,11 @@ class PricingService:  # pylint: disable=too-few-public-methods
         if delivery_fee < 0:
             raise ValueError("Delivery fee cannot be negative")
 
+        return delivery_fee
+
+    @staticmethod
+    def _validate_tax_rate(order) -> Decimal:
+        """Validate and return tax rate as a Decimal."""
         tax_rate_raw = getattr(order, "tax_rate", PricingService.DEFAULT_TAX_RATE)
         try:
             tax_rate = Decimal(str(tax_rate_raw))
@@ -82,6 +86,22 @@ class PricingService:  # pylint: disable=too-few-public-methods
         if tax_rate < 0:
             raise ValueError("Tax rate cannot be negative")
 
+        return tax_rate
+
+    @staticmethod
+    def calculate_totals(order) -> None:
+        """Mutate order fields with recalculated totals."""
+        PricingService._validate_order(order)
+
+        subtotal = Decimal("0.00")
+        for item in order.items:
+            quantity, price_decimal = PricingService._validate_item(item)
+            subtotal += _to_money(price_decimal) * Decimal(quantity)
+
+        subtotal = _to_money(subtotal)
+        delivery_fee = PricingService._validate_delivery_fee(order)
+        tax_rate = PricingService._validate_tax_rate(order)
+
         tax = PricingService.calculate_tax(subtotal, tax_rate)
         total = _to_money(subtotal + delivery_fee + tax)
 
@@ -89,4 +109,3 @@ class PricingService:  # pylint: disable=too-few-public-methods
         order.delivery_fee = delivery_fee
         order.tax = tax
         order.total = total
-        

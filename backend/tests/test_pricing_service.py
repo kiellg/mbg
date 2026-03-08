@@ -2,6 +2,8 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
+import pytest
+
 from backend.app.services.pricing_service import PricingService
 
 
@@ -26,6 +28,7 @@ class Order:  # pylint: disable=too-many-instance-attributes
     subtotal: Decimal = Decimal("0.00")
     tax: Decimal = Decimal("0.00")
     delivery_fee: object = Decimal("0.00")
+    tax_rate: object = Decimal("0.10")
     total: Decimal = Decimal("0.00")
 
 
@@ -259,8 +262,8 @@ def test_calculate_totals_rejects_invalid_tax_rate():
         ],
         delivery_address="123 Main St",
         delivery_fee="2.00",
+        tax_rate="abc",
     )
-    order.tax_rate = "abc"
 
     with pytest.raises(ValueError, match="Tax rate must be a valid number"):
         PricingService.calculate_totals(order)
@@ -276,9 +279,8 @@ def test_calculate_totals_rejects_negative_tax_rate():
         ],
         delivery_address="123 Main St",
         delivery_fee="2.00",
+        tax_rate="-0.10",
     )
-    order.tax_rate = "-0.10"
 
     with pytest.raises(ValueError, match="Tax rate cannot be negative"):
         PricingService.calculate_totals(order)
-        
