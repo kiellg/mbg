@@ -86,7 +86,7 @@ def test_calculate_totals_empty_order():
 
 
 def test_calculate_totals_applies_default_tax_rule():
-    """Test that PricingService applies the predefined default tax rate to subtotal and includes it in total."""
+    """Tests PricingService applies the predefined tax rate to subtotal and includes it in total."""
     order = Order(
         order_id=3,
         status="Pending",
