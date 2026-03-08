@@ -6,7 +6,7 @@ from backend.app.schemas.restaurant import RestaurantOut, MenuItemCreate
 from backend.app.schemas.menu import MenuItemOut
 from backend.app.services.restaurants_service import (
     get_restaurant_menu,
-    delete_restaurant_by_id, 
+    delete_restaurant_by_id,
     delete_menu_item_by_id,
     add_menu_item
 )

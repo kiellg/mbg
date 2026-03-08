@@ -5,9 +5,9 @@ from fastapi import HTTPException
 from backend.app.schemas.restaurant import RestaurantOut, MenuItemCreate
 from backend.app.schemas.menu import PriceStatus
 from backend.app.data.restaurants_data import (
-    get_restaurant_record, 
-    delete_restaurant, 
-    delete_menu_item, 
+    get_restaurant_record,
+    delete_restaurant,
+    delete_menu_item,
     get_active_menu_items
 )
 
@@ -69,7 +69,7 @@ def delete_menu_item_by_id(restaurant_id: int, item_id: int) -> None:
     removed = delete_menu_item(restaurant_id, item_id)
     if not removed:
         raise HTTPException(status_code=404, detail="Menu item not found")
-    
+
 def add_menu_item(restaurant_id: int, item: MenuItemCreate) -> dict:
     """Add a new menu item to a restaurant"""
     record = get_restaurant_record(restaurant_id)
