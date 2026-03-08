@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
 
-from backend.app.services.pricing_costing_service import PricingService
+from backend.app.services.pricing_service import PricingService
 
 
 TWOPLACES = Decimal("0.01")
@@ -83,3 +83,22 @@ def test_calculate_totals_empty_order():
     assert order.delivery_fee == Decimal("4.99")
     assert order.tax == Decimal("0.00")
     assert order.total == Decimal("4.99")
+
+
+def test_calculate_totals_applies_default_tax_rule():
+    """Test that PricingService applies the predefined default tax rate to subtotal and includes it in total."""
+    order = Order(
+        order_id=3,
+        status="Pending",
+        items=[
+            OrderItem(order_item_id=1, order_id=3, quantity=2, item_price="15.00"),
+        ],
+        delivery_address="123 Main St",
+        delivery_fee="5.00",
+    )
+
+    PricingService.calculate_totals(order)
+
+    assert order.subtotal == Decimal("30.00")
+    assert order.tax == Decimal("3.00")   # 10% of 30.00
+    assert order.total == Decimal("38.00")  # 30.00 + 5.00 + 3.00
