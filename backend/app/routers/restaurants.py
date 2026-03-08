@@ -1,9 +1,15 @@
 """Router for restaurant endpoints"""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 
-from backend.app.schemas.restaurant import RestaurantOut
-from backend.app.services.restaurants_service import get_restaurant_menu
+from backend.app.schemas.restaurant import RestaurantOut, MenuItemCreate
+from backend.app.schemas.menu import MenuItemOut
+from backend.app.services.restaurants_service import (
+    get_restaurant_menu,
+    delete_restaurant_by_id,
+    delete_menu_item_by_id,
+    add_menu_item
+)
 
 router = APIRouter(prefix="/restaurants", tags=["restaurants"])
 
@@ -11,3 +17,21 @@ router = APIRouter(prefix="/restaurants", tags=["restaurants"])
 def read_restaurant_menu(restaurant_id: int):
     """Endpoint to get a restaurant menu with price formatting and status"""
     return get_restaurant_menu(restaurant_id)
+
+@router.delete("/{restaurant_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_restaurant(restaurant_id: int):
+    """Endpoint to delete a restaurant if it has no active menu items"""
+    delete_restaurant_by_id(restaurant_id)
+
+@router.delete("/{restaurant_id}/menu/{item_id}",
+               status_code=status.HTTP_204_NO_CONTENT)
+def delete_menu_item(restaurant_id: int, item_id: int):
+    """Endpoint to delete a menu item by id"""
+    delete_menu_item_by_id(restaurant_id, item_id)
+
+@router.post("/{restaurant_id}/menu",
+             response_model=MenuItemOut,
+             status_code=status.HTTP_201_CREATED)
+def create_menu_item(restaurant_id: int, item: MenuItemCreate):
+    """Endpoint to add a new menu item to a restaurant"""
+    return add_menu_item(restaurant_id, item)
