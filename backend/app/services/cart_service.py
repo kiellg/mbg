@@ -61,34 +61,34 @@ def add_item(customer_id: int, restaurant_id: int, payload: CartItemCreate) -> C
         cart = cart_repo.create_cart(customer_id, restaurant_id)
 
     cart_repo.add_item_to_cart(cart["id"], payload.menu_item_id, payload.quantity)
+    updated_cart = cart_repo.get_cart_by_id(cart["id"])
+    return _build_cart_response(updated_cart)
 
-    return _build_cart_response(cart)
-
-def update_item(customer_id: int, cart_id: int, item_id: int,
+def update_item(customer_id: int, restaurant_id: int, item_id: int,
                 payload: CartItemUpdate) -> CartResponse:
     """Update the quantity of an item in the customer's cart."""
 
-    cart = cart_repo.get_cart_by_id(cart_id)
-    if cart is None or cart["customer_id"] != customer_id:
-        raise HTTPException(status_code=404, detail=f"Cart {cart_id} not found")
+    cart = cart_repo.get_cart_by_customer_and_restaurant(customer_id, restaurant_id)
+    if cart is None:
+        raise HTTPException(status_code=404, detail="Cart not found")
 
-    updated_item = cart_repo.update_item_quantity(cart_id, item_id, payload.quantity)
+    updated_item = cart_repo.update_item_quantity(cart["id"], item_id, payload.quantity)
     if updated_item is None:
         raise HTTPException(status_code=404,
-                            detail=f"Cart item {item_id} is not found in cart {cart_id}")
+                            detail=f"Cart item {item_id} is not found in cart {cart['id']}")
+    updated_cart = cart_repo.get_cart_by_id(cart["id"])
+    return _build_cart_response(updated_cart)
 
-    return _build_cart_response(cart)
-
-def remove_item(customer_id: int, cart_id: int, item_id: int) -> None:
+def remove_item(customer_id: int, restaurant_id: int, item_id: int) -> None:
     """Remove an item from the customer's cart."""
-    cart = cart_repo.get_cart_by_id(cart_id)
-    if cart is None or cart["customer_id"] != customer_id:
-        raise HTTPException(status_code=404, detail=f"Cart {cart_id} not found")
+    cart = cart_repo.get_cart_by_customer_and_restaurant(customer_id, restaurant_id)
+    if cart is None:
+        raise HTTPException(status_code=404, detail="Cart not found")
 
-    removed = cart_repo.remove_item_from_cart(cart_id, item_id)
+    removed = cart_repo.remove_item_from_cart(cart["id"], item_id)
     if not removed:
         raise HTTPException(status_code=404,
-                            detail=f"Cart item {item_id} is not found in cart {cart_id}")
+                            detail=f"Cart item {item_id} is not found in cart {cart['id']}")
 
 def get_cart(customer_id: int, restaurant_id: int) -> CartResponse:
     """Retrieve the customer's cart for a specific restaurant."""
