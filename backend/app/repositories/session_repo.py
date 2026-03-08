@@ -28,4 +28,4 @@ def delete_session(session_token: str) -> bool:
 
 def reset_session():
     """Reset all sessions"""
-    session_store.SESSIONS = {}
+    session_store.SESSIONS.clear()
