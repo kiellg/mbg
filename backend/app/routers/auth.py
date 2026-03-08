@@ -1,6 +1,6 @@
 """API routes related to authentication"""
 
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Response, Request, HTTPException, Depends
 
 from backend.app.schemas.auth import (
     RegisterRequest,
@@ -8,8 +8,15 @@ from backend.app.schemas.auth import (
     LoginRequest,
     LoginResponse,
 )
-from backend.app.services.auth_service import register_user, authenticate_user
+from backend.app.services.auth_service import (
+    register_user,
+    authenticate_user,
+    logout_user,
+)
+
 from backend.app.repositories.session_repo import create_session
+
+from backend.app.dependencies import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -50,3 +57,22 @@ def login(payload: LoginRequest, response: Response):
         "email": user["email"],
         "role": user["role"],
     }
+
+@router.post("/logout")
+def logout(request: Request, response: Response):
+    """Log out the current user"""
+    session_token = request.cookies.get("session_token")
+
+    if not session_token:
+        raise HTTPException(status_code=401, detail="Login required")
+
+    result = logout_user(session_token)
+
+    response.delete_cookie(key="session_token")
+
+    return result
+
+@router.get("/me")
+def get_me(current_user: dict = Depends(get_current_user)):
+    """Return the currently authenticated user"""
+    return {"user_id": current_user["user_id"]}
