@@ -17,7 +17,7 @@ class PricingService:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def calculate_totals(order) -> None:
-        """Mutate order fields with recalculated monetary totals using consistent 2-decimal rounding."""
+        """Mutate order fields with recalculated monetary totals using consistent 2-dp rounding."""
         subtotal = Decimal("0.00")
 
         for item in order.items:
