@@ -1,7 +1,5 @@
 """This module simulates a database of order records."""
 
-# pylint: disable=protected-access
-
 from typing import Any, Dict
 
 _ORDERDB: Dict[int, Dict[str, Any]] = {}
