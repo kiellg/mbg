@@ -2,7 +2,7 @@
 
 # pylint: disable=protected-access
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 _ORDERDB: Dict[int, Dict[str, Any]] = {}
 

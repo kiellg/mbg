@@ -1,5 +1,7 @@
 """Repository functions for order records."""
 
+# pylint: disable=protected-access
+
 from typing import Any, Dict, List, Optional
 
 from backend.app.data import order_data
