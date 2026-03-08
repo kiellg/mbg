@@ -9,6 +9,14 @@ def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
     """Return a user by email"""
     return users_data.USERS.get(email)
 
+def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
+    """Return a user by user_id"""
+    for user in users_data.USERS.values():
+        if user["user_id"] == user_id:
+            return user
+
+    return None
+
 def create_user(name: str, email: str, password_hash: str) -> Dict[str, Any]:
     """Create a new user"""
     user = {
