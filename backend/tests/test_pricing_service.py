@@ -85,3 +85,23 @@ def test_calculate_totals_applies_default_tax_rule():
     assert order.subtotal == Decimal("30.00")
     assert order.tax == Decimal("3.00")   # 10% of 30.00
     assert order.total == Decimal("38.00")  # 30.00 + 5.00 + 3.00
+
+
+def test_calculate_totals_applies_consistent_two_decimal_rounding():
+    """Test that all monetary values are rounded consistently to 2 decimal places."""
+    order = Order(
+        order_id=4,
+        status="Pending",
+        items=[
+            OrderItem(order_item_id=1, order_id=4, quantity=3, item_price="1.235"),
+        ],
+        delivery_address="123 Main St",
+        delivery_fee="2.345",
+    )
+
+    PricingService.calculate_totals(order)
+
+    assert order.subtotal == Decimal("3.72")
+    assert order.delivery_fee == Decimal("2.35")
+    assert order.tax == Decimal("0.37")
+    assert order.total == Decimal("6.44")
