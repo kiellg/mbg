@@ -12,4 +12,4 @@ def get_current_user(request: Request) -> dict:
     session = get_session(session_token)
     if not session:
         raise HTTPException(status_code=401, detail="Login required")
-    return {"id": session["user_id"]}
+    return {"user_id": session["user_id"]}
