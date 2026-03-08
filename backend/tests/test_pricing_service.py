@@ -2,6 +2,8 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
+import pytest
+
 from backend.app.services.pricing_service import PricingService
 
 
@@ -23,65 +25,96 @@ class Order:  # pylint: disable=too-many-instance-attributes
     status: str
     items: list[OrderItem]
     delivery_address: str
+    delivery_method: object = "walk"
     subtotal: Decimal = Decimal("0.00")
     tax: Decimal = Decimal("0.00")
-    delivery_fee: object = Decimal("0.00")
+    tax_rate: object = Decimal("0.10")
+    delivery_fee: Decimal = Decimal("0.00")
     total: Decimal = Decimal("0.00")
 
 
-def test_calculate_totals_basic():
-    """Test that calculate_totals correctly computes subtotal, tax, and total for a simple order."""
+def test_calculate_totals_walk_delivery_fee():
+    """Test that walk delivery method applies the fixed 5.00 delivery fee."""
     order = Order(
         order_id=1,
         status="Pending",
         items=[
-            OrderItem(order_item_id=1, order_id=1, quantity=2, item_price="10.00"),
-            OrderItem(order_item_id=2, order_id=1, quantity=1, item_price="3.50"),
+            OrderItem(order_item_id=1, order_id=1, quantity=1, item_price="10.00"),
         ],
         delivery_address="123 Main St",
-        delivery_fee="2.00",
+        delivery_method="walk",
     )
 
     PricingService.calculate_totals(order)
 
-    assert order.subtotal == Decimal("23.50")
-    assert order.delivery_fee == Decimal("2.00")
-    assert order.tax == Decimal("2.35")
-    assert order.total == Decimal("27.85")
+    assert order.delivery_fee == Decimal("5.00")
 
 
-def test_calculate_totals_empty_order():
-    """Test that calculate_totals handles an empty order with no items."""
+def test_calculate_totals_bike_delivery_fee():
+    """Test that bike delivery method applies the fixed 8.00 delivery fee."""
     order = Order(
         order_id=2,
         status="Pending",
-        items=[],
+        items=[
+            OrderItem(order_item_id=1, order_id=2, quantity=1, item_price="10.00"),
+        ],
         delivery_address="123 Main St",
-        delivery_fee="4.99",
+        delivery_method="bike",
     )
 
     PricingService.calculate_totals(order)
 
-    assert order.subtotal == Decimal("0.00")
-    assert order.delivery_fee == Decimal("4.99")
-    assert order.tax == Decimal("0.00")
-    assert order.total == Decimal("4.99")
+    assert order.delivery_fee == Decimal("8.00")
 
 
-def test_calculate_totals_applies_default_tax_rule():
-    """Tests PricingService applies the predefined tax rate to subtotal and includes it in total."""
+def test_calculate_totals_car_delivery_fee():
+    """Test that car delivery method applies the fixed 10.00 delivery fee."""
     order = Order(
         order_id=3,
         status="Pending",
         items=[
-            OrderItem(order_item_id=1, order_id=3, quantity=2, item_price="15.00"),
+            OrderItem(order_item_id=1, order_id=3, quantity=1, item_price="10.00"),
         ],
         delivery_address="123 Main St",
-        delivery_fee="5.00",
+        delivery_method="car",
     )
 
     PricingService.calculate_totals(order)
 
-    assert order.subtotal == Decimal("30.00")
-    assert order.tax == Decimal("3.00")   # 10% of 30.00
-    assert order.total == Decimal("38.00")  # 30.00 + 5.00 + 3.00
+    assert order.delivery_fee == Decimal("10.00")
+
+
+def test_calculate_totals_includes_delivery_fee_in_total():
+    """Test total calculation includes subtotal, tax, and fixed delivery fee."""
+    order = Order(
+        order_id=4,
+        status="Pending",
+        items=[
+            OrderItem(order_item_id=1, order_id=4, quantity=2, item_price="10.00"),
+        ],
+        delivery_address="123 Main St",
+        delivery_method="bike",
+    )
+
+    PricingService.calculate_totals(order)
+
+    assert order.subtotal == Decimal("20.00")
+    assert order.tax == Decimal("2.00")
+    assert order.delivery_fee == Decimal("8.00")
+    assert order.total == Decimal("30.00")
+
+
+def test_calculate_totals_rejects_invalid_delivery_method():
+    """Test that calculate_totals rejects an unsupported delivery method."""
+    order = Order(
+        order_id=5,
+        status="Pending",
+        items=[
+            OrderItem(order_item_id=1, order_id=5, quantity=1, item_price="10.00"),
+        ],
+        delivery_address="123 Main St",
+        delivery_method="drone",
+    )
+
+    with pytest.raises(ValueError, match="Delivery method must be one of: walk, bike, car"):
+        PricingService.calculate_totals(order)

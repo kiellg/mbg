@@ -4,14 +4,21 @@ from decimal import Decimal, ROUND_HALF_UP
 
 TWOPLACES = Decimal("0.01")
 
+
 def _to_money(value: object) -> Decimal:
     """Convert a value to a 2-decimal Decimal using half-up rounding."""
     return Decimal(str(value)).quantize(TWOPLACES, rounding=ROUND_HALF_UP)
 
+
 class PricingService:
-    """Service for calculating order subtotal, tax, and total."""
+    """Service for calculating order subtotal, tax, delivery fee, and total."""
 
     DEFAULT_TAX_RATE = Decimal("0.10")
+    DELIVERY_FEE_BY_METHOD = {
+        "walk": Decimal("5.00"),
+        "bike": Decimal("8.00"),
+        "car": Decimal("10.00"),
+    }
 
     @staticmethod
     def calculate_tax(subtotal: Decimal, tax_rate: Decimal) -> Decimal:
@@ -19,8 +26,20 @@ class PricingService:
         return (subtotal * tax_rate).quantize(TWOPLACES, rounding=ROUND_HALF_UP)
 
     @staticmethod
+    def calculate_delivery_fee(delivery_method: str) -> Decimal:
+        """Calculate fixed delivery fee based on delivery method."""
+        method = getattr(delivery_method, "value", delivery_method)
+        method = str(method)
+
+        fee = PricingService.DELIVERY_FEE_BY_METHOD.get(method)
+        if fee is None:
+            raise ValueError("Delivery method must be one of: walk, bike, car")
+
+        return fee.quantize(TWOPLACES, rounding=ROUND_HALF_UP)
+
+    @staticmethod
     def calculate_totals(order) -> None:
-        """Mutate order fields with recalculated totals."""
+        """Mutate order fields with recalculated subtotal, tax, delivery fee, and total."""
         subtotal = Decimal("0.00")
 
         for item in order.items:
@@ -36,7 +55,8 @@ class PricingService:
             subtotal += line_total
 
         subtotal = subtotal.quantize(TWOPLACES, rounding=ROUND_HALF_UP)
-        delivery_fee = _to_money(getattr(order, "delivery_fee", 0))
+        delivery_method = getattr(order, "delivery_method", None)
+        delivery_fee = PricingService.calculate_delivery_fee(delivery_method)
         tax_rate = Decimal(str(getattr(order, "tax_rate", PricingService.DEFAULT_TAX_RATE)))
         tax = PricingService.calculate_tax(subtotal, tax_rate)
         total = (subtotal + delivery_fee + tax).quantize(TWOPLACES, rounding=ROUND_HALF_UP)

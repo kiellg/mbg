@@ -26,6 +26,14 @@ class OrderStatus(str, Enum):
     CANCELLED = "Cancelled"
 
 
+class DeliveryMethod(str, Enum):
+    """Valid delivery methods for an order."""
+
+    WALK = "walk"
+    BIKE = "bike"
+    CAR = "car"
+
+
 class OrderItemBase(OrderSchemaModel):
     """Base schema for order item fields."""
 
@@ -50,6 +58,7 @@ class OrderBase(OrderSchemaModel):
     """Base schema for order fields."""
 
     delivery_address: str
+    delivery_method: DeliveryMethod
     status: OrderStatus = OrderStatus.PENDING
 
 
@@ -64,6 +73,7 @@ class OrderUpdate(OrderSchemaModel):
 
     status: Optional[OrderStatus] = None
     delivery_address: Optional[str] = None
+    delivery_method: Optional[DeliveryMethod] = None
     items: Optional[list[OrderItemCreate]] = None
 
 
