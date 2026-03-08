@@ -15,7 +15,7 @@ def require_role(session_token: str, allowed_roles: list[str]) -> int:
     if role not in allowed_roles:
         raise HTTPException(status_code=403, detail="Access denied")
 
-    return user_id
+    return session
 
 def require_customer(session_token: str) -> int:
     """Ensure the authenticated user is a customer"""
