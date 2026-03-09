@@ -1,7 +1,7 @@
 """Service layer for role based access checks"""
 
-from fastapi import HTTPException
 from typing import Dict, Any
+from fastapi import HTTPException
 
 from backend.app.services.auth_service import get_current_user_session
 from backend.app.repositories.user_repo import get_user_role
