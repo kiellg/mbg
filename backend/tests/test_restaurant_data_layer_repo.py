@@ -70,7 +70,7 @@ def test_add_menu_item_appends_to_menu():
         "is_visible": True,
         "is_active": True,
         "is_available": True,
-        "category": {"id": 10, "name": "Mains"},
+        "category": {"id": 40, "name": "Mains"},
     })
     assert item["restaurant_id"] == 1
     assert item["name"] == "Lobster"
