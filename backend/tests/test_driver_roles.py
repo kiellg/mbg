@@ -1,4 +1,5 @@
 """Tests for driver role permissions"""
+# pylint: disable=duplicate-code
 
 from fastapi.testclient import TestClient
 
