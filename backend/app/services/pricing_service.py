@@ -1,16 +1,16 @@
 """Pricing and costing service logic for order totals."""
 
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 TWOPLACES = Decimal("0.01")
 
 
 def _to_money(value: object) -> Decimal:
-    """Convert a value to a 2-decimal Decimal using half-up rounding."""
+    """Convert a monetary value to the system standard of 2 decimal places."""
     return Decimal(str(value)).quantize(TWOPLACES, rounding=ROUND_HALF_UP)
 
 
-class PricingService:
+class PricingService:  # pylint: disable=too-few-public-methods
     """Service for calculating order subtotal, tax, delivery fee, and total."""
 
     DEFAULT_TAX_RATE = Decimal("0.10")
@@ -26,42 +26,95 @@ class PricingService:
         return (subtotal * tax_rate).quantize(TWOPLACES, rounding=ROUND_HALF_UP)
 
     @staticmethod
+    def _validate_order(order) -> None:
+        """Validate required order-level fields."""
+        if order is None:
+            raise ValueError("Order is required")
+
+        if not hasattr(order, "items") or order.items is None:
+            raise ValueError("Order items are required")
+
+    @staticmethod
+    def _validate_item(item) -> tuple[int, Decimal]:
+        """Validate an order item and return quantity and decimal price."""
+        if item is None:
+            raise ValueError("Order item is required")
+
+        if not hasattr(item, "quantity"):
+            raise ValueError("Order item quantity is required")
+        if not hasattr(item, "item_price"):
+            raise ValueError("Order item price is required")
+
+        quantity = item.quantity
+        if quantity is None:
+            raise ValueError("Order item quantity is required")
+        if quantity <= 0:
+            raise ValueError("Order item quantity must be greater than zero")
+
+        price = item.item_price
+        if price is None:
+            raise ValueError("Order item price is required")
+
+        try:
+            price_decimal = Decimal(str(price))
+        except (InvalidOperation, ValueError, TypeError) as exc:
+            raise ValueError("Order item price must be a valid number") from exc
+
+        if price_decimal < 0:
+            raise ValueError("Order item price cannot be negative")
+
+        return quantity, price_decimal
+
+    @staticmethod
     def calculate_delivery_fee(delivery_method: str) -> Decimal:
         """Calculate fixed delivery fee based on delivery method."""
         method = getattr(delivery_method, "value", delivery_method)
-        method = str(method)
+
+        if method is None:
+            raise ValueError("Delivery method is required")
+
+        method = str(method).strip().lower()
 
         fee = PricingService.DELIVERY_FEE_BY_METHOD.get(method)
         if fee is None:
             raise ValueError("Delivery method must be one of: walk, bike, car")
 
-        return fee.quantize(TWOPLACES, rounding=ROUND_HALF_UP)
+        return _to_money(fee)
+
+    @staticmethod
+    def _validate_tax_rate(order) -> Decimal:
+        """Validate and return tax rate as a Decimal."""
+        tax_rate_raw = getattr(order, "tax_rate", PricingService.DEFAULT_TAX_RATE)
+        try:
+            tax_rate = Decimal(str(tax_rate_raw))
+        except (InvalidOperation, ValueError, TypeError) as exc:
+            raise ValueError("Tax rate must be a valid number") from exc
+
+        if tax_rate < 0:
+            raise ValueError("Tax rate cannot be negative")
+
+        return tax_rate
 
     @staticmethod
     def calculate_totals(order) -> None:
         """Mutate order fields with recalculated subtotal, tax, delivery fee, and total."""
+        PricingService._validate_order(order)
+
         subtotal = Decimal("0.00")
-
         for item in order.items:
-            quantity = item.quantity
-            price = item.item_price
+            quantity, price_decimal = PricingService._validate_item(item)
+            subtotal += _to_money(price_decimal) * Decimal(quantity)
 
-            if quantity < 0:
-                raise ValueError("Order item quantity cannot be negative")
-            if Decimal(str(price)) < 0:
-                raise ValueError("Order item price cannot be negative")
-
-            line_total = _to_money(price) * Decimal(quantity)
-            subtotal += line_total
-
-        subtotal = subtotal.quantize(TWOPLACES, rounding=ROUND_HALF_UP)
+        subtotal = _to_money(subtotal)
         delivery_method = getattr(order, "delivery_method", None)
         delivery_fee = PricingService.calculate_delivery_fee(delivery_method)
-        tax_rate = Decimal(str(getattr(order, "tax_rate", PricingService.DEFAULT_TAX_RATE)))
+        tax_rate = PricingService._validate_tax_rate(order)
+
         tax = PricingService.calculate_tax(subtotal, tax_rate)
-        total = (subtotal + delivery_fee + tax).quantize(TWOPLACES, rounding=ROUND_HALF_UP)
+        total = _to_money(subtotal + delivery_fee + tax)
 
         order.subtotal = subtotal
         order.delivery_fee = delivery_fee
         order.tax = tax
         order.total = total
+        
