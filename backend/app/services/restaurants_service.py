@@ -81,6 +81,7 @@ def add_menu_item(restaurant_id: int, item: MenuItemCreate) -> dict:
 
     new_item = {
         "id": new_id,
+        "restaurant_id": restaurant_id,
         "name": item.name,
         "price_cents": item.price_cents,
         "description": item.description,
