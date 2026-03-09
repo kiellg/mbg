@@ -1,4 +1,4 @@
-"""Pricing and costing service logic for order totals."""
+"""Pricing service logic for order totals."""
 
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
@@ -6,7 +6,7 @@ TWOPLACES = Decimal("0.01")
 
 
 def _to_money(value: object) -> Decimal:
-    """Convert a value to a 2-decimal Decimal using half-up rounding."""
+    """Convert a monetary value to the system standard of 2 decimal places."""
     return Decimal(str(value)).quantize(TWOPLACES, rounding=ROUND_HALF_UP)
 
 
