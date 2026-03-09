@@ -1,7 +1,8 @@
 """Repository functions for restaurant data management"""
 
+import copy
 from typing import Dict, Any, List, Optional
-from backend.app.data.restaurants_data import _DB
+from backend.app.data.restaurants_data import _DB, _SEED
 
 def get_restaurant_record(restaurant_id: int) -> Optional[Dict[str, Any]]:
     """Simulate fetching a restaurant record from the database"""
@@ -110,49 +111,4 @@ def get_active_menu_items(restaurant_id: int) -> List[Dict[str, Any]]:
 def reset_restaurants() -> None:
     """Reset the simulated restaurant DB for testing only"""
     _DB.clear()
-    _DB.update({
-        1: {
-            "id": 1,
-            "name": "The Keg Steakhouse",
-            "address": "67 Bernard Ave, Kelowna, BC",
-            "rating": 4,
-            "opening_hours": "Mon-Sun 11:30-22:00",
-            "owner_id": 1,
-            "menu": [
-                {
-                    "id": 1,
-                    "restaurant_id": 1,
-                    "name": "Ribeye Steak",
-                    "price_cents": 4999,
-                    "description": "12oz AAA ribeye with garlic mashed potatoes",
-                    "dietary_tag": "",
-                    "is_visible": True,
-                    "is_active": True,
-                    "is_available": True,
-                    "category": {"id": 10, "name": "Mains"},
-                },
-            ],
-        },
-        2: {
-            "id": 2,
-            "name": "Sushi World",
-            "address": "123 Sushi St, Vancouver, BC",
-            "rating": 5,
-            "opening_hours": "Mon-Sun 12:00-23:00",
-            "owner_id": 2,
-            "menu": [
-                {
-                    "id": 1,
-                    "restaurant_id": 2,
-                    "name": "California Roll",
-                    "price_cents": 899,
-                    "description": "Crab, avocado, cucumber, and mayo",
-                    "dietary_tag": "",
-                    "is_visible": True,
-                    "is_active": True,
-                    "is_available": True,
-                    "category": {"id": 10, "name": "Mains"},
-                },
-            ],
-        },
-    })
+    _DB.update(copy.deepcopy(_SEED))

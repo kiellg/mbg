@@ -45,7 +45,7 @@ def test_create_restaurant_stores_record():
     assert r["id"] == 3
     assert r["name"] == "Burger Place"
     assert r["owner_id"] == 99
-    assert r["menu"] == []
+    assert not r["menu"]
 
 def test_update_restaurant_changes_fields():
     """Should update only provided fields"""
@@ -74,7 +74,7 @@ def test_add_menu_item_appends_to_menu():
     })
     assert item["restaurant_id"] == 1
     assert item["name"] == "Lobster"
-    assert item["id"] == 2
+    assert item["id"] == 5
 
 def test_update_menu_item_changes_fields():
     """Should update only provided fields"""

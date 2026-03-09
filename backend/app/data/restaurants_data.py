@@ -1,8 +1,9 @@
 """This module simulates a database of restaurant records"""
 
 from typing import Dict, Any
+import copy
 
-_DB: Dict[int, Dict[str, Any]] = {
+_SEED: Dict[int, Dict[str, Any]] = {
     1: {
         "id": 1,
         "name": "The Keg Steakhouse",
@@ -88,3 +89,5 @@ _DB: Dict[int, Dict[str, Any]] = {
         ],
     },
 }
+
+_DB: Dict[int, Dict[str, Any]] = copy.deepcopy(_SEED)
