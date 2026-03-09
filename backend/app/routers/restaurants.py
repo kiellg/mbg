@@ -37,10 +37,7 @@ def delete_restaurant(restaurant_id: int,
                       session_token: Optional[str] = Header(default=None),):
     """Endpoint to delete a restaurant if it has no active menu items"""
     token = get_session_token(request, session_token)
-
-    if token:
-        require_manager(token)
-
+    require_manager(token)
     delete_restaurant_by_id(restaurant_id)
 
 @router.delete("/{restaurant_id}/menu/{item_id}",
@@ -51,10 +48,7 @@ def delete_menu_item(restaurant_id: int,
                      session_token: Optional[str] = Header(default=None),):
     """Endpoint to delete a menu item by id"""
     token = get_session_token(request, session_token)
-
-    if token:
-        require_manager(token)
-
+    require_manager(token)
     delete_menu_item_by_id(restaurant_id, item_id)
 
 @router.post("/{restaurant_id}/menu",
