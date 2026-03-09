@@ -1,4 +1,4 @@
-"""Pricing and costing service logic for order totals."""
+"""Pricing service logic for order totals."""
 
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
