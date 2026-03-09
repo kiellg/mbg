@@ -1,8 +1,9 @@
 """This module simulates a database of restaurant records"""
 
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any
+import copy
 
-_DB: Dict[int, Dict[str, Any]] = {
+_SEED: Dict[int, Dict[str, Any]] = {
     1: {
         "id": 1,
         "name": "The Keg Steakhouse",
@@ -89,29 +90,4 @@ _DB: Dict[int, Dict[str, Any]] = {
     },
 }
 
-def get_restaurant_record(restaurant_id: int) -> Optional[Dict[str, Any]]:
-    """Simulate fetching a restaurant record from the database"""
-    return _DB.get(restaurant_id)
-
-def delete_menu_item(restaurant_id: int, item_id: int) -> bool:
-    """Remove a menu item from a restaurant"""
-    restaurant = _DB.get(restaurant_id)
-    if not restaurant:
-        return False
-    original_len = len(restaurant["menu"])
-    restaurant["menu"] = [i for i in restaurant["menu"] if i["id"] != item_id]
-    return len(restaurant["menu"]) < original_len
-
-def get_active_menu_items(restaurant_id: int) -> List[Dict[str, Any]]:
-    """Return all active menu items for a restaurant"""
-    restaurant = _DB.get(restaurant_id)
-    if not restaurant:
-        return []
-    return [i for i in restaurant["menu"] if i.get("is_active", True)]
-
-def delete_restaurant(restaurant_id: int) -> bool:
-    """Remove a restaurant from the simulated DB"""
-    if restaurant_id not in _DB:
-        return False
-    del _DB[restaurant_id]
-    return True
+_DB: Dict[int, Dict[str, Any]] = copy.deepcopy(_SEED)

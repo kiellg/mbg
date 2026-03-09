@@ -4,7 +4,7 @@ from fastapi import HTTPException
 
 from backend.app.schemas.restaurant import RestaurantOut, MenuItemCreate
 from backend.app.schemas.menu import PriceStatus
-from backend.app.data.restaurants_data import (
+from backend.app.repositories.restaurant_repo import (
     get_restaurant_record,
     delete_restaurant,
     delete_menu_item,
