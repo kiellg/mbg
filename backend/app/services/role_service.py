@@ -1,13 +1,16 @@
 """Service layer for role based access checks"""
 
-from typing import Dict, Any
+from typing import Any, Dict, Optional
 from fastapi import HTTPException
 
 from backend.app.services.auth_service import get_current_user_session
 from backend.app.repositories.user_repo import get_user_role
 
-def require_role(session_token: str, allowed_roles: list[str]) -> Dict[str, Any]:
+def require_role(session_token: Optional[str], allowed_roles: list[str]) -> Dict[str, Any]:
     """Ensure the authenticated user has an allowed role"""
+    if not session_token:
+        raise HTTPException(status_code=401, detail="Login required")
+
     session = get_current_user_session(session_token)
 
     user_id = session["user_id"]
