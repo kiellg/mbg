@@ -11,11 +11,11 @@ MANAGER_TOKEN = "valid-manager-token"
 
 BASE_RESTAURANT = {
     "id": 2,
-    "name": "Test Bistro",
-    "address": "123 Main St",
-    "rating": 4,
-    "opening_hours": "9am-9pm",
-    "owner_id": 42,
+    "name": "Test Bistro2",
+    "address": "123 Main St2",
+    "rating": 2,
+    "opening_hours": "9am-10pm",
+    "owner_id": 41,
     "menu": [],
 }
 
@@ -51,7 +51,7 @@ def test_list_restaurants_success():
     with patch(f"{SERVICE}.get_all_restaurants", return_value=[BASE_RESTAURANT]):
         response = client.get("/restaurants")
     assert response.status_code == 200
-    assert response.json()[0]["name"] == "Test Bistro"
+    assert response.json()[0]["name"] == "Test Bistro2"
 
 def test_list_restaurants_empty():
     """Test that the restaurant list endpoint returns an empty list"""
@@ -81,7 +81,7 @@ def test_patch_restaurant_success():
     with patch(f"{ROUTER}.require_manager", return_value=MANAGER_SESSION), \
          patch(f"{SERVICE}.get_restaurant_record", return_value=BASE_RESTAURANT), \
          patch(f"{SERVICE}.repo_update_restaurant", return_value=updated):
-        response = client.patch("/restaurants/1", json={"name": "Updated Bistro"}, 
+        response = client.patch("/restaurants/1", json={"name": "Updated Bistro"},
                                 headers=auth_headers())
     assert response.status_code == 200
     assert response.json()["name"] == "Updated Bistro"
@@ -104,7 +104,7 @@ def test_patch_menu_item_success():
     with patch(f"{ROUTER}.require_manager", return_value=MANAGER_SESSION), \
          patch(f"{SERVICE}.get_restaurant_record", return_value=BASE_RESTAURANT), \
          patch(f"{SERVICE}.repo_update_menu_item", return_value=updated):
-        response = client.patch("/restaurants/1/menu/1", json={"name": "Updated Burger"}, 
+        response = client.patch("/restaurants/1/menu/1", json={"name": "Updated Burger"},
                                 headers=auth_headers())
     assert response.status_code == 200
     assert response.json()["name"] == "Updated Burger"
@@ -112,10 +112,11 @@ def test_patch_menu_item_success():
 def test_patch_menu_item_not_found():
     """Test that patching a non-existent menu item returns 404"""
     with patch(f"{ROUTER}.require_manager", return_value=MANAGER_SESSION), \
-         patch(f"{SERVICE}.get_restaurant_record", 
+         patch(f"{SERVICE}.get_restaurant_record",
                return_value=BASE_RESTAURANT), \
          patch(f"{SERVICE}.repo_update_menu_item", return_value=None):
-        response = client.patch("/restaurants/1/menu/99", json={"name": "X"}, headers=auth_headers())
+        response = client.patch("/restaurants/1/menu/99", json={"name": "X"},
+                                headers=auth_headers())
     assert response.status_code == 404
 
 def test_patch_menu_item_no_token():
