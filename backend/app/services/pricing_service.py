@@ -118,4 +118,3 @@ class PricingService:  # pylint: disable=too-few-public-methods
         order.delivery_fee = delivery_fee
         order.tax = tax
         order.total = total
-        
