@@ -48,4 +48,3 @@ class MenuItemUpdate(BaseModel):
     is_active: Optional[bool] = None
     is_available: Optional[bool] = None
     category_id: Optional[int] = None
-    
