@@ -2,7 +2,14 @@
 
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
+from backend.app.schemas.order import DeliveryMethod
+
 TWOPLACES = Decimal("0.01")
+DELIVERY_FEE_BY_METHOD = {
+    DeliveryMethod.WALK: Decimal("5.00"),
+    DeliveryMethod.BIKE: Decimal("8.00"),
+    DeliveryMethod.CAR: Decimal("10.00"),
+}
 
 
 def _to_money(value: object) -> Decimal:
@@ -14,11 +21,6 @@ class PricingService:  # pylint: disable=too-few-public-methods
     """Service for calculating order subtotal, tax, delivery fee, and total."""
 
     DEFAULT_TAX_RATE = Decimal("0.10")
-    DELIVERY_FEE_BY_METHOD = {
-        "walk": Decimal("5.00"),
-        "bike": Decimal("8.00"),
-        "car": Decimal("10.00"),
-    }
 
     @staticmethod
     def calculate_tax(subtotal: Decimal, tax_rate: Decimal) -> Decimal:
@@ -73,13 +75,12 @@ class PricingService:  # pylint: disable=too-few-public-methods
         if method is None:
             raise ValueError("Delivery method is required")
 
-        method = str(method).strip().lower()
+        try:
+            method_enum = DeliveryMethod(str(method).strip().lower())
+        except ValueError as exc:
+            raise ValueError("Delivery method must be one of: walk, bike, car") from exc
 
-        fee = PricingService.DELIVERY_FEE_BY_METHOD.get(method)
-        if fee is None:
-            raise ValueError("Delivery method must be one of: walk, bike, car")
-
-        return _to_money(fee)
+        return _to_money(DELIVERY_FEE_BY_METHOD[method_enum])
 
     @staticmethod
     def _validate_tax_rate(order) -> Decimal:
