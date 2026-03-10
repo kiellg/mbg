@@ -2,18 +2,30 @@
 
 from fastapi import HTTPException
 
-from backend.app.schemas.restaurant import RestaurantOut, MenuItemCreate
+from backend.app.schemas.restaurant import (
+    RestaurantOut, RestaurantCreate, RestaurantUpdate,
+    MenuItemCreate, MenuItemUpdate,
+)
 from backend.app.schemas.menu import PriceStatus
 from backend.app.repositories.restaurant_repo import (
     get_restaurant_record,
+    get_all_restaurants,
+    get_active_menu_items,
+    create_restaurant,
+    update_restaurant as repo_update_restaurant,
     delete_restaurant,
+    add_menu_item as repo_add_menu_item,
+    update_menu_item as repo_update_menu_item,
     delete_menu_item,
-    get_active_menu_items
 )
 
 def format_cad_from_cents(price_cents: int) -> str:
     """Convert price in cents to a formatted CAD string"""
     return f"${price_cents / 100:.2f}"
+
+def get_all_restaurants_list() -> list[RestaurantOut]:
+    """Fetch all restaurants"""
+    return get_all_restaurants()
 
 def get_restaurant_menu(restaurant_id: int) -> RestaurantOut:
     """Fetch restaurant data and process menu items for display"""
@@ -46,7 +58,7 @@ def get_restaurant_menu(restaurant_id: int) -> RestaurantOut:
     return RestaurantOut(**record)
 
 def delete_restaurant_by_id(restaurant_id: int) -> None:
-    """Delete a restaurant only if it has no active menu items (US21)"""
+    """Delete a restaurant only if it has no active menu items"""
     record = get_restaurant_record(restaurant_id)
     if record is None:
         raise HTTPException(status_code=404, detail="Restaurant not found")
@@ -70,26 +82,36 @@ def delete_menu_item_by_id(restaurant_id: int, item_id: int) -> None:
     if not removed:
         raise HTTPException(status_code=404, detail="Menu item not found")
 
+def create_new_restaurant(item: RestaurantCreate, owner_id: int) -> dict:
+    """Create a new restaurant record"""
+    return create_restaurant(
+        name=item.name,
+        address=item.address,
+        rating=item.rating,
+        opening_hours=item.opening_hours,
+        owner_id=owner_id,
+    )
+
 def add_menu_item(restaurant_id: int, item: MenuItemCreate) -> dict:
     """Add a new menu item to a restaurant"""
     record = get_restaurant_record(restaurant_id)
     if record is None:
         raise HTTPException(status_code=404, detail="Restaurant not found")
+    return repo_add_menu_item(restaurant_id, item.model_dump())
 
-    existing_ids = [i["id"] for i in record["menu"]]
-    new_id = max(existing_ids, default=0) + 1
+def update_restaurant_by_id(restaurant_id: int, patch: RestaurantUpdate) -> dict:
+    """Update restaurant fields"""
+    record = get_restaurant_record(restaurant_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+    return repo_update_restaurant(restaurant_id, patch.model_dump(exclude_none=True))
 
-    new_item = {
-        "id": new_id,
-        "restaurant_id": restaurant_id,
-        "name": item.name,
-        "price_cents": item.price_cents,
-        "description": item.description,
-        "dietary_tag": item.dietary_tag,
-        "is_visible": item.is_visible,
-        "is_active": item.is_active,
-        "is_available": item.is_available,
-        "category": {"id": item.category_id, "name": ""},
-    }
-    record["menu"].append(new_item)
-    return new_item
+def update_menu_item_by_id(restaurant_id: int, item_id: int, patch: MenuItemUpdate) -> dict:
+    """Update menu item fields"""
+    record = get_restaurant_record(restaurant_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+    updated = repo_update_menu_item(restaurant_id, item_id, patch.model_dump(exclude_none=True))
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Menu item not found")
+    return updated
