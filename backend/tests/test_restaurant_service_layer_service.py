@@ -36,11 +36,11 @@ CREATED_ITEM = {
 }
 
 ITEM_CREATE = MenuItemCreate(
-    name="Pizza", 
-    price_cents=999, 
+    name="Pizza",
+    price_cents=999,
     description="",
-    dietary_tag="", 
-    is_visible=True, is_active=True, is_available=True, 
+    dietary_tag="",
+    is_visible=True, is_active=True, is_available=True,
     category_id=1,
 )
 
@@ -57,7 +57,7 @@ def test_get_all_restaurants_empty():
     """Test that an empty list is returned when no restaurants exist"""
     with patch(f"{SERVICE}.get_all_restaurants", return_value=[]):
         result = get_all_restaurants_list()
-    assert result == []
+    assert not result
 
 def test_create_new_restaurant_calls_repo_correctly():
     """Test that create_new_restaurant calls the repo with the correct parameters"""
@@ -81,7 +81,7 @@ def test_update_restaurant_success():
     assert result["name"] == "Updated Bistro"
 
 def test_add_menu_item_delegates_to_repo():
-    """Test that add_menu_item calls the repository function with the correct parameters and returns the created item"""
+    """Test that add_menu_item calls the repository function with the correct parameters"""
     with patch(f"{SERVICE}.get_restaurant_record", return_value=BASE_RECORD), \
          patch(f"{SERVICE}.repo_add_menu_item", return_value=CREATED_ITEM) as mock:
         result = add_menu_item(1, ITEM_CREATE)

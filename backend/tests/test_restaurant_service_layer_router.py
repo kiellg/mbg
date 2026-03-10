@@ -1,7 +1,7 @@
 """Tests for restaurant service layer router validation"""
 
-from fastapi.testclient import TestClient
 from unittest.mock import patch
+from fastapi.testclient import TestClient
 from backend.main import app
 
 client = TestClient(app)
@@ -10,7 +10,7 @@ MANAGER_SESSION = {"user_id": 10, "role": "manager"}
 MANAGER_TOKEN = "valid-manager-token"
 
 BASE_RESTAURANT = {
-    "id": 1,
+    "id": 2,
     "name": "Test Bistro",
     "address": "123 Main St",
     "rating": 4,
@@ -40,10 +40,11 @@ NEW_ITEM_PAYLOAD = {
 }
 
 def auth_headers(token=MANAGER_TOKEN):
+    """Helper function to generate auth headers for testing"""
     return {"session_token": token}
 
 SERVICE = "backend.app.services.restaurants_service"
-ROUTER = "backend.app.routers.restaurants" 
+ROUTER = "backend.app.routers.restaurants"
 
 def test_list_restaurants_success():
     """Test that the restaurant list endpoint returns all restaurants"""
@@ -60,6 +61,7 @@ def test_list_restaurants_empty():
     assert response.json() == []
 
 def test_create_restaurant_success():
+    """Test that creating a restaurant successfully returns the created restaurant"""
     payload = {"name": "New Bistro", "address": "789 Oak Ave", "opening_hours": "9am-9pm"}
     with patch(f"{ROUTER}.require_manager", return_value=MANAGER_SESSION), \
          patch(f"{SERVICE}.create_restaurant",
@@ -74,12 +76,13 @@ def test_create_restaurant_no_token():
     assert response.status_code == 401
 
 def test_patch_restaurant_success():
-    """US24: manager updates restaurant, returns 200"""
+    """Test that patching a restaurant successfully updates and returns the restaurant"""
     updated = {**BASE_RESTAURANT, "name": "Updated Bistro"}
     with patch(f"{ROUTER}.require_manager", return_value=MANAGER_SESSION), \
          patch(f"{SERVICE}.get_restaurant_record", return_value=BASE_RESTAURANT), \
          patch(f"{SERVICE}.repo_update_restaurant", return_value=updated):
-        response = client.patch("/restaurants/1", json={"name": "Updated Bistro"}, headers=auth_headers())
+        response = client.patch("/restaurants/1", json={"name": "Updated Bistro"}, 
+                                headers=auth_headers())
     assert response.status_code == 200
     assert response.json()["name"] == "Updated Bistro"
 
@@ -101,14 +104,16 @@ def test_patch_menu_item_success():
     with patch(f"{ROUTER}.require_manager", return_value=MANAGER_SESSION), \
          patch(f"{SERVICE}.get_restaurant_record", return_value=BASE_RESTAURANT), \
          patch(f"{SERVICE}.repo_update_menu_item", return_value=updated):
-        response = client.patch("/restaurants/1/menu/1", json={"name": "Updated Burger"}, headers=auth_headers())
+        response = client.patch("/restaurants/1/menu/1", json={"name": "Updated Burger"}, 
+                                headers=auth_headers())
     assert response.status_code == 200
     assert response.json()["name"] == "Updated Burger"
 
 def test_patch_menu_item_not_found():
     """Test that patching a non-existent menu item returns 404"""
     with patch(f"{ROUTER}.require_manager", return_value=MANAGER_SESSION), \
-         patch(f"{SERVICE}.get_restaurant_record", return_value=BASE_RESTAURANT), \
+         patch(f"{SERVICE}.get_restaurant_record", 
+               return_value=BASE_RESTAURANT), \
          patch(f"{SERVICE}.repo_update_menu_item", return_value=None):
         response = client.patch("/restaurants/1/menu/99", json={"name": "X"}, headers=auth_headers())
     assert response.status_code == 404
