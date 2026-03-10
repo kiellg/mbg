@@ -78,6 +78,34 @@ def get_user_role(user_id: int) -> Optional[str]:
 
     return None
 
+def get_customer_by_user_id(user_id: int) -> Optional[Dict[str, Any]]:
+    """Return a customer profile by user_id"""
+    return users_data.CUSTOMERS.get(user_id)
+
+def get_driver_by_user_id(user_id: int) -> Optional[Dict[str, Any]]:
+    """Return a driver profile by user_id"""
+    return users_data.DRIVERS.get(user_id)
+
+def update_user_name(user_id: int, name: str) -> Optional[Dict[str, Any]]:
+    """Update the name of a user"""
+    user = get_user_by_id(user_id)
+    if not user:
+        return None
+    user["name"] = name
+    return user
+
+def update_customer_delivery_address(
+        user_id: int,
+        delivery_address: str,
+) -> Optional[Dict[str, Any]]:
+    """Update the delivery address of a customer"""
+    customer = get_customer_by_user_id(user_id)
+    if not customer:
+        return None
+
+    customer["delivery_address"] = delivery_address
+    return customer
+
 def increment_failed_login_attempts(email: str):
     """Increase failed login attempts for a user"""
     user = users_data.USERS.get(email)
