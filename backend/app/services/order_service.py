@@ -1,3 +1,4 @@
+"""Service layer for order management, handling business logic and interactions with the order repository."""
 from decimal import Decimal
 from fastapi import HTTPException
 from backend.app.repositories import order_repo
@@ -93,7 +94,7 @@ def update_order(order_id: int, payload: OrderUpdate) -> OrderResponse:
             }
             for item in payload.items
         ]
-    
+
     updated_order = order_repo.update_order_record(order_id, patch)
     if not updated_order:
         raise HTTPException(status_code=500, detail="Failed to update order")
@@ -111,3 +112,4 @@ def delete_order(order_id: int) -> None:
     deleted = order_repo.delete_order_record(order_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Order not found")
+    
