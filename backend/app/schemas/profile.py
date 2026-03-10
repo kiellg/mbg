@@ -30,10 +30,14 @@ class RestaurantProfileUpdateRequest(BaseModel):
     """Request schema for updating restaurant details"""
     name: Optional[str] = None
     address: Optional[str] = None
+    rating: Optional[int] = None
+    opening_hours: Optional[str] = None
 
 class RestaurantProfileUpdateResponse(BaseModel):
     """Response schema returned after updating restaurant"""
     restaurant_id: int
     name: str
     address: str
+    rating: Optional[int]
+    opening_hours: str
     message: str
