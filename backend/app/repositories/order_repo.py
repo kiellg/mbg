@@ -34,9 +34,12 @@ def _alloc_order_item_id() -> int:
 def create_order_record(
     delivery_address: str,
     items: List[Dict[str, Any]],
+    delivery_method: str = "walk",
     status: str = "Pending",
 ) -> Dict[str, Any]:
     """Create and store a new order record.
+
+    Delivery method must be one of: walk, bike, car.
 
     Items must include:
     - quantity
@@ -62,6 +65,7 @@ def create_order_record(
         "order_id": order_id,
         "status": status,
         "delivery_address": delivery_address,
+        "delivery_method": delivery_method,
         "subtotal": "0.00",
         "tax": "0.00",
         "delivery_fee": "0.00",
@@ -87,6 +91,8 @@ def update_order_record(order_id: int, patch: Dict[str, Any]) -> Optional[Dict[s
         order["status"] = patch["status"]
     if "delivery_address" in patch:
         order["delivery_address"] = patch["delivery_address"]
+    if "delivery_method" in patch:
+        order["delivery_method"] = patch["delivery_method"]
     if "subtotal" in patch:
         order["subtotal"] = str(patch["subtotal"])
     if "tax" in patch:

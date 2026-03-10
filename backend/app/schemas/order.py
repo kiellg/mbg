@@ -4,7 +4,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_serializer
 
 
 class OrderSchemaModel(BaseModel):
@@ -12,8 +12,14 @@ class OrderSchemaModel(BaseModel):
 
     model_config = ConfigDict(
         validate_assignment=True,
-        json_encoders={Decimal: str},
     )
+
+    @field_serializer("*", when_used="json", check_fields=False)
+    def _serialize_decimal_for_json(self, value):
+        """Serialize Decimal values as strings for JSON responses."""
+        if isinstance(value, Decimal):
+            return str(value)
+        return value
 
 
 class OrderStatus(str, Enum):
@@ -24,6 +30,14 @@ class OrderStatus(str, Enum):
     OUT_FOR_DELIVERY = "OutForDelivery"
     DELIVERED = "Delivered"
     CANCELLED = "Cancelled"
+
+
+class DeliveryMethod(str, Enum):
+    """Valid delivery methods for an order."""
+
+    WALK = "walk"
+    BIKE = "bike"
+    CAR = "car"
 
 
 class OrderItemBase(OrderSchemaModel):
@@ -50,6 +64,7 @@ class OrderBase(OrderSchemaModel):
     """Base schema for order fields."""
 
     delivery_address: str
+    delivery_method: DeliveryMethod
     status: OrderStatus = OrderStatus.PENDING
 
 
@@ -64,6 +79,7 @@ class OrderUpdate(OrderSchemaModel):
 
     status: Optional[OrderStatus] = None
     delivery_address: Optional[str] = None
+    delivery_method: Optional[DeliveryMethod] = None
     items: Optional[list[OrderItemCreate]] = None
 
 

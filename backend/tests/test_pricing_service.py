@@ -25,15 +25,16 @@ class Order:  # pylint: disable=too-many-instance-attributes
     status: str
     items: list[OrderItem]
     delivery_address: str
+    delivery_method: object = "walk"
     subtotal: Decimal = Decimal("0.00")
     tax: Decimal = Decimal("0.00")
-    delivery_fee: object = Decimal("0.00")
     tax_rate: object = Decimal("0.10")
+    delivery_fee: Decimal = Decimal("0.00")
     total: Decimal = Decimal("0.00")
 
 
-def test_calculate_totals_basic():
-    """Test that calculate_totals correctly computes subtotal, tax, and total for a simple order."""
+def test_calculate_totals_basic_walk_delivery():
+    """Test subtotal, tax, delivery fee, and total for a walk delivery order."""
     order = Order(
         order_id=1,
         status="Pending",
@@ -42,37 +43,37 @@ def test_calculate_totals_basic():
             OrderItem(order_item_id=2, order_id=1, quantity=1, item_price="3.50"),
         ],
         delivery_address="123 Main St",
-        delivery_fee="2.00",
+        delivery_method="walk",
     )
 
     PricingService.calculate_totals(order)
 
     assert order.subtotal == Decimal("23.50")
-    assert order.delivery_fee == Decimal("2.00")
+    assert order.delivery_fee == Decimal("5.00")
     assert order.tax == Decimal("2.35")
-    assert order.total == Decimal("27.85")
+    assert order.total == Decimal("30.85")
 
 
-def test_calculate_totals_empty_order():
-    """Test that calculate_totals handles an empty order with no items."""
+def test_calculate_totals_empty_order_bike_delivery():
+    """Test an empty order still applies bike fixed delivery fee."""
     order = Order(
         order_id=2,
         status="Pending",
         items=[],
         delivery_address="123 Main St",
-        delivery_fee="4.99",
+        delivery_method="bike",
     )
 
     PricingService.calculate_totals(order)
 
     assert order.subtotal == Decimal("0.00")
-    assert order.delivery_fee == Decimal("4.99")
+    assert order.delivery_fee == Decimal("8.00")
     assert order.tax == Decimal("0.00")
-    assert order.total == Decimal("4.99")
+    assert order.total == Decimal("8.00")
 
 
-def test_calculate_totals_applies_default_tax_rule():
-    """Tests PricingService applies the predefined tax rate to subtotal and includes it in total."""
+def test_calculate_totals_applies_default_tax_rule_with_car_delivery():
+    """Test default tax is applied and total includes fixed car delivery fee."""
     order = Order(
         order_id=3,
         status="Pending",
@@ -80,14 +81,66 @@ def test_calculate_totals_applies_default_tax_rule():
             OrderItem(order_item_id=1, order_id=3, quantity=2, item_price="15.00"),
         ],
         delivery_address="123 Main St",
-        delivery_fee="5.00",
+        delivery_method="car",
     )
 
     PricingService.calculate_totals(order)
 
     assert order.subtotal == Decimal("30.00")
-    assert order.tax == Decimal("3.00")   # 10% of 30.00
-    assert order.total == Decimal("38.00")  # 30.00 + 5.00 + 3.00
+    assert order.delivery_fee == Decimal("10.00")
+    assert order.tax == Decimal("3.00")
+    assert order.total == Decimal("43.00")
+
+
+def test_calculate_totals_walk_delivery_fee():
+    """Test walk delivery method applies the fixed 5.00 delivery fee."""
+    order = Order(
+        order_id=4,
+        status="Pending",
+        items=[
+            OrderItem(order_item_id=1, order_id=4, quantity=1, item_price="10.00"),
+        ],
+        delivery_address="123 Main St",
+        delivery_method="walk",
+    )
+
+    PricingService.calculate_totals(order)
+
+    assert order.delivery_fee == Decimal("5.00")
+
+
+def test_calculate_totals_bike_delivery_fee():
+    """Test bike delivery method applies the fixed 8.00 delivery fee."""
+    order = Order(
+        order_id=5,
+        status="Pending",
+        items=[
+            OrderItem(order_item_id=1, order_id=5, quantity=1, item_price="10.00"),
+        ],
+        delivery_address="123 Main St",
+        delivery_method="bike",
+    )
+
+    PricingService.calculate_totals(order)
+
+    assert order.delivery_fee == Decimal("8.00")
+
+
+def test_calculate_totals_car_delivery_fee():
+    """Test car delivery method applies the fixed 10.00 delivery fee."""
+    order = Order(
+        order_id=6,
+        status="Pending",
+        items=[
+            OrderItem(order_item_id=1, order_id=6, quantity=1, item_price="10.00"),
+        ],
+        delivery_address="123 Main St",
+        delivery_method="car",
+    )
+
+    PricingService.calculate_totals(order)
+
+    assert order.delivery_fee == Decimal("10.00")
 
 
 def test_calculate_totals_rejects_none_order():
@@ -99,11 +152,11 @@ def test_calculate_totals_rejects_none_order():
 def test_calculate_totals_rejects_missing_items():
     """Test that calculate_totals rejects an order with missing items."""
     order = Order(
-        order_id=4,
+        order_id=7,
         status="Pending",
         items=None,
         delivery_address="123 Main St",
-        delivery_fee="2.00",
+        delivery_method="walk",
     )
 
     with pytest.raises(ValueError, match="Order items are required"):
@@ -113,11 +166,11 @@ def test_calculate_totals_rejects_missing_items():
 def test_calculate_totals_rejects_none_item():
     """Test that calculate_totals rejects a missing order item."""
     order = Order(
-        order_id=5,
+        order_id=8,
         status="Pending",
         items=[None],
         delivery_address="123 Main St",
-        delivery_fee="2.00",
+        delivery_method="walk",
     )
 
     with pytest.raises(ValueError, match="Order item is required"):
@@ -127,13 +180,13 @@ def test_calculate_totals_rejects_none_item():
 def test_calculate_totals_rejects_none_quantity():
     """Test that calculate_totals rejects an item with a missing quantity."""
     order = Order(
-        order_id=6,
+        order_id=9,
         status="Pending",
         items=[
-            OrderItem(order_item_id=1, order_id=6, quantity=None, item_price="10.00"),
+            OrderItem(order_item_id=1, order_id=9, quantity=None, item_price="10.00"),
         ],
         delivery_address="123 Main St",
-        delivery_fee="2.00",
+        delivery_method="walk",
     )
 
     with pytest.raises(ValueError, match="Order item quantity is required"):
@@ -143,13 +196,13 @@ def test_calculate_totals_rejects_none_quantity():
 def test_calculate_totals_rejects_zero_quantity():
     """Test that calculate_totals rejects an item with zero quantity."""
     order = Order(
-        order_id=7,
+        order_id=10,
         status="Pending",
         items=[
-            OrderItem(order_item_id=1, order_id=7, quantity=0, item_price="10.00"),
+            OrderItem(order_item_id=1, order_id=10, quantity=0, item_price="10.00"),
         ],
         delivery_address="123 Main St",
-        delivery_fee="2.00",
+        delivery_method="walk",
     )
 
     with pytest.raises(ValueError, match="Order item quantity must be greater than zero"):
@@ -159,13 +212,13 @@ def test_calculate_totals_rejects_zero_quantity():
 def test_calculate_totals_rejects_negative_quantity():
     """Test that calculate_totals rejects an item with a negative quantity."""
     order = Order(
-        order_id=8,
+        order_id=11,
         status="Pending",
         items=[
-            OrderItem(order_item_id=1, order_id=8, quantity=-1, item_price="10.00"),
+            OrderItem(order_item_id=1, order_id=11, quantity=-1, item_price="10.00"),
         ],
         delivery_address="123 Main St",
-        delivery_fee="2.00",
+        delivery_method="walk",
     )
 
     with pytest.raises(ValueError, match="Order item quantity must be greater than zero"):
@@ -175,13 +228,13 @@ def test_calculate_totals_rejects_negative_quantity():
 def test_calculate_totals_rejects_none_item_price():
     """Test that calculate_totals rejects an item with a missing price."""
     order = Order(
-        order_id=9,
+        order_id=12,
         status="Pending",
         items=[
-            OrderItem(order_item_id=1, order_id=9, quantity=1, item_price=None),
+            OrderItem(order_item_id=1, order_id=12, quantity=1, item_price=None),
         ],
         delivery_address="123 Main St",
-        delivery_fee="2.00",
+        delivery_method="walk",
     )
 
     with pytest.raises(ValueError, match="Order item price is required"):
@@ -191,13 +244,13 @@ def test_calculate_totals_rejects_none_item_price():
 def test_calculate_totals_rejects_invalid_item_price():
     """Test that calculate_totals rejects an item with a non-numeric price."""
     order = Order(
-        order_id=10,
+        order_id=13,
         status="Pending",
         items=[
-            OrderItem(order_item_id=1, order_id=10, quantity=1, item_price="abc"),
+            OrderItem(order_item_id=1, order_id=13, quantity=1, item_price="abc"),
         ],
         delivery_address="123 Main St",
-        delivery_fee="2.00",
+        delivery_method="walk",
     )
 
     with pytest.raises(ValueError, match="Order item price must be a valid number"):
@@ -207,61 +260,29 @@ def test_calculate_totals_rejects_invalid_item_price():
 def test_calculate_totals_rejects_negative_item_price():
     """Test that calculate_totals rejects an item with a negative price."""
     order = Order(
-        order_id=11,
+        order_id=14,
         status="Pending",
         items=[
-            OrderItem(order_item_id=1, order_id=11, quantity=1, item_price="-5.00"),
+            OrderItem(order_item_id=1, order_id=14, quantity=1, item_price="-5.00"),
         ],
         delivery_address="123 Main St",
-        delivery_fee="2.00",
+        delivery_method="walk",
     )
 
     with pytest.raises(ValueError, match="Order item price cannot be negative"):
         PricingService.calculate_totals(order)
 
 
-def test_calculate_totals_rejects_invalid_delivery_fee():
-    """Test that calculate_totals rejects a non-numeric delivery fee."""
-    order = Order(
-        order_id=12,
-        status="Pending",
-        items=[
-            OrderItem(order_item_id=1, order_id=12, quantity=1, item_price="10.00"),
-        ],
-        delivery_address="123 Main St",
-        delivery_fee="abc",
-    )
-
-    with pytest.raises(ValueError, match="Delivery fee must be a valid number"):
-        PricingService.calculate_totals(order)
-
-
-def test_calculate_totals_rejects_negative_delivery_fee():
-    """Test that calculate_totals rejects a negative delivery fee."""
-    order = Order(
-        order_id=13,
-        status="Pending",
-        items=[
-            OrderItem(order_item_id=1, order_id=13, quantity=1, item_price="10.00"),
-        ],
-        delivery_address="123 Main St",
-        delivery_fee="-1.00",
-    )
-
-    with pytest.raises(ValueError, match="Delivery fee cannot be negative"):
-        PricingService.calculate_totals(order)
-
-
 def test_calculate_totals_rejects_invalid_tax_rate():
     """Test that calculate_totals rejects a non-numeric tax rate."""
     order = Order(
-        order_id=14,
+        order_id=15,
         status="Pending",
         items=[
-            OrderItem(order_item_id=1, order_id=14, quantity=1, item_price="10.00"),
+            OrderItem(order_item_id=1, order_id=15, quantity=1, item_price="10.00"),
         ],
         delivery_address="123 Main St",
-        delivery_fee="2.00",
+        delivery_method="walk",
         tax_rate="abc",
     )
 
@@ -272,15 +293,47 @@ def test_calculate_totals_rejects_invalid_tax_rate():
 def test_calculate_totals_rejects_negative_tax_rate():
     """Test that calculate_totals rejects a negative tax rate."""
     order = Order(
-        order_id=15,
+        order_id=16,
         status="Pending",
         items=[
-            OrderItem(order_item_id=1, order_id=15, quantity=1, item_price="10.00"),
+            OrderItem(order_item_id=1, order_id=16, quantity=1, item_price="10.00"),
         ],
         delivery_address="123 Main St",
-        delivery_fee="2.00",
+        delivery_method="walk",
         tax_rate="-0.10",
     )
 
     with pytest.raises(ValueError, match="Tax rate cannot be negative"):
+        PricingService.calculate_totals(order)
+
+
+def test_calculate_totals_rejects_invalid_delivery_method():
+    """Test that calculate_totals rejects an unsupported delivery method."""
+    order = Order(
+        order_id=17,
+        status="Pending",
+        items=[
+            OrderItem(order_item_id=1, order_id=17, quantity=1, item_price="10.00"),
+        ],
+        delivery_address="123 Main St",
+        delivery_method="plane",
+    )
+
+    with pytest.raises(ValueError, match="Delivery method must be one of: walk, bike, car"):
+        PricingService.calculate_totals(order)
+
+
+def test_calculate_totals_rejects_missing_delivery_method():
+    """Test that calculate_totals rejects a missing delivery method."""
+    order = Order(
+        order_id=18,
+        status="Pending",
+        items=[
+            OrderItem(order_item_id=1, order_id=18, quantity=1, item_price="10.00"),
+        ],
+        delivery_address="123 Main St",
+        delivery_method=None,
+    )
+
+    with pytest.raises(ValueError, match="Delivery method is required"):
         PricingService.calculate_totals(order)
