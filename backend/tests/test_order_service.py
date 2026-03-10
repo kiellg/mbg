@@ -120,7 +120,7 @@ def test_update_order_raises_404_if_not_found(mock_repo):
 
     with pytest.raises(HTTPException) as exc:
         order_service.update_order(99, OrderUpdate(status=OrderStatus.COOKING))
- 
+
     assert exc.value.status_code == 404
 
 # for cancel order

@@ -1,4 +1,5 @@
-"""Service layer for order management, handling business logic and interactions with the order repository."""
+"""Service layer for order management, handling business logic 
+and interactions with the order repository."""
 from decimal import Decimal
 from fastapi import HTTPException
 from backend.app.repositories import order_repo
