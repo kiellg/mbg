@@ -18,7 +18,7 @@ def update_customer_profile(
 ):
     """Update the logged in customer's profile"""
     result = profile_service.update_customer_profile(
-        user_id=current_user["id"],
+        user_id=current_user["user_id"],
         name=request.name,
         delivery_address=request.delivery_address,
     )

@@ -1,15 +1,11 @@
 """Service layer for profile update"""
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from fastapi import HTTPException
 
 from backend.app.repositories import user_repo
 
-def update_customer_profile(
-        user_id: int,
-        name: Optional[str],
-        delivery_address: Optional[str],
-) -> Dict[str, Any]:
+def update_customer_profile(user_id, name, delivery_address) -> Dict[str, Any]:
     """Update customer profile fields"""
     if not user_repo.is_customer(user_id):
         raise HTTPException(status_code=403, detail="User is not a customer")
@@ -25,11 +21,14 @@ def update_customer_profile(
     if name is not None:
         user_repo.update_user_name(user_id, name)
 
+    if delivery_address is not None:
+        user_repo.update_customer_delivery_address(user_id, delivery_address)
+
     customer = user_repo.get_customer_by_user_id(user_id)
 
     return{
         "user_id": user_id,
         "name": user["name"],
         "delivery_address": customer["delivery_address"],
-        "message": user_repo.get_customer_by_user_id(user_id),
+        "message": "Customer profile updated successfully",
     }
