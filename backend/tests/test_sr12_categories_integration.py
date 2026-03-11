@@ -1,4 +1,5 @@
 """Tests for category and dietary tag integration in restaurant menu endpoints"""
+# pylint: disable=duplicate-code
 
 from fastapi.testclient import TestClient
 from backend.main import app

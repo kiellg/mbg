@@ -1,12 +1,12 @@
 """Tests for category and dietary tag validation in MenuItemCreate and category name"""
+# pylint: disable=duplicate-code
 
+from unittest.mock import patch
+import copy
 from pydantic import ValidationError
+import pytest
 from backend.app.schemas.restaurant import MenuItemCreate
 from backend.app.services.restaurants_service import get_restaurant_menu
-from unittest.mock import patch
-
-import pytest
-import copy
 
 BASE_RECORD = {
     "id": 1,
