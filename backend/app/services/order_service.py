@@ -95,6 +95,9 @@ def update_order(order_id: int, payload: OrderUpdate) -> OrderResponse:
             }
             for item in payload.items
         ]
+    
+    if not patch:
+        return _build_order_response(order)
 
     updated_order = order_repo.update_order_record(order_id, patch)
     if not updated_order:
