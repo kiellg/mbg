@@ -55,7 +55,7 @@ def test_add_item_creates_cart_and_returns_cart_response(monkeypatch):
     assert resp.customer_id == 42
     assert resp.restaurant_id == restaurant_id
     assert len(resp.items) == 1
-    assert resp.total_cents == 500 * 2
+    assert resp.cart_subtotal_cents == 500 * 2
 
 
 def test_add_item_unavailable_raises(monkeypatch):
