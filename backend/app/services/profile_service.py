@@ -80,4 +80,5 @@ def update_manager_restaurant_profile(
         "address": updated["address"],
         "rating": updated["rating"],
         "opening_hours": updated["opening_hours"],
+        "message": "Restaurant profile updated successfully",
     }
