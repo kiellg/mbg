@@ -82,3 +82,40 @@ def update_manager_restaurant_profile(
         "opening_hours": updated["opening_hours"],
         "message": "Restaurant profile updated successfully",
     }
+
+def update_driver_profile(user_id: int, request):
+    """Update driver profile information"""
+
+    user = user_repo.get_user_by_id(user_id)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not user_repo.is_driver(user_id):
+        raise HTTPException(status_code=403, detail="User is not a driver")
+
+    if(
+        request.name is None
+        and request.vehicle_type is None
+        and request.is_available is None
+    ):
+        raise HTTPException(status_code=400, detail="No fields provided")
+
+    driver = user_repo.get_driver_by_user_id(user_id)
+
+    if request.name is not None:
+        user["name"] = request.name
+
+    if request.vehicle_type is not None:
+        driver["vehicle_type"] = request.vehicle_type
+
+    if request.is_available is not None:
+        driver["is_available"] = request.is_available
+
+    return{
+        "user_id": user_id,
+        "name": user["name"],
+        "vehicle_type": driver["vehicle_type"],
+        "is_available": driver["is_available"],
+        "message": "Driver profile updated successfully",
+    }
