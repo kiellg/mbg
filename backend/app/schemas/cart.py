@@ -23,7 +23,7 @@ class CartItemResponse(BaseModel):
     quantity: int = Field(..., gt=0, description="Quantity must be greater than 0")
     item_name: str
     unit_price_cents: int
-    subtotal_cents: int
+    item_subtotal_cents: int
 
 class CartResponse(BaseModel):
     """Schema for returning the full cart."""
@@ -32,4 +32,4 @@ class CartResponse(BaseModel):
     restaurant_id: int
     created_at: datetime
     items: List[CartItemResponse] = []
-    total_cents: int
+    cart_subtotal_cents: int

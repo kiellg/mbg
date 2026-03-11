@@ -29,7 +29,7 @@ MOCK_CART_ITEM_RESPONSE = CartItemResponse(
     quantity=2,
     item_name="Ribeye Steak",
     unit_price_cents=4999,
-    subtotal_cents=9998,
+    item_subtotal_cents=9998,
 )
 
 MOCK_CART_RESPONSE = CartResponse(
@@ -38,7 +38,7 @@ MOCK_CART_RESPONSE = CartResponse(
     restaurant_id=1,
     created_at=datetime.now(timezone.utc).isoformat(),
     items=[MOCK_CART_ITEM_RESPONSE],
-    total_cents=9998
+    cart_subtotal_cents=9998
 )
 
 # for get cart
@@ -70,7 +70,7 @@ def test_add_item_returns_201(mock_add_item):
     payload = {"menu_item_id": 1, "quantity": 2}
     response = client.post("/cart/1/items", json=payload)
     assert response.status_code == 201
-    assert response.json()["total_cents"] == 9998
+    assert response.json()["cart_subtotal_cents"] == 9998
     mock_add_item.assert_called_once()
 
 @patch(f"{_SVC}.add_item",
