@@ -20,6 +20,7 @@ from backend.app.services.restaurants_service import (
     delete_menu_item_by_id,
 )
 from backend.app.services.role_service import require_manager
+from backend.app.data.categories_data import VALID_CATEGORIES, VALID_DIETARY_TAGS
 
 router = APIRouter(prefix="/restaurants", tags=["restaurants"])
 
@@ -108,3 +109,11 @@ def patch_menu_item(
     token = get_session_token(request, session_token)
     require_manager(token)
     return update_menu_item_by_id(restaurant_id, item_id, body)
+
+@router.get("/categories")
+def list_categories():
+    """Test endpoint to list valid categories and dietary tags for menu items"""
+    return {
+        "categories": [{"id": k, "name": v} for k, v in VALID_CATEGORIES.items()],
+        "dietary_tags": list(VALID_DIETARY_TAGS),
+    }

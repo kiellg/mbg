@@ -1,8 +1,9 @@
 """Schemas for restaurant data"""
 
 from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from backend.app.schemas.menu import MenuItemOut
+from backend.app.data.categories_data import VALID_CATEGORIES, VALID_DIETARY_TAGS
 
 class RestaurantOut(BaseModel):
     """Schema for restaurant output with menu items and price statuses"""
@@ -37,6 +38,26 @@ class MenuItemCreate(BaseModel):
     is_active: bool = True
     is_available: bool = True
     category_id: int
+
+    @field_validator("category_id")
+    @classmethod
+    def validate_category(cls, v):
+        """Reject invalid category IDs"""
+        if v not in VALID_CATEGORIES:
+            raise ValueError(
+                f"Invalid category_id {v}. Valid options: {VALID_CATEGORIES}"
+            )
+        return v
+
+    @field_validator("dietary_tag")
+    @classmethod
+    def validate_dietary_tag(cls, v):
+        """Reject invalid dieetray tags"""
+        if v and v.lower() not in VALID_DIETARY_TAGS:
+            raise ValueError(
+                f"Invalid dietary_tag '{v}'. Valid options: {VALID_DIETARY_TAGS}"
+            )
+        return v.lower() if v else v
 
 class MenuItemUpdate(BaseModel):
     """Schema for updating a menu item"""

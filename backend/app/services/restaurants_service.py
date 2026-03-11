@@ -2,6 +2,7 @@
 
 from fastapi import HTTPException
 
+from backend.app.data.categories_data import VALID_CATEGORIES
 from backend.app.schemas.restaurant import (
     RestaurantOut, RestaurantCreate, RestaurantUpdate,
     MenuItemCreate, MenuItemUpdate,
@@ -35,6 +36,11 @@ def get_restaurant_menu(restaurant_id: int) -> RestaurantOut:
 
     for item in record.get("menu", []):
         item["restaurant_id"] = restaurant_id
+
+        cat = item.get("category") or {}
+        cat_id = cat.get("id") if isinstance(cat, dict) else None
+        if cat_id and cat_id in VALID_CATEGORIES:
+            item["category"] = {"id": cat_id, "name": VALID_CATEGORIES[cat_id]}
 
         visible = item.get("is_visible", True)
         active = item.get("is_active", True)
