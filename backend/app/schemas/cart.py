@@ -24,6 +24,8 @@ class CartItemResponse(BaseModel):
     item_name: str
     unit_price_cents: int
     item_subtotal_cents: int
+    display_unit_price: str = Field(..., description="Formatted price for display")
+    display_item_subtotal: str = Field(..., description="Formatted subtotal for display")
 
 class CartResponse(BaseModel):
     """Schema for returning the full cart."""
@@ -33,3 +35,4 @@ class CartResponse(BaseModel):
     created_at: datetime
     items: List[CartItemResponse] = []
     cart_subtotal_cents: int
+    display_cart_subtotal: str = Field(..., description="Formatted cart subtotal for display")

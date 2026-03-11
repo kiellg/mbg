@@ -18,10 +18,7 @@ from backend.app.repositories.restaurant_repo import (
     update_menu_item as repo_update_menu_item,
     delete_menu_item,
 )
-
-def format_cad_from_cents(price_cents: int) -> str:
-    """Convert price in cents to a formatted CAD string"""
-    return f"${price_cents / 100:.2f}"
+from backend.app.utils.formatting import format_cad_from_cents
 
 def get_all_restaurants_list() -> list[RestaurantOut]:
     """Fetch all restaurants"""
