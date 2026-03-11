@@ -34,7 +34,7 @@ def get_session_token(
     return request.cookies.get("session_token")
 
 def authenticate_manager(
-        request: Request, 
+        request: Request,
         session_token: Optional[str] = Header(default=None)) -> Dict[str, Any]:
     """Authenticate the user and ensure they are a manager"""
     token = get_session_token(request, session_token)
