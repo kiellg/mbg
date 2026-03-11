@@ -116,4 +116,3 @@ def delete_order(order_id: int) -> None:
     deleted = order_repo.delete_order_record(order_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Order not found")
-    
