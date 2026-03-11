@@ -1,6 +1,6 @@
 """Router for restaurant endpoints"""
 
-from typing import Optional
+from typing import Any, Optional, Dict
 
 from fastapi import APIRouter, Header, Request, status
 
@@ -33,6 +33,13 @@ def get_session_token(
 
     return request.cookies.get("session_token")
 
+def authenticate_manager(
+        request: Request, 
+        session_token: Optional[str] = Header(default=None)) -> Dict[str, Any]:
+    """Authenticate the user and ensure they are a manager"""
+    token = get_session_token(request, session_token)
+    return require_manager(token)
+
 @router.get("", response_model=list[RestaurantOut])
 def read_all_restaurants():
     """Endpoint to get a list of all restaurants"""
@@ -48,8 +55,7 @@ def delete_restaurant(restaurant_id: int,
                       request: Request,
                       session_token: Optional[str] = Header(default=None),):
     """Endpoint to delete a restaurant if it has no active menu items"""
-    token = get_session_token(request, session_token)
-    require_manager(token)
+    authenticate_manager(request, session_token)
     delete_restaurant_by_id(restaurant_id)
 
 @router.delete("/{restaurant_id}/menu/{item_id}",
@@ -59,8 +65,7 @@ def delete_menu_item(restaurant_id: int,
                      request: Request,
                      session_token: Optional[str] = Header(default=None),):
     """Endpoint to delete a menu item by id"""
-    token = get_session_token(request, session_token)
-    require_manager(token)
+    authenticate_manager(request, session_token)
     delete_menu_item_by_id(restaurant_id, item_id)
 
 @router.post("", response_model=RestaurantOut, status_code=status.HTTP_201_CREATED)
@@ -80,8 +85,7 @@ def create_menu_item(restaurant_id: int,
                      request: Request,
                      session_token: Optional[str] = Header(default=None),):
     """Endpoint to add a new menu item to a restaurant"""
-    token = get_session_token(request, session_token)
-    require_manager(token)
+    authenticate_manager(request, session_token)
     return add_menu_item(restaurant_id, item)
 
 @router.patch("/{restaurant_id}", response_model=RestaurantOut)
@@ -92,8 +96,7 @@ def patch_restaurant(
     session_token: Optional[str] = Header(default=None),
 ):
     """Endpoint to update restaurant details"""
-    token = get_session_token(request, session_token)
-    require_manager(token)
+    authenticate_manager(request, session_token)
     return update_restaurant_by_id(restaurant_id, body)
 
 @router.patch("/{restaurant_id}/menu/{item_id}", response_model=MenuItemOut)
@@ -105,6 +108,5 @@ def patch_menu_item(
     session_token: Optional[str] = Header(default=None),
 ):
     """Endpoint to update a menu item"""
-    token = get_session_token(request, session_token)
-    require_manager(token)
+    authenticate_manager(request, session_token)
     return update_menu_item_by_id(restaurant_id, item_id, body)
