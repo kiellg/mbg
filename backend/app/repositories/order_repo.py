@@ -1,13 +1,13 @@
 """Repository functions for order records."""
 
 # pylint: disable=protected-access
-
 from typing import Any, Dict, List, Optional
+import shortuuid
 
 from backend.app.data import order_data
 
 
-def get_order_record(order_id: int) -> Optional[Dict[str, Any]]:
+def get_order_record(order_id: str) -> Optional[Dict[str, Any]]:
     """Fetch an order record from the database."""
     return order_data._ORDERDB.get(order_id)
 
@@ -17,11 +17,9 @@ def list_order_records() -> List[Dict[str, Any]]:
     return [order_data._ORDERDB[oid] for oid in sorted(order_data._ORDERDB.keys())]
 
 
-def _alloc_order_id() -> int:
+def _alloc_order_id() -> str:
     """Allocate and return the next order_id."""
-    order_id = order_data.NEXT_ORDER_ID
-    order_data.NEXT_ORDER_ID += 1
-    return order_id
+    return shortuuid.ShortUUID().random(length=7)
 
 
 def _alloc_order_item_id() -> int:
@@ -77,7 +75,7 @@ def create_order_record(
     return order_record
 
 
-def update_order_record(order_id: int, patch: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+def update_order_record(order_id: str, patch: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """Update an existing order record with known fields only.
 
     If 'items' is provided, it replaces the entire items list.
@@ -125,17 +123,17 @@ def update_order_record(order_id: int, patch: Dict[str, Any]) -> Optional[Dict[s
     return order
 
 
-def set_order_status(order_id: int, new_status: str) -> Optional[Dict[str, Any]]:
+def set_order_status(order_id: str, new_status: str) -> Optional[Dict[str, Any]]:
     """Set the status of an order record."""
     return update_order_record(order_id, {"status": new_status})
 
 
-def cancel_order_record(order_id: int) -> Optional[Dict[str, Any]]:
+def cancel_order_record(order_id: str) -> Optional[Dict[str, Any]]:
     """Set an order status to Cancelled."""
     return set_order_status(order_id, "Cancelled")
 
 
-def delete_order_record(order_id: int) -> bool:
+def delete_order_record(order_id: str) -> bool:
     """Delete an order record by ID."""
     if order_id not in order_data._ORDERDB:
         return False

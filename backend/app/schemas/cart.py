@@ -28,7 +28,7 @@ class CartItemResponse(BaseModel):
 class CartResponse(BaseModel):
     """Schema for returning the full cart."""
     id: int
-    customer_id: int
+    customer_id: str
     restaurant_id: int
     created_at: datetime
     items: List[CartItemResponse] = []

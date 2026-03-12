@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 from datetime import datetime
 from backend.app.data import cart_data
 
-def get_cart_by_customer_and_restaurant(customer_id: int,
+def get_cart_by_customer_and_restaurant(customer_id: str,
                                         restaurant_id: int) -> Optional[Dict[str, Any]]:
     """Search for a cart matching the given customer and restaurant IDs."""
     for cart in cart_data._CARTDB.values():
@@ -17,7 +17,7 @@ def get_cart_by_id(cart_id: int) -> Optional[Dict[str, Any]]:
     """Retrieve a cart by its unique ID."""
     return cart_data._CARTDB.get(cart_id)
 
-def create_cart(customer_id: int, restaurant_id: int) -> Dict[str, Any]:
+def create_cart(customer_id: str, restaurant_id: int) -> Dict[str, Any]:
     """Create a new cart for the specified customer and restaurant."""
     cart_id = cart_data.NEXT_CART_ID
     cart_data.NEXT_CART_ID += 1

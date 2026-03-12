@@ -49,7 +49,7 @@ def _build_cart_response(cart: dict) -> CartResponse:
         cart_subtotal_cents=cart_subtotal
     )
 
-def add_item(customer_id: int, restaurant_id: int, payload: CartItemCreate) -> CartResponse:
+def add_item(customer_id: str, restaurant_id: int, payload: CartItemCreate) -> CartResponse:
     """Add an item to the customer's cart, creating a cart if necessary."""
     menu_item = _get_menu_item(restaurant_id, payload.menu_item_id)
     if not menu_item.get("is_available", False):
@@ -64,7 +64,7 @@ def add_item(customer_id: int, restaurant_id: int, payload: CartItemCreate) -> C
     updated_cart = cart_repo.get_cart_by_id(cart["id"])
     return _build_cart_response(updated_cart)
 
-def update_item(customer_id: int, restaurant_id: int, item_id: int,
+def update_item(customer_id: str, restaurant_id: int, item_id: int,
                 payload: CartItemUpdate) -> CartResponse:
     """Update the quantity of an item in the customer's cart."""
 
@@ -79,7 +79,7 @@ def update_item(customer_id: int, restaurant_id: int, item_id: int,
     updated_cart = cart_repo.get_cart_by_id(cart["id"])
     return _build_cart_response(updated_cart)
 
-def remove_item(customer_id: int, restaurant_id: int, item_id: int) -> None:
+def remove_item(customer_id: str, restaurant_id: int, item_id: int) -> None:
     """Remove an item from the customer's cart."""
     cart = cart_repo.get_cart_by_customer_and_restaurant(customer_id, restaurant_id)
     if cart is None:
@@ -90,7 +90,7 @@ def remove_item(customer_id: int, restaurant_id: int, item_id: int) -> None:
         raise HTTPException(status_code=404,
                             detail=f"Cart item {item_id} is not found in cart {cart['id']}")
 
-def get_cart(customer_id: int, restaurant_id: int) -> CartResponse:
+def get_cart(customer_id: str, restaurant_id: int) -> CartResponse:
     """Retrieve the customer's cart for a specific restaurant."""
     cart = cart_repo.get_cart_by_customer_and_restaurant(customer_id, restaurant_id)
     if cart is None:
