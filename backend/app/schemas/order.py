@@ -23,7 +23,8 @@ class OrderSchemaModel(BaseModel):
 
 
 class OrderStatus(str, Enum):
-    """Valid statuses for an order."""
+    """Valid statuses for an order.""" 
+    # SR26: System define order states as Pending, Cooking, Out for Delivery, Delivered, Cancelled
 
     PENDING = "Pending"
     COOKING = "Cooking"
