@@ -27,7 +27,7 @@ def _build_cart_response(cart: dict) -> CartResponse:
 
     for cart_item in cart["items"]:
         menu_item = _get_menu_item(restaurant_id, cart_item["menu_item_id"])
-        subtotal = menu_item["price_cents"] * cart_item["quantity"]
+        item_subtotal = menu_item["price_cents"] * cart_item["quantity"]
         item_responses.append(CartItemResponse(
             id=cart_item["id"],
             cart_id=cart_item["cart_id"],
@@ -35,10 +35,10 @@ def _build_cart_response(cart: dict) -> CartResponse:
             quantity=cart_item["quantity"],
             item_name=menu_item["name"],
             unit_price_cents=menu_item["price_cents"],
-            subtotal_cents=subtotal,
+            item_subtotal_cents=item_subtotal,
         ))
 
-    total = sum(item.subtotal_cents for item in item_responses)
+    cart_subtotal = sum(item.item_subtotal_cents for item in item_responses)
 
     return CartResponse(
         id=cart["id"],
@@ -46,7 +46,7 @@ def _build_cart_response(cart: dict) -> CartResponse:
         restaurant_id=cart["restaurant_id"],
         created_at=cart["created_at"],
         items=item_responses,
-        total_cents=total
+        cart_subtotal_cents=cart_subtotal
     )
 
 def add_item(customer_id: int, restaurant_id: int, payload: CartItemCreate) -> CartResponse:

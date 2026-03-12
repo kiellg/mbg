@@ -1,6 +1,6 @@
 """Unit tests for cart Pydantic schemas."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 from pydantic import ValidationError
@@ -37,11 +37,11 @@ def test_cart_response_nests_items_correctly():
     """CartResponse should correctly nest a list of CartItemResponse."""
     item = CartItemResponse(
         id=1, cart_id=1, menu_item_id=7, quantity=2,
-        item_name="Ribeye Steak", unit_price_cents=4999, subtotal_cents=9998,
+        item_name="Ribeye Steak", unit_price_cents=4999, item_subtotal_cents=9998,
     )
     cart = CartResponse(
         id=1, customer_id=42, restaurant_id=3,
-        created_at=datetime.utcnow(), items=[item], total_cents=9998,
+        created_at=datetime.now(timezone.utc), items=[item], cart_subtotal_cents=9998,
     )
     assert isinstance(cart.items[0], CartItemResponse)
-    assert cart.total_cents == 9998
+    assert cart.cart_subtotal_cents == 9998

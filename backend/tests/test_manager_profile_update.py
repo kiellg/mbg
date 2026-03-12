@@ -58,3 +58,19 @@ def test_manager_update_restaurant_no_fields():
     response = client.patch("/profile/restaurant/1", json={})
 
     assert response.status_code == 400
+
+def test_non_manager_cannot_update_restaurant():
+    """Non manager users should not be allowed to update restaurant profiles"""
+
+    user = create_user("cust", "cust@email.com", "pw123")
+
+    app.dependency_overrides[get_current_user] = lambda: {
+        "user_id": user["user_id"]
+    }
+
+    response = client.patch(
+        "/profile/restaurant/1",
+        json={"name": "New name"},
+    )
+
+    assert response.status_code == 403
