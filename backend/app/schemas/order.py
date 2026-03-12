@@ -65,7 +65,7 @@ class OrderBase(OrderSchemaModel):
 
     delivery_address: str
     delivery_method: DeliveryMethod
-    status: OrderStatus = OrderStatus.PENDING
+    status: OrderStatus = OrderStatus.PENDING # Current order status is clearly displayed (US48)
 
 
 class OrderCreate(OrderBase):
