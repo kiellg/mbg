@@ -1,5 +1,6 @@
 """Repository layer for user data access"""
 
+import uuid
 from datetime import datetime
 from typing import Dict, Any, Optional
 
@@ -9,7 +10,7 @@ def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
     """Return a user by email"""
     return users_data.USERS.get(email)
 
-def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
+def get_user_by_id(user_id: str) -> Optional[Dict[str, Any]]:
     """Return a user by user_id"""
     for user in users_data.USERS.values():
         if user["user_id"] == user_id:
@@ -19,33 +20,34 @@ def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
 
 def create_user(name: str, email: str, password_hash: str) -> Dict[str, Any]:
     """Create a new user"""
+    user_id = str(uuid.uuid4())
+
     user = {
-        "user_id": users_data.NEXT_USER_ID,
+        "user_id": user_id,
         "name": name,
         "email": email,
         "password_hash": password_hash,
     }
 
     users_data.USERS[email] = user
-    users_data.NEXT_USER_ID += 1
 
     return user
 
-def create_customer(user_id: int, delivery_address: str = ""):
+def create_customer(user_id: str, delivery_address: str = ""):
     """Create a customer profile"""
     users_data.CUSTOMERS[user_id] = {
         "user_id": user_id,
         "delivery_address": delivery_address,
     }
 
-def create_manager(user_id: int):
+def create_manager(user_id: str):
     """Create a manager profile"""
     users_data.MANAGERS[user_id] = {
         "user_id": user_id,
         "manager_id": user_id,
     }
 
-def create_driver(user_id: int, vehicle_type: str = "", is_available: bool = True):
+def create_driver(user_id: str, vehicle_type: str = "", is_available: bool = True):
     """Create a driver profile"""
     users_data.DRIVERS[user_id] = {
         "user_id": user_id,
@@ -53,19 +55,19 @@ def create_driver(user_id: int, vehicle_type: str = "", is_available: bool = Tru
         "is_available": is_available,
     }
 
-def is_customer(user_id: int) -> bool:
+def is_customer(user_id: str) -> bool:
     """Return whether a user is a customer"""
     return user_id in users_data.CUSTOMERS
 
-def is_manager(user_id: int) -> bool:
+def is_manager(user_id: str) -> bool:
     """Return whether a user is a manager"""
     return user_id in users_data.MANAGERS
 
-def is_driver(user_id: int) -> bool:
+def is_driver(user_id: str) -> bool:
     """Return whether a user is a driver"""
     return user_id in users_data.DRIVERS
 
-def get_user_role(user_id: int) -> Optional[str]:
+def get_user_role(user_id: str) -> Optional[str]:
     """Return the role for a user"""
     if is_customer(user_id):
         return "customer"
@@ -78,15 +80,15 @@ def get_user_role(user_id: int) -> Optional[str]:
 
     return None
 
-def get_customer_by_user_id(user_id: int) -> Optional[Dict[str, Any]]:
+def get_customer_by_user_id(user_id: str) -> Optional[Dict[str, Any]]:
     """Return a customer profile by user_id"""
     return users_data.CUSTOMERS.get(user_id)
 
-def get_driver_by_user_id(user_id: int) -> Optional[Dict[str, Any]]:
+def get_driver_by_user_id(user_id: str) -> Optional[Dict[str, Any]]:
     """Return a driver profile by user_id"""
     return users_data.DRIVERS.get(user_id)
 
-def update_user_name(user_id: int, name: str) -> Optional[Dict[str, Any]]:
+def update_user_name(user_id: str, name: str) -> Optional[Dict[str, Any]]:
     """Update the name of a user"""
     user = get_user_by_id(user_id)
     if not user:
@@ -95,7 +97,7 @@ def update_user_name(user_id: int, name: str) -> Optional[Dict[str, Any]]:
     return user
 
 def update_customer_delivery_address(
-        user_id: int,
+        user_id: str,
         delivery_address: str,
 ) -> Optional[Dict[str, Any]]:
     """Update the delivery address of a customer"""
@@ -151,4 +153,3 @@ def reset_users():
     users_data.CUSTOMERS.clear()
     users_data.MANAGERS.clear()
     users_data.DRIVERS.clear()
-    users_data.NEXT_USER_ID = 1
