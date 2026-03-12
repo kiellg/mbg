@@ -1,8 +1,8 @@
 """Repository functions for order records."""
 
 # pylint: disable=protected-access
-import shortuuid
 from typing import Any, Dict, List, Optional
+import shortuuid
 
 from backend.app.data import order_data
 
