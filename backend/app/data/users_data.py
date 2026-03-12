@@ -3,8 +3,6 @@
 from typing import Dict, Any
 
 USERS: Dict[str, Dict[str, Any]] = {}
-CUSTOMERS: Dict[int, Dict[str, Any]] = {}
-MANAGERS: Dict[int, Dict[str, Any]] = {}
-DRIVERS: Dict[int, Dict[str, Any]] = {}
-
-NEXT_USER_ID = 1
+CUSTOMERS: Dict[str, Dict[str, Any]] = {}
+MANAGERS: Dict[str, Dict[str, Any]] = {}
+DRIVERS: Dict[str, Dict[str, Any]] = {}

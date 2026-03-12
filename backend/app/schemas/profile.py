@@ -11,7 +11,7 @@ class CustomerProfileUpdateRequest(BaseModel):
 
 class CustomerProfileUpdateResponse(BaseModel):
     """Response schema returned after updating customer profile"""
-    user_id: int
+    user_id: str
     name: str
     delivery_address: str
     message: str
@@ -24,7 +24,7 @@ class DriverProfileUpdateRequest(BaseModel):
 
 class DriverProfileUpdateResponse(BaseModel):
     """Response schema returned after updating driver profile"""
-    user_id: int
+    user_id: str
     name: str
     vehicle_type: str
     is_available: bool

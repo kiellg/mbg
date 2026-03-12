@@ -13,7 +13,7 @@ class RegisterRequest(BaseModel):
 
 class RegisterResponse(BaseModel):
     """Response schema returned after registration"""
-    user_id: int
+    user_id: str
     email: EmailStr
 
 class LoginRequest(BaseModel):
@@ -24,6 +24,6 @@ class LoginRequest(BaseModel):
 class LoginResponse(BaseModel):
     """Response schema returned after succcessful login"""
     message: str
-    user_id: int
+    user_id: str
     email: EmailStr
     role: Optional[str]

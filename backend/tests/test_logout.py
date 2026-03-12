@@ -80,9 +80,7 @@ def test_protected_route_requires_login_after_logout():
     )
 
     assert protected_before_logout.status_code == 200
-    assert protected_before_logout.json() == {
-        "user_id": 1,
-    }
+    assert "user_id" in protected_before_logout.json()
 
     logout_response = client.post(
         "/auth/logout",
