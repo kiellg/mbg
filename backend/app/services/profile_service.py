@@ -41,12 +41,16 @@ def update_manager_restaurant_profile(
     """Update restaurant profile information for a manager"""
 
     restaurant = restaurant_repo.get_restaurant_record(restaurant_id)
+    owner_id = restaurant.get("owner_id")
 
     if not restaurant:
         raise HTTPException(status_code=404, detail="Restaurant not found")
 
     if not user_repo.is_manager(user_id):
         raise HTTPException(status_code=403, detail="User is not a manager")
+
+    if owner_id is not None and owner_id != user_id:
+        raise HTTPException(status_code=403, detail="Manager does not own this restaurant")
 
     if(
         request.name is None
