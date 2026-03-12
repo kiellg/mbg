@@ -32,7 +32,7 @@ def test_add_item_creates_cart_and_returns_cart_response(monkeypatch):
         "menu": [{"id": menu_item_id, "name": "Taco", "price_cents": 500, "is_available": True}]
     }
 
-    created_cart = {"id": 1, "customer_id": 42, "restaurant_id": restaurant_id,
+    created_cart = {"id": 1, "customer_id": "42", "restaurant_id": restaurant_id,
                     "created_at": datetime.now(timezone.utc).isoformat(), "items": []}
 
     monkeypatch.setattr(cart_repo, "get_cart_by_customer_and_restaurant", lambda cid, rid: None)
@@ -52,7 +52,7 @@ def test_add_item_creates_cart_and_returns_cart_response(monkeypatch):
     resp = cart_service.add_item(42, restaurant_id, payload)
 
     assert resp.id == created_cart["id"]
-    assert resp.customer_id == 42
+    assert resp.customer_id == "42"
     assert resp.restaurant_id == restaurant_id
     assert len(resp.items) == 1
     assert resp.cart_subtotal_cents == 500 * 2
@@ -60,7 +60,7 @@ def test_add_item_creates_cart_and_returns_cart_response(monkeypatch):
 
 def test_add_item_unavailable_raises(monkeypatch):
     """Test that trying to add an unavailable menu item raises an HTTPException."""
-    restaurant_id = 2
+    restaurant_id = "2"
     menu_item_id = 9
     cart_service.RESTAURANT_DB[restaurant_id] = {
         "id": restaurant_id,
@@ -86,11 +86,11 @@ def test_update_item_cart_not_found_raises(monkeypatch):
 
 def test_remove_item_not_found_raises(monkeypatch):
     """Test that trying to remove an item that doesn't exist in the cart raises an HTTPException."""
-    cart = {"id": 5, "customer_id": 7, "restaurant_id": 1,
+    cart = {"id": 5, "customer_id": "7", "restaurant_id": "1",
             "created_at": datetime.now(timezone.utc).isoformat(), "items": []}
     monkeypatch.setattr(cart_repo, "get_cart_by_customer_and_restaurant", lambda cid, rid: cart)
     monkeypatch.setattr(cart_repo, "remove_item_from_cart", lambda cart_id, item_id: False)
 
     with pytest.raises(HTTPException) as excinfo:
-        cart_service.remove_item(customer_id=7, restaurant_id=1, item_id=1)
+        cart_service.remove_item(customer_id="7", restaurant_id="1", item_id=1)
     assert excinfo.value.status_code == 404

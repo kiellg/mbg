@@ -50,14 +50,14 @@ class OrderItemBase(OrderSchemaModel):
 class OrderItemCreate(OrderItemBase):
     """Schema for creating a new order item."""
 
-    order_id: Optional[int] = None
+    order_id: Optional[str] = None
 
 
 class OrderItemResponse(OrderItemBase):
     """Schema for returning an order item."""
 
     order_item_id: int
-    order_id: int
+    order_id: str
 
 
 class OrderBase(OrderSchemaModel):
@@ -86,7 +86,7 @@ class OrderUpdate(OrderSchemaModel):
 class OrderResponse(OrderBase):
     """Schema for returning order details with cost breakdown."""
 
-    order_id: int
+    order_id: str
     items: list[OrderItemResponse] = Field(default_factory=list)
     subtotal: Decimal = Field(..., ge=0)
     tax: Decimal = Field(..., ge=0)

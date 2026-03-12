@@ -60,7 +60,7 @@ def create_order(payload: OrderCreate) -> OrderResponse:
 
     return _build_order_response(order)
 
-def get_order(order_id: int) -> OrderResponse:
+def get_order(order_id: str) -> OrderResponse:
     """Retrieve a single order by ID"""
     order = order_repo.get_order_record(order_id)
     if not order:
@@ -73,7 +73,7 @@ def list_orders() -> list[OrderResponse]:
     orders = order_repo.list_order_records()
     return [_build_order_response(order) for order in orders]
 
-def update_order(order_id: int, payload: OrderUpdate) -> OrderResponse:
+def update_order(order_id: str, payload: OrderUpdate) -> OrderResponse:
     """Apply a partial update to an existing order"""
     order = order_repo.get_order_record(order_id)
     if not order:
@@ -104,14 +104,14 @@ def update_order(order_id: int, payload: OrderUpdate) -> OrderResponse:
         raise HTTPException(status_code=500, detail="Failed to update order")
     return _build_order_response(updated_order)
 
-def cancel_order(order_id: int) -> OrderResponse:
+def cancel_order(order_id: str) -> OrderResponse:
     """Cancel an order by setting its status to Cancelled."""
     order = order_repo.cancel_order_record(order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     return _build_order_response(order)
 
-def delete_order(order_id: int) -> None:
+def delete_order(order_id: str) -> None:
     """Delete an order by ID."""
     deleted = order_repo.delete_order_record(order_id)
     if not deleted:

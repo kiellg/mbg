@@ -15,7 +15,7 @@ from backend.app.schemas.order import (
 )
 
 FAKE_RAW_ORDER = {
-    "order_id": 1,
+    "order_id": "1",
     "status": "Pending",
     "delivery_address": "123 Test St",
     "delivery_method": "walk",
@@ -24,7 +24,7 @@ FAKE_RAW_ORDER = {
     "delivery_fee": "0.00",
     "total": "0.00",
     "items": [
-        {"order_item_id": 1, "order_id": 1, "quantity": 2, "item_price": "10.00"}
+        {"order_item_id": 1, "order_id": "1", "quantity": 2, "item_price": "10.00"}
     ],
 }
 
@@ -44,7 +44,7 @@ def test_create_order_calls_repo_and_returns_response(mock_repo, mock_pricing):
     result = order_service.create_order(FAKE_PAYLOAD)
 
     mock_repo.create_order_record.assert_called_once()
-    assert result.order_id == 1
+    assert result.order_id == "1"
     assert result.status == OrderStatus.PENDING
 
 @patch("backend.app.services.order_service.PricingService.calculate_totals")
@@ -67,7 +67,7 @@ def test_get_order_returns_order(mock_repo, mock_pricing):
     result = order_service.get_order(1)
 
     mock_repo.get_order_record.assert_called_once_with(1)
-    assert result.order_id == 1
+    assert result.order_id == "1"
 
 @patch("backend.app.services.order_service.order_repo")
 def test_get_order_raises_404_if_not_found(mock_repo):

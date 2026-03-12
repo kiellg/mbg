@@ -16,7 +16,7 @@ def get_cart(
 ):
     """Get the current user's cart for a specific restaurant."""
     return cart_service.get_cart(
-        customer_id=current_user["id"],
+        customer_id=current_user["user_id"],
         restaurant_id=restaurant_id,
     )
 
@@ -30,7 +30,7 @@ def add_item_to_cart(
 ):
     """Add a menu item to the cart for a specific restaurant."""
     return cart_service.add_item(
-        customer_id=current_user["id"],
+        customer_id=current_user["user_id"],
         restaurant_id=restaurant_id,
         payload=payload,
     )
@@ -45,7 +45,7 @@ def update_cart_item(
 ):
     """Update the quantity of an existing cart item."""
     return cart_service.update_item(
-        customer_id=current_user["id"],
+        customer_id=current_user["user_id"],
         restaurant_id=restaurant_id,
         item_id=item_id,
         payload=payload,
@@ -63,7 +63,7 @@ def remove_cart_item(
 ):
     """Remove an item from the cart."""
     cart_service.remove_item(
-        customer_id=current_user["id"],
+        customer_id=current_user["user_id"],
         restaurant_id=restaurant_id,
         item_id=item_id,
     )
