@@ -8,6 +8,7 @@ from backend.app.repositories.user_repo import(
     create_user,
     create_manager,
 )
+from backend.app.repositories.restaurant_repo import get_restaurant_record
 from backend.app.dependencies import get_current_user
 
 client = TestClient(app)
@@ -71,6 +72,29 @@ def test_non_manager_cannot_update_restaurant():
     response = client.patch(
         "/profile/restaurant/1",
         json={"name": "New name"},
+    )
+
+    assert response.status_code == 403
+
+def test_manager_cannot_update_other_restaurant():
+    """Manager can't update restaurant they do not own"""
+
+    mgr1 = create_user("mgr1", "mgr1@email.com", "pw123")
+    create_manager(mgr1["user_id"])
+
+    mgr2 = create_user("mgr2", "mgr2@email.com", "pw123")
+    create_manager(mgr2["user_id"])
+
+    restaurant = get_restaurant_record(1)
+    restaurant["owner_id"] = mgr1["user_id"]
+
+    app.dependency_overrides[get_current_user] = lambda: {
+        "user_id": mgr2["user_id"]
+    }
+
+    response = client.patch(
+        "/profile/restaurant/1",
+        json={"name": "Illegal update"}
     )
 
     assert response.status_code == 403

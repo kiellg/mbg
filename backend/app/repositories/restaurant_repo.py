@@ -74,7 +74,10 @@ def add_menu_item(
         "is_visible": item_data.get("is_visible", True),
         "is_active": item_data.get("is_active", True),
         "is_available": item_data.get("is_available", True),
-        "category": {"id": item_data["category_id"], "name": ""}
+        "category": {
+            "id": item_data.get("category_id"),
+            "name": "",
+        },
     }
     restaurant["menu"].append(new_item)
     return new_item

@@ -8,6 +8,8 @@ from backend.app.schemas.profile import(
     CustomerProfileUpdateResponse,
     RestaurantProfileUpdateRequest,
     RestaurantProfileUpdateResponse,
+    DriverProfileUpdateRequest,
+    DriverProfileUpdateResponse,
 )
 from backend.app.services import profile_service
 
@@ -40,5 +42,17 @@ def update_restaurant_profile(
     return profile_service.update_manager_restaurant_profile(
         user_id=current_user["user_id"],
         restaurant_id=restaurant_id,
+        request=request,
+    )
+
+@router.patch("/driver", response_model=DriverProfileUpdateResponse)
+def update_driver_profile(
+    request: DriverProfileUpdateRequest,
+    current_user=Depends(get_current_user),
+):
+    """Update the logged in driver's profile"""
+
+    return profile_service.update_driver_profile(
+        user_id=current_user["user_id"],
         request=request,
     )
