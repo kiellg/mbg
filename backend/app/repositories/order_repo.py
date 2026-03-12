@@ -29,7 +29,7 @@ def _alloc_order_item_id() -> int:
     return item_id
 
 
-def create_order_record(
+def create_order_record(# pylint: disable=too-many-arguments, too-many-positional-arguments
     customer_id: str,
     restaurant_id: int,
     delivery_address: str,
