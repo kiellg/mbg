@@ -52,7 +52,7 @@ class MenuItemCreate(BaseModel):
     @field_validator("dietary_tag")
     @classmethod
     def validate_dietary_tag(cls, v):
-        """Reject invalid dieetray tags"""
+        """Reject invalid dietary tags"""
         if v and v.lower() not in VALID_DIETARY_TAGS:
             raise ValueError(
                 f"Invalid dietary_tag '{v}'. Valid options: {VALID_DIETARY_TAGS}"
