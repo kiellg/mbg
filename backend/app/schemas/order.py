@@ -62,7 +62,8 @@ class OrderItemResponse(OrderItemBase):
 
 class OrderBase(OrderSchemaModel):
     """Base schema for order fields."""
-
+    customer_id: str
+    restaurant_id: int
     delivery_address: str
     delivery_method: DeliveryMethod
     status: OrderStatus = OrderStatus.PENDING

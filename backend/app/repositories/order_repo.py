@@ -30,6 +30,8 @@ def _alloc_order_item_id() -> int:
 
 
 def create_order_record(
+    customer_id: str,
+    restaurant_id: int,
     delivery_address: str,
     items: List[Dict[str, Any]],
     delivery_method: str = "walk",
@@ -62,6 +64,8 @@ def create_order_record(
     order_record: Dict[str, Any] = {
         "order_id": order_id,
         "status": status,
+        "customer_id": customer_id,
+        "restaurant_id": restaurant_id,
         "delivery_address": delivery_address,
         "delivery_method": delivery_method,
         "subtotal": "0.00",

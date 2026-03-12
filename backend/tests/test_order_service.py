@@ -16,6 +16,8 @@ from backend.app.schemas.order import (
 
 FAKE_RAW_ORDER = {
     "order_id": "1",
+    "customer_id": "9c6dbfcb-72c5-4cc4-9f76-29200f0efda7",
+    "restaurant_id": 1,
     "status": "Pending",
     "delivery_address": "123 Test St",
     "delivery_method": "walk",
@@ -29,6 +31,8 @@ FAKE_RAW_ORDER = {
 }
 
 FAKE_PAYLOAD = OrderCreate(
+    customer_id="9c6dbfcb-72c5-4cc4-9f76-29200f0efda7",
+    restaurant_id=1,
     delivery_address="123 Test St",
     delivery_method=DeliveryMethod.WALK,
     items=[OrderItemCreate(quantity=2, item_price=Decimal("10.00"))],
@@ -75,7 +79,7 @@ def test_get_order_raises_404_if_not_found(mock_repo):
     mock_repo.get_order_record.return_value = None
 
     with pytest.raises(HTTPException) as exc:
-        order_service.get_order(99)
+        order_service.get_order("99")
 
     assert exc.value.status_code == 404
 
@@ -130,9 +134,9 @@ def test_cancel_order_returns_cancelled_order(mock_repo, mock_pricing):
     """Test that cancel_order returns an OrderResponse with status set to Cancelled."""
     mock_repo.cancel_order_record.return_value = {**FAKE_RAW_ORDER, "status": "Cancelled"}
 
-    result = order_service.cancel_order(1)
+    result = order_service.cancel_order("1")
 
-    mock_repo.cancel_order_record.assert_called_once_with(1)
+    mock_repo.cancel_order_record.assert_called_once_with("1")
     assert result.status == OrderStatus.CANCELLED
 
 @patch("backend.app.services.order_service.order_repo")
@@ -141,7 +145,7 @@ def test_cancel_order_raises_404_if_not_found(mock_repo):
     mock_repo.cancel_order_record.return_value = None
 
     with pytest.raises(HTTPException) as exc:
-        order_service.cancel_order(99)
+        order_service.cancel_order("99")
 
     assert exc.value.status_code == 404
 
@@ -151,9 +155,9 @@ def test_delete_order_calls_repo(mock_repo):
     """Test that delete_order calls the repository to delete the order."""
     mock_repo.delete_order_record.return_value = True
 
-    order_service.delete_order(1)
+    order_service.delete_order("1")
 
-    mock_repo.delete_order_record.assert_called_once_with(1)
+    mock_repo.delete_order_record.assert_called_once_with("1")
 
 @patch("backend.app.services.order_service.order_repo")
 def test_delete_order_raises_404_if_not_found(mock_repo):
@@ -161,6 +165,6 @@ def test_delete_order_raises_404_if_not_found(mock_repo):
     mock_repo.delete_order_record.return_value = False
 
     with pytest.raises(HTTPException) as exc:
-        order_service.delete_order(99)
+        order_service.delete_order("99")
 
     assert exc.value.status_code == 404
