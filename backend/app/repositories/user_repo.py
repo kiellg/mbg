@@ -147,6 +147,25 @@ def get_lock_until(email: str) -> Optional[datetime]:
 
     return user.get("lock_until")
 
+def store_password_reset_token(
+        token: str,
+        user_id: str,
+        expires_at: datetime,
+) -> None:
+    """Store a password reset token"""
+    users_data.PASSWORD_RESET_TOKENS[token] = {
+        "user_id": user_id,
+        "expires_at": expires_at
+    }
+
+def get_password_reset_token(token: str) -> Optional[Dict[str, Any]]:
+    """Return a password reset token"""
+    return users_data.PASSWORD_RESET_TOKENS.get(token)
+
+def delete_password_reset_token(token: str) -> None:
+    """Delete a password reset token"""
+    users_data.PASSWORD_RESET_TOKENS.pop(token, None)
+
 def reset_users():
     """Reset the simulated user db"""
     users_data.USERS.clear()
