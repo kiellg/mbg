@@ -38,16 +38,16 @@ FAKE_PAYLOAD = OrderCreate(
     items=[OrderItemCreate(quantity=2, item_price=Decimal("10.00"))],
 )
 
-def _order_with_stringified_patch(patch: dict) -> dict:
+def _order_with_stringified_patch(order_patch: dict) -> dict:
     """Return a fake order merged with a stringified patch."""
     return {
         **FAKE_RAW_ORDER,
-        **{key: str(value) for key, value in patch.items()},
+        **{key: str(value) for key, value in order_patch.items()},
     }
 
-def _update_order_record_side_effect(_order_id: str, patch: dict) -> dict:
+def _update_order_record_side_effect(_order_id: str, order_patch: dict) -> dict:
     """Mimic the repository updating an order record."""
-    return _order_with_stringified_patch(patch)
+    return _order_with_stringified_patch(order_patch)
 
 # for create order
 @patch("backend.app.services.order_service.PricingService.calculate_totals")
@@ -83,11 +83,11 @@ def test_create_order_persists_recalculated_totals(mock_repo):
 
     result = order_service.create_order(FAKE_PAYLOAD)
 
-    patch = mock_repo.update_order_record.call_args[0][1]
-    assert patch["subtotal"] == Decimal("20.00")
-    assert patch["tax"] == Decimal("2.00")
-    assert patch["delivery_fee"] == Decimal("5.00")
-    assert patch["total"] == Decimal("27.00")
+    order_patch = mock_repo.update_order_record.call_args[0][1]
+    assert order_patch["subtotal"] == Decimal("20.00")
+    assert order_patch["tax"] == Decimal("2.00")
+    assert order_patch["delivery_fee"] == Decimal("5.00")
+    assert order_patch["total"] == Decimal("27.00")
     assert result.total == Decimal("27.00")
 
 # for get order
@@ -171,12 +171,12 @@ def test_update_order_recalculates_totals_while_pending(mock_repo):
 
     result = order_service.update_order(1, OrderUpdate(delivery_method=DeliveryMethod.CAR))
 
-    patch = mock_repo.update_order_record.call_args[0][1]
-    assert patch["delivery_method"] == DeliveryMethod.CAR.value
-    assert patch["subtotal"] == Decimal("20.00")
-    assert patch["tax"] == Decimal("2.00")
-    assert patch["delivery_fee"] == Decimal("10.00")
-    assert patch["total"] == Decimal("32.00")
+    order_patch = mock_repo.update_order_record.call_args[0][1]
+    assert order_patch["delivery_method"] == DeliveryMethod.CAR.value
+    assert order_patch["subtotal"] == Decimal("20.00")
+    assert order_patch["tax"] == Decimal("2.00")
+    assert order_patch["delivery_fee"] == Decimal("10.00")
+    assert order_patch["total"] == Decimal("32.00")
     assert result.total == Decimal("32.00")
 
 @patch("backend.app.services.order_service.order_repo")
