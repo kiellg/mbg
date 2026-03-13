@@ -7,11 +7,15 @@ from backend.app.schemas.auth import (
     RegisterResponse,
     LoginRequest,
     LoginResponse,
+    PasswordResetRequest,
+    PasswordResetConfirm,
 )
 from backend.app.services.auth_service import (
     register_user,
     authenticate_user,
     logout_user,
+    request_password_reset,
+    reset_password,
 )
 
 from backend.app.repositories.session_repo import create_session
@@ -76,3 +80,20 @@ def logout(request: Request, response: Response):
 def get_me(current_user: dict = Depends(get_current_user)):
     """Return the currently authenticated user"""
     return {"user_id": current_user["user_id"]}
+
+@router.post("/forgot-password")
+def forgot_password(payload: PasswordResetRequest):
+    """Send a password reset token"""
+    token = request_password_reset(payload.email)
+
+    return {"reset_token": token}
+
+@router.post("/reset-password")
+def confirm_password_reset(payload: PasswordResetConfirm):
+    """Reset a password using a reset token"""
+    reset_password(
+        payload.token,
+        payload.new_password,
+    )
+
+    return {"message": "Password reset successful"}
