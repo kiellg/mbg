@@ -1,12 +1,14 @@
 """Service layer containing business logic for user registration and login"""
 
 import hashlib
+import secrets
 from datetime import datetime, timedelta
 from typing import Dict, Any
 from fastapi import HTTPException
 
 from backend.app.repositories.user_repo import(
     get_user_by_email,
+    get_user_by_id,
     create_user,
     create_customer,
     create_manager,
@@ -17,6 +19,9 @@ from backend.app.repositories.user_repo import(
     get_failed_login_attempts,
     set_lock_until,
     get_lock_until,
+    store_password_reset_token,
+    get_password_reset_token,
+    delete_password_reset_token,
 )
 
 from backend.app.repositories.session_repo import(
@@ -26,6 +31,7 @@ from backend.app.repositories.session_repo import(
 
 MAX_FAILED_LOGIN_ATTEMPTS = 5
 LOCK_DURATION = timedelta(hours=1)
+RESET_TOKEN_DURATION = timedelta(hours=1)
 
 def hash_password(password: str) -> str:
     """Hash the password for storage"""
@@ -99,6 +105,45 @@ def authenticate_user(email: str, password: str):
         "email": user["email"],
         "role": role,
     }
+
+def request_password_reset(email: str):
+    """Generate a password reset token for a user"""
+    user = get_user_by_email(email)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    token = secrets.token_urlsafe(32)
+
+    expires_at = datetime.now() + RESET_TOKEN_DURATION
+
+    store_password_reset_token(
+        token,
+        user["user_id"],
+        expires_at,
+    )
+
+    return token
+
+def reset_password(token: str, new_password: str):
+    """Reset a user's password using a reset token"""
+    record = get_password_reset_token(token)
+
+    if not record:
+        raise HTTPException(status_code=400, detail="Invalid reset token")
+
+    if datetime.now() > record["expires_at"]:
+        delete_password_reset_token(token)
+        raise HTTPException(status_code=400, detail="Reset token expired")
+
+    user = get_user_by_id(record["user_id"])
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user["password_hash"] = hash_password(new_password)
+
+    delete_password_reset_token(token)
 
 def logout_user(session_token: str):
     """Log out a user by deleting the session"""
