@@ -13,7 +13,7 @@ from backend.app.schemas.order import (
 )
 from backend.app.services.pricing_service import PricingService
 
-def _assert_order_is_pending(order: dict) -> None:
+def _validate_order_is_pending(order: dict) -> None:
     """Raise an HTTPException when an order is not editable."""
     if order["status"] != "Pending":
         raise HTTPException(
@@ -139,7 +139,7 @@ def update_order(order_id: str, payload: OrderUpdate) -> OrderResponse:
     if not patch:
         return _build_order_response(order)
 
-    _assert_order_is_pending(order)
+    _validate_order_is_pending(order)
     patch.update(_calculate_totals_patch({**order, **patch}))
 
     updated_order = order_repo.update_order_record(order_id, patch)
@@ -153,7 +153,7 @@ def cancel_order(order_id: str) -> OrderResponse:
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 
-    _assert_order_is_pending(order)
+    _validate_order_is_pending(order)
 
     updated_order = order_repo.cancel_order_record(order_id)
     if not updated_order:
