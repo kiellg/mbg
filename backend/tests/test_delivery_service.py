@@ -1,6 +1,6 @@
 """Unit tests for delivery_service.py"""
-import pytest
 from unittest.mock import patch
+import pytest
 from fastapi import HTTPException
 from backend.app.services import delivery_service
 from backend.app.schemas.order import OrderStatus, DeliveryMethod
