@@ -1,6 +1,7 @@
 """Schemas for authentication requests and responses"""
 
 from typing import Literal, Optional
+from datetime import datetime
 
 from pydantic import BaseModel, EmailStr
 
@@ -36,3 +37,11 @@ class PasswordResetConfirm(BaseModel):
     """Request schema for confirming a password reset"""
     token: str
     new_password: str
+
+class LoginAttemptResponse(BaseModel):
+    """Schema representing a login attempt"""
+    user_id: str
+    email: EmailStr
+    success: bool
+    reason: Optional[str]
+    timestamp: datetime
