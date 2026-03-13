@@ -29,6 +29,10 @@ from backend.app.repositories.session_repo import(
     delete_session,
 )
 
+from backend.app.repositories.login_attempt_repo import(
+    create_login_attempt,
+)
+
 MAX_FAILED_LOGIN_ATTEMPTS = 5
 LOCK_DURATION = timedelta(hours=1)
 RESET_TOKEN_DURATION = timedelta(hours=1)
@@ -62,6 +66,8 @@ def authenticate_user(email: str, password: str):
     user = get_user_by_email(email)
 
     if not user:
+        create_login_attempt("", email, False, "invalid_credentials")
+
         raise HTTPException(
             status_code=401,
             detail="Incorrect email or password",
@@ -70,6 +76,8 @@ def authenticate_user(email: str, password: str):
     lock_until = get_lock_until(email)
 
     if lock_until and datetime.now() < lock_until:
+        create_login_attempt(user["user_id"], email, False, "account_locked")
+
         raise HTTPException(
             status_code=401,
             detail="Account is locked. Please try again later.",
@@ -82,8 +90,13 @@ def authenticate_user(email: str, password: str):
 
         failed_attempts = get_failed_login_attempts(email)
 
+        create_login_attempt(user["user_id"], email, False, "invalid_credentials")
+
         if failed_attempts >= MAX_FAILED_LOGIN_ATTEMPTS:
             set_lock_until(email, datetime.now() + LOCK_DURATION)
+
+            create_login_attempt(user["user_id"], email, False, "account_locked")
+
             raise HTTPException(
                 status_code=401,
                 detail="Account is locked. Please try again later.",
@@ -96,6 +109,8 @@ def authenticate_user(email: str, password: str):
 
     reset_failed_login_attempts(email)
     set_lock_until(email, None)
+
+    create_login_attempt(user["user_id"], email, True, None)
 
     role = get_user_role(user["user_id"])
 
