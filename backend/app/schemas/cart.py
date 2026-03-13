@@ -33,6 +33,6 @@ class CartResponse(BaseModel):
     customer_id: int
     restaurant_id: int
     created_at: datetime
-    items: List[CartItemResponse] = []
+    items: List[CartItemResponse] = Field(default_factory=list)
     cart_subtotal_cents: int
     display_cart_subtotal: str = Field(..., description="Formatted cart subtotal for display")
