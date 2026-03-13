@@ -27,7 +27,6 @@ def checkout(cart_id: int,
     Raises 400 if the cart is empty or already checked out."""
 
     cart = cart_repo.get_cart_by_id(cart_id)
-    customer = user_repo.get_customer_by_user_id(customer_id)
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found.")
 
@@ -40,6 +39,14 @@ def checkout(cart_id: int,
     if not cart["items"]:
         raise HTTPException(status_code=400, detail="Cart is empty.")
 
+    customer = user_repo.get_customer_by_user_id(customer_id)
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer profile not found.")
+
+    delivery_address = customer["delivery_address"]
+    if not delivery_address:
+        raise HTTPException(status_code=400, detail="Customer does not have a delivery address.")
+
     items = [
         OrderItemCreate(
             quantity=item["quantity"],
@@ -51,7 +58,7 @@ def checkout(cart_id: int,
     payload = OrderCreate(
         customer_id = customer_id,
         restaurant_id = cart["restaurant_id"],
-        delivery_address=customer["delivery_address"],
+        delivery_address=delivery_address,
         delivery_method=delivery_method,
         items=items,
     )
