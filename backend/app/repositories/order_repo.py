@@ -79,7 +79,6 @@ def create_order_record(# pylint: disable=too-many-arguments, too-many-positiona
         "delivery_distance": 0.0,
         "driver_name": "",
         "route_taken": "",
-        
     }
 
     order_data._ORDERDB[order_id] = order_record

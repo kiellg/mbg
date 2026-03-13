@@ -4,11 +4,9 @@ from pydantic import ValidationError
 from backend.app.schemas.delivery import DeliveryStatusResponse, DeliveryDetailsResponse
 from backend.app.schemas.order import OrderStatus, DeliveryMethod
 from backend.app.repositories import order_repo
-from backend.app.data import order_data
+from unittest.mock import patch
 
-def reset_orders():
-    """Helper function to clear the order database"""
-    order_data._ORDERDB.clear()
+@patch("backend.app.data.order_data._ORDERDB", {})
 
 def test_delivery_status_response_valid():
     """Valid input should create a DeliveryStatusResponse successfully"""
@@ -61,7 +59,6 @@ def test_delivery_details_response_invalid_method():
 
 def test_create_order_record_stores_delivery_fields():
     """create_order_record should initialize all SR28 delivery fields"""
-    reset_orders()
     order = order_repo.create_order_record(
         customer_id="CUST-001",
         restaurant_id=1,
