@@ -11,7 +11,7 @@ class CustomerProfileUpdateRequest(BaseModel):
 
 class CustomerProfileUpdateResponse(BaseModel):
     """Response schema returned after updating customer profile"""
-    user_id: int
+    user_id: str
     name: str
     delivery_address: str
     message: str
@@ -19,11 +19,15 @@ class CustomerProfileUpdateResponse(BaseModel):
 class DriverProfileUpdateRequest(BaseModel):
     """Request schema for updating driver profile"""
     name: Optional[str] = None
+    vehicle_type: Optional[str] = None
+    is_available: Optional[bool] = None
 
 class DriverProfileUpdateResponse(BaseModel):
     """Response schema returned after updating driver profile"""
-    user_id: int
+    user_id: str
     name: str
+    vehicle_type: str
+    is_available: bool
     message: str
 
 class RestaurantProfileUpdateRequest(BaseModel):

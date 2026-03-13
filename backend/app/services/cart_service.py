@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from backend.app.data.restaurants_data import _DB as RESTAURANT_DB
 from backend.app.schemas.cart import CartItemCreate, CartItemUpdate, CartResponse, CartItemResponse
 from backend.app.repositories import cart_repo
+from backend.app.utils.formatting import format_cad_from_cents
 
 def _get_menu_item(restaurant_id: int, menu_item_id: int) -> dict:
     """Fetch a menu from the restaurant database. Raises HTTPException if not found."""
@@ -27,15 +28,18 @@ def _build_cart_response(cart: dict) -> CartResponse:
 
     for cart_item in cart["items"]:
         menu_item = _get_menu_item(restaurant_id, cart_item["menu_item_id"])
-        item_subtotal = menu_item["price_cents"] * cart_item["quantity"]
+        unit_price_cents = menu_item["price_cents"]
+        item_subtotal_cents = menu_item["price_cents"] * cart_item["quantity"]
         item_responses.append(CartItemResponse(
             id=cart_item["id"],
             cart_id=cart_item["cart_id"],
             menu_item_id=cart_item["menu_item_id"],
             quantity=cart_item["quantity"],
             item_name=menu_item["name"],
-            unit_price_cents=menu_item["price_cents"],
-            item_subtotal_cents=item_subtotal,
+            unit_price_cents=unit_price_cents,
+            item_subtotal_cents=item_subtotal_cents,
+            display_unit_price=format_cad_from_cents(unit_price_cents),
+            display_item_subtotal=format_cad_from_cents(item_subtotal_cents),
         ))
 
     cart_subtotal = sum(item.item_subtotal_cents for item in item_responses)
@@ -46,7 +50,8 @@ def _build_cart_response(cart: dict) -> CartResponse:
         restaurant_id=cart["restaurant_id"],
         created_at=cart["created_at"],
         items=item_responses,
-        cart_subtotal_cents=cart_subtotal
+        cart_subtotal_cents=cart_subtotal,
+        display_cart_subtotal=format_cad_from_cents(cart_subtotal),
     )
 
 def add_item(customer_id: str, restaurant_id: int, payload: CartItemCreate) -> CartResponse:

@@ -29,6 +29,8 @@ def _build_order_response(order: dict) -> OrderResponse:
     response = OrderResponse(
         order_id=order["order_id"],
         status=order["status"],
+        customer_id=order["customer_id"],
+        restaurant_id=order["restaurant_id"],
         delivery_address=order["delivery_address"],
         delivery_method=DeliveryMethod(order["delivery_method"]),
         items=item_responses,
@@ -52,6 +54,8 @@ def create_order(payload: OrderCreate) -> OrderResponse:
     ]
 
     order = order_repo.create_order_record(
+        customer_id=payload.customer_id,
+        restaurant_id=payload.restaurant_id,
         delivery_address=payload.delivery_address,
         items=items,
         delivery_method=payload.delivery_method.value,
@@ -116,4 +120,3 @@ def delete_order(order_id: str) -> None:
     deleted = order_repo.delete_order_record(order_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Order not found")
-    

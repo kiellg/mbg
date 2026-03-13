@@ -23,7 +23,8 @@ class OrderSchemaModel(BaseModel):
 
 
 class OrderStatus(str, Enum):
-    """Valid statuses for an order."""
+    """Valid statuses for an order.""" 
+    # SR26: System define order states as Pending, Cooking, Out for Delivery, Delivered, Cancelled
 
     PENDING = "Pending"
     COOKING = "Cooking"
@@ -62,10 +63,11 @@ class OrderItemResponse(OrderItemBase):
 
 class OrderBase(OrderSchemaModel):
     """Base schema for order fields."""
-
+    customer_id: str
+    restaurant_id: int
     delivery_address: str
     delivery_method: DeliveryMethod
-    status: OrderStatus = OrderStatus.PENDING
+    status: OrderStatus = OrderStatus.PENDING # Current order status is clearly displayed (US48)
 
 
 class OrderCreate(OrderBase):

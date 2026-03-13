@@ -1,4 +1,5 @@
 """Tests for restaurant service layer service validation"""
+# pylint: disable=duplicate-code
 
 from unittest.mock import patch
 
