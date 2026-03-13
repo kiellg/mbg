@@ -78,7 +78,7 @@ def _validate_cart_items(cart: dict) -> None:
 
     for cart_item in cart["items"]:
         menu_item = restaurant_repo.get_menu_item(
-            cart["restaurant_id"], 
+            cart["restaurant_id"],
             cart_item["menu_item_id"]
         )
         if menu_item is None or not menu_item.get("is_available", False):

@@ -43,7 +43,10 @@ FAKE_ORDER_RESPONSE_DICT = {
 @patch("backend.app.services.checkout_service.user_repo")
 @patch("backend.app.services.checkout_service.cart_repo")
 @patch("backend.app.services.checkout_service.order_service")
-def test_checkout_creates_order_and_marks_cart(mock_order_service, mock_cart_repo, mock_user_repo, mock_restaurant_repo):
+def test_checkout_creates_order_and_marks_cart(mock_order_service,
+                                               mock_cart_repo,
+                                               mock_user_repo,
+                                               mock_restaurant_repo):
     """Test that checkout creates an order and marks the cart as checked out."""
     mock_restaurant_repo.get_menu_item.return_value = {"id": 1, "is_available": True}
     mock_user_repo.get_customer_by_user_id.return_value = {"user_id": CUSTOMER_ID,
