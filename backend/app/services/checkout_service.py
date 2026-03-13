@@ -30,16 +30,16 @@ def checkout(cart_id: int,
     customer = user_repo.get_customer_by_user_id(customer_id)
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found.")
-    
+
     if cart["customer_id"] != customer_id:
         raise HTTPException(status_code=403, detail="Cart does not belong to the customer.")
-    
+
     if cart["checked_out"]:
         raise HTTPException(status_code=400, detail="Cart has already been checked out.")
-    
+
     if not cart["items"]:
         raise HTTPException(status_code=400, detail="Cart is empty.")
-    
+
     items = [
         OrderItemCreate(
             quantity=item["quantity"],

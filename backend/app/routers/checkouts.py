@@ -15,6 +15,7 @@ def checkout(
     payload: CheckoutRequest,
     current_user: dict = Depends(get_current_user)
 ):
+    """Endpoint to convert a cart into an order. Returns the created order details."""
     return checkout_service.checkout(
         cart_id=cart_id,
         customer_id=current_user["user_id"],

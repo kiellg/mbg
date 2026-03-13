@@ -1,4 +1,4 @@
-# pylint: disable=unused-argument
+# pylint: disable=unused-argument, unused-import
 """Unit tests for checkout_router.py with mocked service and auth."""
 
 from decimal import Decimal
@@ -30,6 +30,8 @@ FAKE_ORDER_RESPONSE = OrderResponse(
 
 client = TestClient(app)
 def override_get_current_user():
+    """Override for get_current_user dependency to return a fixed user_id.
+    Only for testing purposes. Because dependency does not work with patch."""
     return {"user_id": CUSTOMER_ID}
 
 @patch("backend.app.routers.checkouts.checkout_service.checkout")

@@ -44,7 +44,8 @@ FAKE_ORDER_RESPONSE_DICT = {
 @patch("backend.app.services.checkout_service.order_service")
 def test_checkout_creates_order_and_marks_cart(mock_order_service, mock_cart_repo, mock_user_repo):
     """Test that checkout creates an order and marks the cart as checked out."""
-    mock_user_repo.get_customer_by_user_id.return_value = {"user_id": CUSTOMER_ID, "delivery_address": "123 Test St"}
+    mock_user_repo.get_customer_by_user_id.return_value = {"user_id": CUSTOMER_ID,
+                                                           "delivery_address": "123 Test St"}
     mock_cart_repo.get_cart_by_id.return_value = FAKE_CART
     mock_order_service.create_order.return_value = FAKE_ORDER_RESPONSE_DICT
 
@@ -60,11 +61,14 @@ def test_checkout_creates_order_and_marks_cart(mock_order_service, mock_cart_rep
 @patch("backend.app.services.checkout_service.user_repo")
 @patch("backend.app.services.checkout_service.cart_repo")
 @patch("backend.app.services.checkout_service.order_service")
-def test_checkout_converts_price_cents_to_decimal(mock_order_service, mock_cart_repo, mock_user_repo):
+def test_checkout_converts_price_cents_to_decimal(mock_order_service,
+                                                  mock_cart_repo,
+                                                  mock_user_repo):
     """Test that price_cents are correctly converted to Decimal item_price."""
     mock_cart_repo.get_cart_by_id.return_value = FAKE_CART
     mock_order_service.create_order.return_value = FAKE_ORDER_RESPONSE_DICT
-    mock_user_repo.get_customer_by_user_id.return_value = {"user_id": CUSTOMER_ID, "delivery_address": "123 Test St"}
+    mock_user_repo.get_customer_by_user_id.return_value = {"user_id": CUSTOMER_ID,
+                                                           "delivery_address": "123 Test St"}
 
     checkout_service.checkout(
         cart_id=1,
