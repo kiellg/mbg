@@ -45,3 +45,22 @@ def test_successful_login_attempt_is_logged():
     assert response.status_code == 200
     assert len(LOGIN_ATTEMPTS) == 1
     assert LOGIN_ATTEMPTS[0]["success"] is True
+
+def test_account_lock_event_logged():
+    """Account lock events should be recorded"""
+
+    create_user("test", "test@email.com", hash_password("correct_pw"))
+
+    for _ in range(5):
+        client.post(
+            "/auth/login",
+            json={
+                "email": "test@email.com",
+                "password": "wrong_pw",
+            },
+        )
+
+    assert any(
+        attempt["reason"] == "account_locked"
+        for attempt in LOGIN_ATTEMPTS
+    )
