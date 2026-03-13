@@ -79,3 +79,9 @@ def get_cart_items(cart_id: int) -> Optional[List[Dict[str, Any]]]:
     if not cart:
         return None
     return cart["items"]
+
+def mark_cart_checked_out(cart_id: int) -> None:
+    """Mark the cart as checked out."""
+    cart = get_cart_by_id(cart_id)
+    if cart:
+        cart["checked_out"] = True

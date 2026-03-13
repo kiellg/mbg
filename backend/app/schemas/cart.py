@@ -36,3 +36,4 @@ class CartResponse(BaseModel):
     items: List[CartItemResponse] = Field(default_factory=list)
     cart_subtotal_cents: int
     display_cart_subtotal: str = Field(..., description="Formatted cart subtotal for display")
+    checked_out: bool = False

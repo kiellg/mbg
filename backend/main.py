@@ -6,6 +6,7 @@ from backend.app.routers.restaurants import router as restaurants_router
 from backend.app.routers.carts import router as carts_router
 from backend.app.routers.orders import router as orders_router
 from backend.app.routers.profile import router as profile_router
+from backend.app.routers.checkouts import router as checkout_router
 
 app = FastAPI()
 app.include_router(auth_router)
@@ -13,6 +14,7 @@ app.include_router(restaurants_router)
 app.include_router(carts_router)
 app.include_router(orders_router)
 app.include_router(profile_router)
+app.include_router(checkout_router)
 
 @app.get("/health")
 def health():
