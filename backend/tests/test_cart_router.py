@@ -16,7 +16,7 @@ app = FastAPI()
 app.include_router(router)
 
 # override the dependency to skip real auth
-app.dependency_overrides[get_current_user] = lambda: {"id": 7}
+app.dependency_overrides[get_current_user] = lambda: {"user_id": "7"}
 
 client = TestClient(app)
 
@@ -30,15 +30,18 @@ MOCK_CART_ITEM_RESPONSE = CartItemResponse(
     item_name="Ribeye Steak",
     unit_price_cents=4999,
     item_subtotal_cents=9998,
+    display_unit_price="$49.99",
+    display_item_subtotal="$99.98",
 )
 
 MOCK_CART_RESPONSE = CartResponse(
     id=1,
-    customer_id=7,
+    customer_id="7",
     restaurant_id=1,
     created_at=datetime.now(timezone.utc).isoformat(),
     items=[MOCK_CART_ITEM_RESPONSE],
-    cart_subtotal_cents=9998
+    cart_subtotal_cents=9998,
+    display_cart_subtotal="$99.98",
 )
 
 # for get cart
@@ -48,8 +51,8 @@ def test_get_cart_returns_200(mock_get_cart):
     response = client.get("/cart/1")
     assert response.status_code == 200
     assert response.json()["id"] == 1
-    assert response.json()["customer_id"] == 7
-    mock_get_cart.assert_called_once_with(customer_id=7, restaurant_id=1)
+    assert response.json()["customer_id"] == "7"
+    mock_get_cart.assert_called_once_with(customer_id="7", restaurant_id=1)
 
 @patch(f"{_SVC}.get_cart",
        side_effect=HTTPException(status_code=404, detail="Cart not found"))
@@ -100,7 +103,7 @@ def test_update_cart_item_returns_200(mock_update):
     response = client.put("/cart/1/items/1", json=payload)
     assert response.status_code == 200
     mock_update.assert_called_once_with(
-        customer_id=7,
+        customer_id="7",
         restaurant_id=1,
         item_id=1,
         payload=CartItemUpdate(quantity=3),
@@ -132,7 +135,7 @@ def test_remove_cart_item_returns_204(mock_remove):
     response = client.delete("/cart/1/items/1")
     assert response.status_code == 204
     mock_remove.assert_called_once_with(
-        customer_id=7,
+        customer_id="7",
         restaurant_id=1,
         item_id=1,
     )
