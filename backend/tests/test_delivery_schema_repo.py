@@ -1,10 +1,10 @@
 """Unit tests for delivery schemas"""
+from unittest.mock import patch
 import pytest
 from pydantic import ValidationError
 from backend.app.schemas.delivery import DeliveryStatusResponse, DeliveryDetailsResponse
 from backend.app.schemas.order import OrderStatus, DeliveryMethod
 from backend.app.repositories import order_repo
-from unittest.mock import patch
 
 @patch("backend.app.data.order_data._ORDERDB", {})
 
