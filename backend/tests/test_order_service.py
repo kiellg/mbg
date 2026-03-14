@@ -250,25 +250,3 @@ def test_cancel_order_raises_400_if_not_pending(mock_repo):
 
         assert exc.value.status_code == 400
         mock_repo.cancel_order_record.assert_not_called()
-
-# for delete order
-@patch("backend.app.services.order_service.order_repo")
-def test_delete_order_raises_400(mock_repo):
-    """Test that delete_order is rejected."""
-    mock_repo.get_order_record.return_value = FAKE_RAW_ORDER
-
-    with pytest.raises(HTTPException) as exc:
-        order_service.delete_order("1")
-
-    assert exc.value.status_code == 400
-    mock_repo.delete_order_record.assert_not_called()
-
-@patch("backend.app.services.order_service.order_repo")
-def test_delete_order_raises_404_if_not_found(mock_repo):
-    """Test that delete_order raises a 404 HTTPException when the order is not found."""
-    mock_repo.get_order_record.return_value = None
-
-    with pytest.raises(HTTPException) as exc:
-        order_service.delete_order("99")
-
-    assert exc.value.status_code == 404

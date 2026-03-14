@@ -159,10 +159,3 @@ def cancel_order(order_id: str) -> OrderResponse:
     if not updated_order:
         raise HTTPException(status_code=500, detail="Failed to cancel order")
     return _build_order_response(updated_order)
-
-def delete_order(order_id: str) -> None:
-    """Delete an order by ID."""
-    order = order_repo.get_order_record(order_id)
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    raise HTTPException(status_code=400, detail="Orders cannot be deleted.")
