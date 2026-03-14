@@ -28,7 +28,7 @@ class OrderStatus(str, Enum):
 
     PENDING = "Pending"
     COOKING = "Cooking"
-    OUT_FOR_DELIVERY = "OutForDelivery"
+    OUT_FOR_DELIVERY = "Out for Delivery"
     DELIVERED = "Delivered"
     CANCELLED = "Cancelled"
 

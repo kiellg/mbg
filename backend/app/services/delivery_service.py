@@ -2,7 +2,15 @@
 from fastapi import HTTPException
 from backend.app.repositories import order_repo
 from backend.app.schemas.delivery import DeliveryStatusResponse, DeliveryDetailsResponse
-from backend.app.schemas.order import DeliveryMethod
+from backend.app.schemas.order import DeliveryMethod, OrderStatus
+
+VALID_TRANSITIONS = {
+    OrderStatus.PENDING: [OrderStatus.COOKING, OrderStatus.CANCELLED],
+    OrderStatus.COOKING: [OrderStatus.OUT_FOR_DELIVERY, OrderStatus.CANCELLED],
+    OrderStatus.OUT_FOR_DELIVERY: [OrderStatus.DELIVERED, OrderStatus.CANCELLED],
+    OrderStatus.DELIVERED: [],
+    OrderStatus.CANCELLED: [],
+}
 
 def get_delivery_status(order_id: str) -> DeliveryStatusResponse:
     """Return delivery status and ETA for a given order"""
@@ -31,3 +39,21 @@ def get_delivery_details(order_id: str) -> DeliveryDetailsResponse:
         delivery_distance=order.get("delivery_distance", 0.0),
         route_taken=order.get("route_taken", ""),
     )
+
+def update_delivery_status(order_id: str, new_status: str) -> dict:
+    """Driver updates delivery status with transition validation"""
+    order = order_repo.get_order_record(order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    current = OrderStatus(order["status"])
+    next_status = OrderStatus(new_status)
+
+    if next_status not in VALID_TRANSITIONS[current]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot transition from {current.value} to {next_status.value}",
+        )
+
+    order_repo.set_order_status(order_id, new_status)
+    return {"order_id": order_id, "status": new_status}
