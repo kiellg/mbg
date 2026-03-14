@@ -1,4 +1,5 @@
 """Router for delivery endpoints"""
+#pylint: disable=duplicate-code, unused-import
 
 from typing import Optional
 from fastapi import APIRouter, Header

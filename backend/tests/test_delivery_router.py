@@ -1,7 +1,9 @@
 """Integration tests for delivery router endpoints"""
+# pylint: disable=duplicate-code, unused-argument, unused-import
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 from backend.main import app
+from fastapi import HTTPException
 
 client = TestClient(app)
 
@@ -82,7 +84,7 @@ def test_driver_update_status_valid_transition(mock_require_driver, mock_order_r
     """Driver should be able to update status through valid transitions"""
     mock_order_repo.get_order_record.return_value = FAKE_ORDER
     mock_order_repo.set_order_status.return_value = {
-        **FAKE_ORDER, 
+        **FAKE_ORDER,
         "status": "Cooking"
     }
 
@@ -99,7 +101,6 @@ def test_driver_update_status_valid_transition(mock_require_driver, mock_order_r
 @patch("backend.app.routers.deliveries.require_driver")
 def test_driver_update_status_no_token(mock_require_driver):
     """PATCH /{order_id}/status should return 403 if no valid driver session token"""
-    from fastapi import HTTPException
     mock_require_driver.side_effect = HTTPException(status_code=403, detail="Forbidden")
 
     response = client.patch(
