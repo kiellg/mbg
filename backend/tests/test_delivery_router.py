@@ -1,9 +1,9 @@
 """Integration tests for delivery router endpoints"""
-# pylint: disable=duplicate-code, unused-argument, unused-import
+# pylint: disable=duplicate-code, unused-argument, unused-import, ungrouped-imports
 from unittest.mock import patch
 from fastapi.testclient import TestClient
-from backend.main import app
 from fastapi import HTTPException
+from backend.main import app
 
 client = TestClient(app)
 
