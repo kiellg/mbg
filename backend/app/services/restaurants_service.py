@@ -1,5 +1,7 @@
 """Service layer for restaurant-related business logic"""
 
+import copy
+
 from fastapi import HTTPException
 
 from backend.app.data.categories_data import VALID_CATEGORIES
@@ -23,13 +25,16 @@ from backend.app.utils.formatting import format_cad_from_cents
 
 def get_all_restaurants_list() -> list[RestaurantOut]:
     """Fetch all restaurants"""
-    return get_all_restaurants()
+    records = get_all_restaurants()
+    return[RestaurantOut(**record) for record in records]
 
 def get_restaurant_menu(restaurant_id: int) -> RestaurantOut:
     """Fetch restaurant data and process menu items for display"""
     record = get_restaurant_record(restaurant_id)
     if record is None:
         raise HTTPException(status_code=404, detail="Restaurant not found")
+
+    record = copy.deepcopy(record)
 
     for item in record.get("menu", []):
         item["restaurant_id"] = restaurant_id
