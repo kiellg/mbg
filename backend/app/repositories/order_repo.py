@@ -135,11 +135,3 @@ def set_order_status(order_id: str, new_status: str) -> Optional[Dict[str, Any]]
 def cancel_order_record(order_id: str) -> Optional[Dict[str, Any]]:
     """Set an order status to Cancelled."""
     return set_order_status(order_id, "Cancelled")
-
-
-def delete_order_record(order_id: str) -> bool:
-    """Delete an order record by ID."""
-    if order_id not in order_data._ORDERDB:
-        return False
-    del order_data._ORDERDB[order_id]
-    return True
