@@ -10,6 +10,7 @@ FAKE_ASSIGNED_ORDER = {
     "delivery_address": "123 Test St",
     "customer_phone": "250-555-0100",
     "driver_name": "Driver 1",
+    "driver_id": "driver-123",
     "delivery_method": "bike",
     "status": "Out for Delivery",
     "delivery_time": "30 mins",

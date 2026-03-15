@@ -17,9 +17,7 @@ router = APIRouter(prefix="/orders", tags=["orders"])
 def get_assigned_deliveries(session_token: Optional[str] = Header(default=None)):
     """Driver views all orders currently assigned to them"""
     user = require_driver(session_token)
-    user_id = user["user_id"]
-    user_record = get_user_by_id(user_id)
-    return delivery_service.get_assigned_deliveries(user_record["name"])
+    return delivery_service.get_assigned_deliveries(user["user_id"])
 
 @router.get("/{order_id}/status", response_model=DeliveryStatusResponse)
 def get_delivery_status(order_id: str):

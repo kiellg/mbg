@@ -79,6 +79,7 @@ def create_order_record(# pylint: disable=too-many-arguments, too-many-positiona
         "delivery_time_actual": 0.0,
         "delivery_delay": 0.0,
         "delivery_distance": 0.0,
+        "driver_id": "",
         "driver_name": "",
         "route_taken": "",
     }
@@ -146,9 +147,10 @@ def cancel_order_record(order_id: str) -> Optional[Dict[str, Any]]:
     """Set an order status to Cancelled."""
     return set_order_status(order_id, "Cancelled")
 
-def get_orders_assigned_to_driver(driver_name: str) -> List[Dict[str, Any]]:
+def get_orders_assigned_to_driver(driver_id: str) -> List[Dict[str, Any]]:
     """Return all orders assigned to a specific driver."""
     return [
         order for order in order_data._ORDERDB.values()
-        if order.get("driver_name") == driver_name
+        if order.get("driver_id") == driver_id 
+        and order.get("status") == "Out for Delivery"
     ]
