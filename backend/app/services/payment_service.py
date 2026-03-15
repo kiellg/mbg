@@ -132,16 +132,16 @@ def get_receipt(order_id: str, customer_id: str) -> PaymentReceipt:
     order = order_repo.get_order_record(order_id)
     if order is None:
         raise HTTPException(status_code=404, detail="Order not found.")
-    
+
     if order["customer_id"] != customer_id:
         raise HTTPException(status_code=403,
                             detail="Not authorized to view this receipt.")
-    
+
     record = payment_repo.get_payment_by_order_id(order_id)
     if record is None or record["status"] != PaymentStatus.ACCEPTED.value:
         raise HTTPException(status_code=404,
                             detail="No accepted payment found for this order.")
-    
+
     return PaymentReceipt(
         payment_id=record["payment_id"],
         order_id=order_id,

@@ -204,6 +204,7 @@ def test_process_payment_raises_400_if_order_not_pending(mock_order_repo):
 @patch("backend.app.services.payment_service.payment_repo")
 @patch("backend.app.services.payment_service.order_repo")
 def test_get_receipt_returns_receipt_for_accepted_payment(mock_order_repo, mock_payment_repo):
+    """Should return a payment receipt for payment with Accepted status."""
     mock_order_repo.get_order_record.return_value = FAKE_ORDER
     mock_payment_repo.get_payment_by_order_id.return_value = FAKE_PAYMENT_RECORD
 
@@ -239,7 +240,7 @@ def test_get_receipt_raises_404_if_payment_declined(mock_order_repo, mock_paymen
 def test_get_receipt_raises_403_if_wrong_customer(mock_order_repo):
     """Should raise 403 when the order belongs to a different customer."""
     mock_order_repo.get_order_record.return_value = FAKE_ORDER
-    
+
     with pytest.raises(HTTPException) as exc:
         payment_service.get_receipt(
             order_id="abc1234",
