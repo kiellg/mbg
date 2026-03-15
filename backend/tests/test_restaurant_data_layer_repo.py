@@ -40,11 +40,11 @@ def test_create_restaurant_stores_record():
         address="456 Main St",
         rating=3,
         opening_hours="Mon-Fri 10:00-20:00",
-        owner_id=99,
+        owner_id="99",
     )
     assert r["id"] == 3
     assert r["name"] == "Burger Place"
-    assert r["owner_id"] == 99
+    assert r["owner_id"] == "99"
     assert not r["menu"]
 
 def test_update_restaurant_changes_fields():
