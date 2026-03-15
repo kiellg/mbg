@@ -26,3 +26,10 @@ def test_filter_menu_items_returns_list():
     )
 
     assert isinstance(results, list)
+
+def test_filter_restaurants_returns_correct_cuisine():
+    """Filtered restaurants should match the requested cuisine type"""
+    results = filter_restaurants(["italian"])
+
+    for r in results:
+        assert r["cuisine_type"] == "italian"
