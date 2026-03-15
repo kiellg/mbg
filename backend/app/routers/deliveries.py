@@ -2,17 +2,21 @@
 from typing import Optional
 from fastapi import APIRouter, Header, HTTPException
 
-from backend.app.schemas.delivery import DeliveryStatusResponse, DeliveryDetailsResponse
+from backend.app.schemas.delivery import (
+    DeliveryStatusResponse,
+    DeliveryDetailsResponse,
+    AssignedDeliveryResponse
+)
 from backend.app.services import delivery_service
 from backend.app.services.role_service import require_driver
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
-@router.get("/assigned")
+@router.get("/assigned", response_model=list[AssignedDeliveryResponse])
 def get_assigned_deliveries(session_token: Optional[str] = Header(default=None)):
-    """Drivers can view assigned deliveries"""
-    require_driver(session_token)
-    return {"message": "Assigned deliveries"}
+    """Driver views all orders currently assigned to them"""
+    user = require_driver(session_token)
+    return delivery_service.get_assigned_deliveries(user["user_id"])
 
 @router.get("/{order_id}/status", response_model=DeliveryStatusResponse)
 def get_delivery_status(order_id: str):

@@ -15,7 +15,7 @@ BASE_RESTAURANT = {
     "address": "123 Main St2",
     "rating": 2,
     "opening_hours": "9am-10pm",
-    "owner_id": 41,
+    "owner_id": "41",
     "menu": [],
 }
 

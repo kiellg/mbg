@@ -14,7 +14,7 @@ BASE_RECORD = {
     "address": "123 Main St",
     "rating": 4,
     "opening_hours": "9am-9pm",
-    "owner_id": 42,
+    "owner_id": "42",
     "menu": [],
 }
 

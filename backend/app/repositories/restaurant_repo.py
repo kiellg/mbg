@@ -58,6 +58,16 @@ def delete_restaurant(restaurant_id: int) -> bool:
     del _DB[restaurant_id]
     return True
 
+def get_menu_item(restaurant_id: int, menu_item_id: int) -> Optional[Dict[str, Any]]:
+    """Return a single menu item by restaurant and item ID."""
+    restaurant = _DB.get(restaurant_id)
+    if not restaurant:
+        return None
+    for item in restaurant["menu"]:
+        if item["id"] == menu_item_id:
+            return item
+    return None
+
 def add_menu_item(
     restaurant_id: int,
     item_data: Dict[str, Any],
