@@ -1,3 +1,4 @@
+#pylint: disable=unused-import
 """Schemas for payment request, response, and receipt"""
 
 from datetime import datetime

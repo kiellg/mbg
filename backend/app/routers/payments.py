@@ -1,3 +1,4 @@
+#pylint: disable=unused-argument
 """Router for payment endpoints."""
 
 from fastapi import APIRouter, Depends, status

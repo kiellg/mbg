@@ -1,4 +1,4 @@
-#pylint: disable=unused-argument
+#pylint: disable=unused-argument, protected-access
 """Unit test for backend.app.repositories.payment_repo"""
 
 from backend.app.data import payment_data
@@ -76,6 +76,7 @@ def test_get_payment_record_returns_none_for_missing():
 
 # for get_payment_by_order_id
 def test_get_payment_by_order_id_returns_correct():
+    """Should return the correct record associated with the given order_id"""
     record = create_payment_record(
         order_id="abc1234", status="Accepted",
         amount="25.99", last4="1234", cardholder_name="John Doe",
@@ -86,6 +87,7 @@ def test_get_payment_by_order_id_returns_correct():
     assert fetched["order_id"] == record["order_id"]
 
 def test_get_payment_by_order_id_returns_none_for_missing():
+    """Should return None when no payment exists for the given order_id."""
     assert get_payment_by_order_id("randomstuff") is None
 
 # for list_payment_records
