@@ -69,3 +69,17 @@ class MenuItemUpdate(BaseModel):
     is_active: Optional[bool] = None
     is_available: Optional[bool] = None
     category_id: Optional[int] = None
+
+class RestaurantSearchResult(BaseModel):
+    """Schema for restaurant search results"""
+    id: int
+    name: str
+    address: str
+    rating: int = Field(ge=1, le=5)
+
+class MenuItemSearchResult(BaseModel):
+    """Schema for menu item search results"""
+    id: int
+    name: str
+    restaurant_id: int
+    restaurant_name: str
