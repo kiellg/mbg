@@ -8,3 +8,13 @@ VALID_CATEGORIES = {
 }
 
 VALID_DIETARY_TAGS = {"vegan", "vegetarian", "gluten-free", "halal", "none"}
+
+VALID_CUISINE_TYPES = {
+    "italian",
+    "american",
+    "japanese",
+    "korean",
+    "chinese",
+    "mexican",
+    "indian",
+}
