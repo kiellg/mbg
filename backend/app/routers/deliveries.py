@@ -58,11 +58,11 @@ def mark_order_delivered(
     require_driver(session_token)
     return delivery_service.update_delivery_status(order_id, OrderStatus.DELIVERED.value)
 
-@router.patch("/{order_id}/status/cooking")
-def mark_order_cooking(
+@router.patch("/{order_id}/status/cancelled")
+def mark_order_cancelled(
     order_id: str,
     session_token: Optional[str] = Header(default=None),
 ):
-    """Manager marks an order as Cooking"""
+    """Manager marks an order as Cancelled"""
     require_manager(session_token)
-    return delivery_service.update_delivery_status(order_id, OrderStatus.COOKING.value)
+    return delivery_service.update_delivery_status(order_id, OrderStatus.CANCELLED.value)
