@@ -87,7 +87,8 @@ def test_get_kitchen_queue_returns_cooking_orders(mock_restaurant_repo, mock_ord
 
 @patch("backend.app.services.delivery_service.order_repo")
 @patch("backend.app.services.delivery_service.restaurant_repo")
-def test_get_kitchen_queue_returns_empty_when_no_cooking_orders(mock_restaurant_repo, mock_order_repo ):
+def test_get_kitchen_queue_returns_empty_when_no_cooking_orders(mock_restaurant_repo,
+                                                                mock_order_repo ):
     """Should return empty list when no Cooking orders exist for the restaurant."""
     mock_restaurant_repo.get_restaurant_record.return_value = {
         "id": 1, "owner_id": "josemou"

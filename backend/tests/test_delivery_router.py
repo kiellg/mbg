@@ -146,12 +146,14 @@ def test_driver_invalid_status_transition(mock_require_driver, mock_order_repo):
 @patch("backend.app.services.delivery_service.order_repo")
 @patch("backend.app.services.delivery_service.restaurant_repo")
 @patch("backend.app.routers.deliveries.require_manager")
-def test_get_kitchen_queue_returns_200(mock_require_manager, mock_restaurant_repo, mock_order_repo ):
+def test_get_kitchen_queue_returns_200(mock_require_manager,
+                                       mock_restaurant_repo,
+                                       mock_order_repo):
     """GET /orders/kitchen/{restaurant_id} should return 200 for a valid manager."""
     mock_require_manager.return_value = {"user_id": "josemou"}
     mock_restaurant_repo.get_restaurant_record.return_value = {"id": 1, "owner_id": "josemou"}
     mock_order_repo.list_order_records.return_value = []
-    
+
     response = client.get("/orders/kitchen/1",
                           headers={"session-token": "valid-manager-token"},
                           )

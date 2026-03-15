@@ -6,7 +6,7 @@ from backend.app.schemas.delivery import (
     DeliveryDetailsResponse,
     AssignedDeliveryResponse
 )
-from backend.app.schemas.order import DeliveryMethod, OrderStatus
+from backend.app.schemas.order import DeliveryMethod, OrderStatus, OrderResponse
 from backend.app.services.order_service import _build_order_response
 
 VALID_TRANSITIONS = {
@@ -91,7 +91,7 @@ def get_kitchen_queue(restaurant_id: int, manager_id: str) -> list[OrderResponse
     if restaurant.get("owner_id") != manager_id:
         raise HTTPException(status_code=403,
                             detail="Not authorized to view this restaurant's orders")
-    
+
     all_orders = order_repo.list_order_records()
     return [
         _build_order_response(order)
