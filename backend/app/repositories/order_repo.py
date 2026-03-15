@@ -151,6 +151,6 @@ def get_orders_assigned_to_driver(driver_id: str) -> List[Dict[str, Any]]:
     """Return all orders assigned to a specific driver."""
     return [
         order for order in order_data._ORDERDB.values()
-        if order.get("driver_id") == driver_id 
+        if order.get("driver_id") == driver_id
         and order.get("status") == "Out for Delivery"
     ]

@@ -9,7 +9,6 @@ from backend.app.schemas.delivery import (
 )
 from backend.app.services import delivery_service
 from backend.app.services.role_service import require_driver
-from backend.app.repositories.user_repo import get_user_by_id
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
