@@ -64,8 +64,7 @@ def update_delivery_status(order_id: str, new_status: str) -> dict:
 
     response = {"order_id": order_id, "status": new_status}
     if next_status == OrderStatus.CANCELLED:
-        response["message"] = f"Order has been cancelled. Refund of ${order['total']} will be processed."
-        
+        response["message"] = f"Order has been cancelled. Refund of ${order['total']} is coming."
     return response
 
 def get_assigned_deliveries(driver_id: str) -> list[AssignedDeliveryResponse]:
