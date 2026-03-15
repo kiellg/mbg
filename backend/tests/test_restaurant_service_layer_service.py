@@ -21,7 +21,7 @@ BASE_RECORD = {
     "address": "123 Main St",
     "rating": 4,
     "opening_hours": "9am-9pm",
-    "owner_id": 42,
+    "owner_id": "42",
     "menu": [],
 }
 
@@ -65,10 +65,10 @@ def test_create_new_restaurant_calls_repo_correctly():
     body = RestaurantCreate(name="New Place", address="456 Elm St", opening_hours="8am-10pm")
     with patch(f"{SERVICE}.create_restaurant",
                return_value={**BASE_RECORD, "name": "New Place"}) as mock:
-        result = create_new_restaurant(body, owner_id=10)
+        result = create_new_restaurant(body, owner_id="10")
     mock.assert_called_once_with(
         name="New Place", address="456 Elm St",
-        rating=None, opening_hours="8am-10pm", owner_id=10,
+        rating=None, opening_hours="8am-10pm", owner_id="10",
     )
     assert result["name"] == "New Place"
 

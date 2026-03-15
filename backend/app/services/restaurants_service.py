@@ -7,7 +7,8 @@ from fastapi import HTTPException
 from backend.app.data.categories_data import VALID_CATEGORIES
 from backend.app.schemas.restaurant import (
     RestaurantOut, RestaurantCreate, RestaurantUpdate,
-    MenuItemCreate, MenuItemUpdate,
+    MenuItemCreate, MenuItemUpdate, RestaurantSearchResult,
+    MenuItemSearchResult,
 )
 from backend.app.schemas.menu import PriceStatus
 from backend.app.repositories.restaurant_repo import (
@@ -20,13 +21,14 @@ from backend.app.repositories.restaurant_repo import (
     add_menu_item as repo_add_menu_item,
     update_menu_item as repo_update_menu_item,
     delete_menu_item,
+    search_restaurant_by_name,
+    search_menu_items_by_name,
 )
 from backend.app.utils.formatting import format_cad_from_cents
 
 def get_all_restaurants_list() -> list[RestaurantOut]:
     """Fetch all restaurants"""
-    records = get_all_restaurants()
-    return[RestaurantOut(**record) for record in records]
+    return get_all_restaurants()
 
 def get_restaurant_menu(restaurant_id: int) -> RestaurantOut:
     """Fetch restaurant data and process menu items for display"""
@@ -90,7 +92,7 @@ def delete_menu_item_by_id(restaurant_id: int, item_id: int) -> None:
     if not removed:
         raise HTTPException(status_code=404, detail="Menu item not found")
 
-def create_new_restaurant(item: RestaurantCreate, owner_id: int) -> dict:
+def create_new_restaurant(item: RestaurantCreate, owner_id: str) -> dict:
     """Create a new restaurant record"""
     return create_restaurant(
         name=item.name,
@@ -123,3 +125,24 @@ def update_menu_item_by_id(restaurant_id: int, item_id: int, patch: MenuItemUpda
     if updated is None:
         raise HTTPException(status_code=404, detail="Menu item not found")
     return updated
+
+def search_restaurant(query: str) -> list[RestaurantSearchResult]:
+    """Search restaurant by name"""
+    results = search_restaurant_by_name(query)
+    return [
+        RestaurantSearchResult(
+            id=r["id"],
+            name=r["name"],
+            address=r["address"],
+            rating=r["rating"],
+        )
+        for r in results
+    ]
+
+def search_menu_items(query: str) -> list[MenuItemSearchResult]:
+    """Search menu items by name"""
+    results = search_menu_items_by_name(query)
+    return [
+        MenuItemSearchResult(**item)
+        for item in results
+    ]

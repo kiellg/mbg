@@ -9,6 +9,7 @@ from decimal import Decimal
 from fastapi import HTTPException
 from backend.app.repositories import cart_repo
 from backend.app.repositories import user_repo
+from backend.app.repositories import restaurant_repo
 from backend.app.schemas.order import (
     DeliveryMethod,
     OrderCreate,
@@ -63,8 +64,29 @@ def checkout(cart_id: int,
         items=items,
     )
 
+    _validate_cart_items(cart)
+
     order = order_service.create_order(payload)
 
     cart_repo.mark_cart_checked_out(cart_id)
 
     return order
+
+def _validate_cart_items(cart: dict) -> None:
+    """Re-validate all cart items against current menu availability."""
+    unavailable = []
+
+    for cart_item in cart["items"]:
+        menu_item = restaurant_repo.get_menu_item(
+            cart["restaurant_id"],
+            cart_item["menu_item_id"]
+        )
+        if menu_item is None or not menu_item.get("is_available", False):
+            name = menu_item["name"] if menu_item else f"item {cart_item['menu_item_id']}"
+            unavailable.append(name)
+
+    if unavailable:
+        raise HTTPException(
+            status_code=400,
+            detail=f"The following items are no longer available: {', '.join(unavailable)}"
+        )

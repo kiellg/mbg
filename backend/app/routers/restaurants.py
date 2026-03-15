@@ -18,6 +18,8 @@ from backend.app.services.restaurants_service import (
     add_menu_item,
     update_menu_item_by_id,
     delete_menu_item_by_id,
+    search_restaurant,
+    search_menu_items,
 )
 from backend.app.services.role_service import require_manager
 from backend.app.data.categories_data import VALID_CATEGORIES, VALID_DIETARY_TAGS
@@ -119,3 +121,13 @@ def list_categories():
         "categories": [{"id": k, "name": v} for k, v in VALID_CATEGORIES.items()],
         "dietary_tags": list(VALID_DIETARY_TAGS),
     }
+
+@router.get("/search")
+def search_restaurants_endpoint(q: str):
+    """Endpoint to search restaurants by name"""
+    return search_restaurant(q)
+
+@router.get("/menu/search")
+def search_menu_items_endpoint(q: str):
+    """Endpoint to search menu items by name"""
+    return search_menu_items(q)

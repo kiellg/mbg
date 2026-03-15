@@ -10,6 +10,7 @@ from backend.app.repositories.restaurant_repo import (
     update_menu_item,
     delete_menu_item,
     get_active_menu_items,
+    get_menu_item,
     reset_restaurants,
 )
 
@@ -40,11 +41,11 @@ def test_create_restaurant_stores_record():
         address="456 Main St",
         rating=3,
         opening_hours="Mon-Fri 10:00-20:00",
-        owner_id=99,
+        owner_id="99",
     )
     assert r["id"] == 3
     assert r["name"] == "Burger Place"
-    assert r["owner_id"] == 99
+    assert r["owner_id"] == "99"
     assert not r["menu"]
 
 def test_update_restaurant_changes_fields():
@@ -94,3 +95,18 @@ def test_get_active_menu_items_returns_only_active():
     """Should return only items where is_active is True"""
     items = get_active_menu_items(1)
     assert all(i["is_active"] for i in items)
+
+def test_get_menu_item_returns_correct_item():
+    """Should return the correct menu item by restaurant and item ID."""
+    item = get_menu_item(1, 1)
+    assert item is not None
+    assert item["id"] == 1
+    assert item["name"] == "Ribeye Steak"
+
+def test_get_menu_item_returns_none_for_missing_item():
+    """Should return None when menu item does not exist."""
+    assert get_menu_item(1, 999) is None
+
+def test_get_menu_item_returns_none_for_missing_restaurant():
+    """Should return None when restaurant does not exist."""
+    assert get_menu_item(999, 1) is None
