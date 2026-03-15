@@ -199,3 +199,50 @@ def test_process_payment_raises_400_if_order_not_pending(mock_order_repo):
             payload=VALID_PAYLOAD,
         )
     assert exc.value.status_code == 400
+
+# for get_receipt
+@patch("backend.app.services.payment_service.payment_repo")
+@patch("backend.app.services.payment_service.order_repo")
+def test_get_receipt_returns_receipt_for_accepted_payment(mock_order_repo, mock_payment_repo):
+    mock_order_repo.get_order_record.return_value = FAKE_ORDER
+    mock_payment_repo.get_payment_by_order_id.return_value = FAKE_PAYMENT_RECORD
+
+    result = payment_service.get_receipt(
+        order_id="abc1234",
+        customer_id=CUSTOMER_ID,
+        )
+
+    assert result.payment_id == "visa123"
+    assert result.order_id == "abc1234"
+    assert result.last4 == "1234"
+    assert result.cardholder_name == "John Doe"
+    assert result.message == "Payment accepted. Your order is being prepared."
+
+@patch("backend.app.services.payment_service.payment_repo")
+@patch("backend.app.services.payment_service.order_repo")
+def test_get_receipt_raises_404_if_payment_declined(mock_order_repo, mock_payment_repo):
+    """Should raise 404 when the payment was declined."""
+    mock_order_repo.get_order_record.return_value = FAKE_ORDER
+    mock_payment_repo.get_payment_by_order_id.return_value = {
+        **FAKE_PAYMENT_RECORD,
+        "status": "Declined",
+        }
+
+    with pytest.raises(HTTPException) as exc:
+        payment_service.get_receipt(
+            order_id="abc1234",
+            customer_id=CUSTOMER_ID,
+            )
+    assert exc.value.status_code == 404
+
+@patch("backend.app.services.payment_service.order_repo")
+def test_get_receipt_raises_403_if_wrong_customer(mock_order_repo):
+    """Should raise 403 when the order belongs to a different customer."""
+    mock_order_repo.get_order_record.return_value = FAKE_ORDER
+    
+    with pytest.raises(HTTPException) as exc:
+        payment_service.get_receipt(
+            order_id="abc1234",
+            customer_id="whoisthisguy",
+            )
+    assert exc.value.status_code == 403

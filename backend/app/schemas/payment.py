@@ -27,7 +27,18 @@ class PaymentResponse(BaseModel):
 
     payment_id: str
     order_id: str
-    status: str
+    status: PaymentStatus
     amount: Decimal
     last4: str
     timestamp: datetime
+
+class PaymentReceipt(BaseModel):
+    """Mock receipt generated on successful payment."""
+
+    payment_id: str
+    order_id: str
+    amount: Decimal
+    last4: str
+    cardholder_name: str
+    timestamp: datetime
+    message: str = "Payment accepted. Your order is being prepared."
