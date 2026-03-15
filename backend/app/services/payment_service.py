@@ -27,7 +27,7 @@ def _validate_expiry_date(expiry_date: str) -> None:
             status_code=400,
             detail="Invalid expiry date. Must be in MM/YY format."
         )
-    
+
     month_str, year_str = expiry_date[:2], expiry_date[3:]
 
     if not month_str.isdigit() or not year_str.isdigit():
@@ -35,7 +35,7 @@ def _validate_expiry_date(expiry_date: str) -> None:
             status_code=400,
             detail="Invalid expiry date. Must be in MM/YY format."
         )
-    
+
     month, year = int(month_str), int(year_str) + 2000
 
     if not 1 <= month <= 12:
@@ -43,7 +43,7 @@ def _validate_expiry_date(expiry_date: str) -> None:
             status_code=400,
             detail="Invalid expiry date. Month must be between 01 and 12."
         )
-    
+
     now = datetime.now(timezone.utc)
     if year < now.year or (year == now.year and month < now.month):
         raise HTTPException(
@@ -95,18 +95,18 @@ def process_payment(
     if order is None:
         raise HTTPException(status_code=404,
                             detail="Order not found")
-    
+
     if order["customer_id"] != customer_id:
         raise HTTPException(status_code=403,
                             detail="Not authorized to pay for this order.")
-    
+
     if order["status"] != "Pending":
         raise HTTPException(
             status_code=400,
             detail=f"Payment can only be made for Pending orders. "
                    f"Current status is '{order['status']}'.",
         )
-    
+
     _validate_payment_info(payload)
 
     status = _simulate_payment(payload.card_number)

@@ -1,4 +1,4 @@
-#pylint: disable=unused-argument
+#pylint: disable=unused-argument, protected-access
 """Unit test for payment_service.py"""
 
 from datetime import datetime, timezone
@@ -119,6 +119,7 @@ def test_simulate_payments_accepts_normal_card():
 def test_simulate_payments_declines_card_ending_in_0000():
     """Should return Declined for a card ending in 0000"""
     result = payment_service._simulate_payment("1234567891010000")
+    assert result == PaymentStatus.DECLINED
 
 # for process_payment
 @patch("backend.app.services.payment_service.payment_repo")
