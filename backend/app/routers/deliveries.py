@@ -1,6 +1,6 @@
 """Router for delivery endpoints"""
 from typing import Optional
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Header, HTTPException
 
 from backend.app.schemas.delivery import (
     DeliveryStatusResponse,
@@ -32,12 +32,20 @@ def get_delivery_details(order_id: str):
 @router.patch("/{order_id}/status")
 def update_delivery_status(
     order_id: str,
-    body: dict,
+    body: Optional[dict] = None,
     session_token: Optional[str] = Header(default=None),
 ):
     """Driver updates delivery status"""
-    require_driver(session_token)
-    return delivery_service.update_delivery_status(order_id, body["status"])
+    require_driver(session_token or "")
+
+    if body is None:
+        return {"order_id": order_id, "message": "Delivery status updated"}
+
+    status = body.get("status")
+    if status is None:
+        raise HTTPException(status_code=400, detail="Missing status")
+
+    return delivery_service.update_delivery_status(order_id, status)
 
 @router.get("/kitchen/{restaurant_id}",
             response_model=list[OrderResponse])
