@@ -17,3 +17,12 @@ class DeliveryDetailsResponse(BaseModel):
     delivery_method: DeliveryMethod
     delivery_distance: float
     route_taken: str
+
+class AssignedDeliveryResponse(BaseModel):
+    order_id: str
+    customer_address: str
+    customer_phone: str
+    driver_name: str
+    delivery_method: DeliveryMethod
+    status: str
+    estimated_arrival: str
