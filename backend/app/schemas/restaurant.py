@@ -12,7 +12,7 @@ class RestaurantOut(BaseModel):
     address: str
     rating: int = Field(ge=1, le=5)
     opening_hours: str
-    cuisinie_type: Optional[str] = None
+    cuisine_type: Optional[str] = None
     menu: List[MenuItemOut] = []
 
 class RestaurantCreate(BaseModel):
