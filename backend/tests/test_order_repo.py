@@ -148,19 +148,19 @@ def test_update_order_record_updates_only_provided_scalar_fields():
         {
             "status": "Cooking",
             "delivery_address": "456 New St",
-            "subtotal": 25.0,
-            "tax": 2.5,
-            "delivery_fee": 5,
-            "total": 32.5,
+            "subtotal": 25.00,
+            "tax": 2.50,
+            "delivery_fee": 5.00,
+            "total": 32.50,
         },
     )
 
     assert result["status"] == "Cooking"
     assert result["delivery_address"] == "456 New St"
-    assert result["subtotal"] == "25.0"
-    assert result["tax"] == "2.5"
-    assert result["delivery_fee"] == "5"
-    assert result["total"] == "32.5"
+    assert result["subtotal"] == "25.00"
+    assert result["tax"] == "2.50"
+    assert result["delivery_fee"] == "5.00"
+    assert result["total"] == "32.50"
     assert result["customer_id"] == "customer-1"
     assert result["restaurant_id"] == 5
     assert result["delivery_method"] == "walk"
@@ -255,7 +255,7 @@ def test_set_order_status_updates_status():
 
     assert result["status"] == "Delivered"
 
-
+ 
 def test_set_order_status_returns_none_for_missing_order_id():
     """Should return None when the order does not exist."""
     result = order_repo.set_order_status("missing", "Delivered")
