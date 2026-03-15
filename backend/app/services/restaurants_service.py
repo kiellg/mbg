@@ -23,6 +23,8 @@ from backend.app.repositories.restaurant_repo import (
     delete_menu_item,
     search_restaurant_by_name,
     search_menu_items_by_name,
+    filter_restaurants_by_cuisine,
+    filter_menu_items,
 )
 from backend.app.utils.formatting import format_cad_from_cents
 
@@ -94,13 +96,18 @@ def delete_menu_item_by_id(restaurant_id: int, item_id: int) -> None:
 
 def create_new_restaurant(item: RestaurantCreate, owner_id: str) -> dict:
     """Create a new restaurant record"""
-    return create_restaurant(
-        name=item.name,
-        address=item.address,
-        rating=item.rating,
-        opening_hours=item.opening_hours,
-        owner_id=owner_id,
-    )
+    args = {
+        "name": item.name,
+        "address": item.address,
+        "rating": item.rating,
+        "opening_hours": item.opening_hours,
+        "owner_id": owner_id,
+    }
+
+    if item.cuisine_type is not None:
+        args["cuisine_type"] = item.cuisine_type
+
+    return create_restaurant(**args)
 
 def add_menu_item(restaurant_id: int, item: MenuItemCreate) -> dict:
     """Add a new menu item to a restaurant"""
@@ -146,3 +153,28 @@ def search_menu_items(query: str) -> list[MenuItemSearchResult]:
         MenuItemSearchResult(**item)
         for item in results
     ]
+
+def filter_restaurants(cuisine_types: list[str] | None):
+    """Filter restaurants by cuisine type"""
+    return filter_restaurants_by_cuisine(cuisine_types)
+
+def filter_menu_items_service(
+        restaurant_id: int,
+        categories: list[int] | None,
+        dietary_tags: list[str] | None,
+        min_price: int | None,
+        max_price: int | None,
+):
+    """Filter menu items by category, dietary tags, and price"""
+    record = get_restaurant_record(restaurant_id)
+
+    if record is None:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+
+    return filter_menu_items(
+        restaurant_id,
+        categories,
+        dietary_tags,
+        min_price,
+        max_price,
+    )

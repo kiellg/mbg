@@ -1,4 +1,6 @@
 """Repository functions for restaurant data management"""
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-positional-arguments
 
 import copy
 from typing import Dict, Any, List, Optional
@@ -17,7 +19,8 @@ def create_restaurant(
     address: str,
     rating: Optional[int],
     opening_hours: str,
-    owner_id: int,
+    owner_id: str,
+    cuisine_type: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Create and store a new restaurant record"""
     new_id = max(_DB.keys(), default=0) + 1
@@ -28,6 +31,7 @@ def create_restaurant(
         "rating": rating,
         "opening_hours": opening_hours,
         "owner_id": owner_id,
+        "cuisine_type": cuisine_type,
         "menu": [],
     }
     _DB[new_id] = restaurant
@@ -158,5 +162,61 @@ def search_menu_items_by_name(query: str) -> List[Dict[str, Any]]:
                     "restaurant_id": restaurant["id"],
                     "restaurant_name": restaurant["name"],
                 })
+
+    return results
+
+def filter_restaurants_by_cuisine(
+        cuisine_types: list[str] | None,
+) -> List[Dict[str, Any]]:
+    """Return restaurants that match cuisine filters"""
+    if not cuisine_types:
+        return list(_DB.values())
+
+    results = []
+
+    for restaurant in _DB.values():
+        cuisine = restaurant.get("cuisine_type")
+
+        if cuisine in cuisine_types:
+            results.append(restaurant)
+
+    return results
+
+def filter_menu_items(
+        restaurant_id: int,
+        categories: list[int] | None,
+        dietary_tags: list[str] | None,
+        min_price: int | None,
+        max_price: int | None,
+) -> List[Dict[str, Any]]:
+    """Return menu items that match filter conditions"""
+    restaurant = _DB.get(restaurant_id)
+
+    if not restaurant:
+        return []
+
+    results = []
+
+    for item in restaurant.get("menu", []):
+        if categories:
+            cat = item.get("category") or {}
+            if cat.get("id") not in categories:
+                continue
+
+        if dietary_tags:
+            if item.get("dietary_tag") not in dietary_tags:
+                continue
+
+        cents = item.get("price_cents")
+
+        if min_price is not None and cents is not None:
+            if cents < min_price:
+                continue
+
+        if max_price is not None and cents is not None:
+            if cents > max_price:
+                continue
+
+        results.append(item)
 
     return results

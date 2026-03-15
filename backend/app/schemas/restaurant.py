@@ -12,6 +12,7 @@ class RestaurantOut(BaseModel):
     address: str
     rating: int = Field(ge=1, le=5)
     opening_hours: str
+    cuisine_type: Optional[str] = None
     menu: List[MenuItemOut] = []
 
 class RestaurantCreate(BaseModel):
@@ -20,6 +21,7 @@ class RestaurantCreate(BaseModel):
     address: str = Field(..., min_length=1)
     rating: Optional[int] = Field(None, ge=1, le=5)
     opening_hours: str = ""
+    cuisine_type: Optional[str] = None
 
 class RestaurantUpdate(BaseModel):
     """Schema for updating restaurant details"""
