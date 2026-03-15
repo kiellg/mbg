@@ -1,12 +1,13 @@
 """Service layer for delivery status and details"""
 from fastapi import HTTPException
-from backend.app.repositories import order_repo
+from backend.app.repositories import order_repo, restaurant_repo
 from backend.app.schemas.delivery import (
     DeliveryStatusResponse,
     DeliveryDetailsResponse,
     AssignedDeliveryResponse
 )
 from backend.app.schemas.order import DeliveryMethod, OrderStatus
+from backend.app.services.order_service import _build_order_response
 
 VALID_TRANSITIONS = {
     OrderStatus.PENDING: [OrderStatus.COOKING, OrderStatus.CANCELLED],
@@ -78,4 +79,23 @@ def get_assigned_deliveries(driver_id: str) -> list[AssignedDeliveryResponse]:
             estimated_arrival=order.get("delivery_time", ""),
         )
         for order in orders
+    ]
+
+def get_kitchen_queue(restaurant_id: int, manager_id: str) -> list[OrderResponse]:
+    """Return Cooking orders for a specific restaurant."""
+    restaurant = restaurant_repo.get_restaurant_record(restaurant_id)
+    if restaurant is None:
+        raise HTTPException(status_code=404,
+                            detail="Restaurant not found")
+
+    if restaurant.get("owner_id") != manager_id:
+        raise HTTPException(status_code=403,
+                            detail="Not authorized to view this restaurant's orders")
+    
+    all_orders = order_repo.list_order_records()
+    return [
+        _build_order_response(order)
+        for order in all_orders
+        if order["status"] == "Cooking"
+        and order["restaurant_id"] == restaurant_id
     ]
