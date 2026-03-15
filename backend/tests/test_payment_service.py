@@ -172,8 +172,8 @@ def test_process_payment_raises_404_if_order_not_found(mock_order_repo):
     assert exc.value.status_code == 404
 
 @patch("backend.app.services.payment_service.order_repo")
-def test_process_payment_raises_404_if_customer_is_wrong(mock_order_repo):
-    """Should raise 404 when the customer is wrong."""
+def test_process_payment_raises_403_if_customer_is_wrong(mock_order_repo):
+    """Should raise 403 when the customer is wrong."""
     mock_order_repo.get_order_record.return_value = FAKE_ORDER
 
     with pytest.raises(HTTPException) as exc:
