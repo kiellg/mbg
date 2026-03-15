@@ -1,7 +1,7 @@
 """Service layer for delivery status and details"""
 from fastapi import HTTPException
 from backend.app.repositories import order_repo
-from backend.app.schemas.delivery import DeliveryStatusResponse, DeliveryDetailsResponse
+from backend.app.schemas.delivery import DeliveryStatusResponse, DeliveryDetailsResponse, AssignedDeliveryResponse
 from backend.app.schemas.order import DeliveryMethod, OrderStatus
 
 VALID_TRANSITIONS = {
@@ -57,3 +57,19 @@ def update_delivery_status(order_id: str, new_status: str) -> dict:
 
     order_repo.set_order_status(order_id, new_status)
     return {"order_id": order_id, "status": new_status}
+
+def get_assigned_deliveries(driver_name: str) -> list[AssignedDeliveryResponse]:
+    """Return all orders assigned to the requesting driver"""
+    orders = order_repo.get_orders_assigned_to_driver(driver_name)
+    return [
+        AssignedDeliveryResponse(
+            order_id=order["order_id"],
+            customer_address=order["delivery_address"],
+            customer_phone=order.get("customer_phone", ""),
+            driver_name=order["driver_name"],
+            delivery_method=DeliveryMethod(order.get("delivery_method", "walk")),
+            status=order["status"],
+            estimated_arrival=order.get("delivery_time", ""),
+        )
+        for order in orders
+    ]
