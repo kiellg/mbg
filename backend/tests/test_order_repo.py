@@ -255,7 +255,7 @@ def test_set_order_status_updates_status():
 
     assert result["status"] == "Delivered"
 
- 
+
 def test_set_order_status_returns_none_for_missing_order_id():
     """Should return None when the order does not exist."""
     result = order_repo.set_order_status("missing", "Delivered")
