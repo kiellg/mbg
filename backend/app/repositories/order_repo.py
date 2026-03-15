@@ -102,13 +102,13 @@ def update_order_record(order_id: str, patch: Dict[str, Any]) -> Optional[Dict[s
     if "delivery_method" in patch:
         order["delivery_method"] = patch["delivery_method"]
     if "subtotal" in patch:
-        order["subtotal"] = str(patch["subtotal"])
+        order["subtotal"] = f"{patch['subtotal']:.2f}"
     if "tax" in patch:
-        order["tax"] = str(patch["tax"])
+        order["tax"] = f"{patch['tax']:.2f}"
     if "delivery_fee" in patch:
-        order["delivery_fee"] = str(patch["delivery_fee"])
+        order["delivery_fee"] = f"{patch['delivery_fee']:.2f}"
     if "total" in patch:
-        order["total"] = str(patch["total"])
+        order["total"] = f"{patch['total']:.2f}"
 
     if "items" in patch:
         replaced_items: List[Dict[str, Any]] = []
