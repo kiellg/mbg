@@ -19,6 +19,7 @@ class DeliveryDetailsResponse(BaseModel):
     route_taken: str
 
 class AssignedDeliveryResponse(BaseModel):
+    """Response schema for orders assigned to a driver"""
     order_id: str
     customer_address: str
     customer_phone: str

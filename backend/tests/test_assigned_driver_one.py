@@ -1,7 +1,7 @@
 # pylint: disable=protected-access
 """Unit tests for get_orders_assigned_to_driver in order_repo"""
-import pytest
 from unittest.mock import patch
+import pytest
 from backend.app.data import order_data
 from backend.app.repositories import order_repo
 
