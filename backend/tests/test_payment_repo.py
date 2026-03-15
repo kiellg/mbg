@@ -106,4 +106,5 @@ def test_list_payment_records_returns_all():
     assert len(records) == 2
 
 def test_list_payment_records_returns_empty_when_no_records():
+    """Should return an empty list when no payments exist."""
     assert not list_payment_records()
