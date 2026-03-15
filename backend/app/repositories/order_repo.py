@@ -1,6 +1,6 @@
 """Repository functions for order records."""
 
-# pylint: disable=protected-access
+# pylint: disable=protected-access, too-many-branches
 from typing import Any, Dict, List, Optional
 import shortuuid
 
@@ -36,6 +36,7 @@ def create_order_record(# pylint: disable=too-many-arguments, too-many-positiona
     items: List[Dict[str, Any]],
     delivery_method: str = "walk",
     status: str = "Pending",
+    customer_phone: str = "",
 ) -> Dict[str, Any]:
     """Create and store a new order record.
 
@@ -67,6 +68,7 @@ def create_order_record(# pylint: disable=too-many-arguments, too-many-positiona
         "customer_id": customer_id,
         "restaurant_id": restaurant_id,
         "delivery_address": delivery_address,
+        "customer_phone": customer_phone,
         "delivery_method": delivery_method,
         "subtotal": "0.00",
         "tax": "0.00",
@@ -77,6 +79,7 @@ def create_order_record(# pylint: disable=too-many-arguments, too-many-positiona
         "delivery_time_actual": 0.0,
         "delivery_delay": 0.0,
         "delivery_distance": 0.0,
+        "driver_id": "",
         "driver_name": "",
         "route_taken": "",
     }
@@ -109,6 +112,8 @@ def update_order_record(order_id: str, patch: Dict[str, Any]) -> Optional[Dict[s
         order["delivery_fee"] = str(patch["delivery_fee"])
     if "total" in patch:
         order["total"] = str(patch["total"])
+    if "customer_phone" in patch:
+        order["customer_phone"] = patch["customer_phone"]
 
     if "items" in patch:
         replaced_items: List[Dict[str, Any]] = []
@@ -141,3 +146,11 @@ def set_order_status(order_id: str, new_status: str) -> Optional[Dict[str, Any]]
 def cancel_order_record(order_id: str) -> Optional[Dict[str, Any]]:
     """Set an order status to Cancelled."""
     return set_order_status(order_id, "Cancelled")
+
+def get_orders_assigned_to_driver(driver_id: str) -> List[Dict[str, Any]]:
+    """Return all orders assigned to a specific driver."""
+    return [
+        order for order in order_data._ORDERDB.values()
+        if order.get("driver_id") == driver_id
+        and order.get("status") == "Out for Delivery"
+    ]

@@ -14,6 +14,18 @@ class DeliveryDetailsResponse(BaseModel):
     """Response schema for driver and delivery details"""
     order_id: str
     driver_name: str
+    driver_id: str
     delivery_method: DeliveryMethod
     delivery_distance: float
     route_taken: str
+
+class AssignedDeliveryResponse(BaseModel):
+    """Response schema for orders assigned to a driver"""
+    order_id: str
+    customer_address: str
+    customer_phone: str
+    driver_name: str
+    driver_id: str
+    delivery_method: DeliveryMethod
+    status: str
+    estimated_arrival: str
