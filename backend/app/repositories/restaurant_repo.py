@@ -122,3 +122,31 @@ def reset_restaurants() -> None:
     """Reset the simulated restaurant DB for testing only"""
     _DB.clear()
     _DB.update(copy.deepcopy(_SEED))
+
+def search_restaurant_by_name(query: str) -> List[Dict[str, Any]]:
+    """Return restaurants whose names partially match the search query"""
+    query_lower = query.lower()
+    results = []
+
+    for restaurant in _DB.values():
+        if query_lower in restaurant["name"].lower():
+            results.append(restaurant)
+
+    return results
+
+def search_menu_items_by_name(query: str) -> List[Dict[str, Any]]:
+    """Return menu items whose names partially match the search query"""
+    query_lower = query.lower()
+    results = []
+
+    for restaurant in _DB.values():
+        for item in restaurant.get("menu", []):
+            if query_lower in item["name"].lower():
+                results.append({
+                    "id": item["id"],
+                    "name": item["name"],
+                    "restaurant_id": restaurant["id"],
+                    "restaurant_name": restaurant["name"],
+                })
+
+    return results
