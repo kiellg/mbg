@@ -4,7 +4,8 @@
 from fastapi import APIRouter, Depends, status
 
 from backend.app.dependencies import get_current_user
-from backend.app.schemas.payment import PaymentRequest, PaymentResponse
+from backend.app.schemas.payment import PaymentRequest, PaymentResponse, PaymentReceipt
+from backend.app.services import payment_service
 
 router = APIRouter(prefix="/payments", tags=["payments"])
 
@@ -15,9 +16,26 @@ router = APIRouter(prefix="/payments", tags=["payments"])
 def process_payment(
     order_id: str,
     payload: PaymentRequest,
-    current_user: Depends(get_current_user),
+    current_user: dict = Depends(get_current_user),
 ):
     """Customer submits payment details to finalize their order"""
 
-    return NotImplementedError("""Payment service is not yet implemented
-                               and will be added in SR44""")
+    return payment_service.process_payment(
+        order_id=order_id,
+        customer_id=current_user["user_id"],
+        payload=payload,
+    )
+
+@router.get(
+    "/{order_id}/receipt",
+    response_model=PaymentReceipt,
+)
+def get_receipt(
+    order_id: str,
+    current_user: dict = Depends(get_current_user),
+):
+    """Customer retrieves their receipt after a successful payment."""
+    return payment_service.get_receipt(
+        order_id=order_id,
+        customer_id=current_user["user_id"]
+    )
