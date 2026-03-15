@@ -16,7 +16,7 @@ router = APIRouter(prefix="/orders", tags=["orders"])
 
 # @router.patch("/{order_id}/status")
 # def update_delivery_status(
-#     order_id: str, 
+#     order_id: str,
 #     session_token: Optional[str] = Header(default=None),
 # ):
 #     """Drivers can update delivery status"""

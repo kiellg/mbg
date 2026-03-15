@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, Header, HTTPException
 
 from backend.app.schemas.delivery import DeliveryStatusResponse, DeliveryDetailsResponse
-import backend.app.services.delivery_service as delivery_service
+from backend.app.services import delivery_service
 from backend.app.services.role_service import require_driver
 
 router = APIRouter(prefix="/orders", tags=["orders"])

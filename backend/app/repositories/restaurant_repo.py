@@ -1,4 +1,6 @@
 """Repository functions for restaurant data management"""
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-positional-arguments
 
 import copy
 from typing import Dict, Any, List, Optional

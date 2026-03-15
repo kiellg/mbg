@@ -96,13 +96,13 @@ def delete_menu_item_by_id(restaurant_id: int, item_id: int) -> None:
 
 def create_new_restaurant(item: RestaurantCreate, owner_id: int) -> dict:
     """Create a new restaurant record"""
-    args = dict(
-        name=item.name,
-        address=item.address,
-        rating=item.rating,
-        opening_hours=item.opening_hours,
-        owner_id=owner_id,
-    )
+    args = {
+        "name": item.name,
+        "address": item.address,
+        "rating": item.rating,
+        "opening_hours": item.opening_hours,
+        "owner_id": owner_id,
+    }
 
     if item.cuisine_type is not None:
         args["cuisine_type"] = item.cuisine_type
