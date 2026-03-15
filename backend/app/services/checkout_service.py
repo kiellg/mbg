@@ -82,10 +82,11 @@ def _validate_cart_items(cart: dict) -> None:
             cart_item["menu_item_id"]
         )
         if menu_item is None or not menu_item.get("is_available", False):
-            unavailable.append(cart_item["menu_item_id"])
+            name = menu_item["name"] if menu_item else f"item {cart_item['menu_item_id']}"
+            unavailable.append(name)
 
     if unavailable:
         raise HTTPException(
             status_code=400,
-            detail=f"The following items are no longer available: {unavailable}"
+            detail=f"The following items are no longer available: {', '.join(unavailable)}"
         )
