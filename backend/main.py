@@ -17,6 +17,8 @@ app.include_router(carts_router)
 app.include_router(orders_router)
 app.include_router(profile_router)
 app.include_router(checkout_router)
+app.include_router(deliveries_router)
+app.include_router(payment_router)
 
 @app.get("/health")
 def health():
