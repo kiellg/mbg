@@ -3,8 +3,8 @@ from typing import Optional
 from fastapi import APIRouter, Header
 
 from backend.app.schemas.delivery import (
-    DeliveryStatusResponse, 
-    DeliveryDetailsResponse, 
+    DeliveryStatusResponse,
+    DeliveryDetailsResponse,
     AssignedDeliveryResponse
 )
 from backend.app.services import delivery_service

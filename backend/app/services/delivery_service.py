@@ -2,8 +2,8 @@
 from fastapi import HTTPException
 from backend.app.repositories import order_repo
 from backend.app.schemas.delivery import (
-    DeliveryStatusResponse, 
-    DeliveryDetailsResponse, 
+    DeliveryStatusResponse,
+    DeliveryDetailsResponse,
     AssignedDeliveryResponse
 )
 from backend.app.schemas.order import DeliveryMethod, OrderStatus
