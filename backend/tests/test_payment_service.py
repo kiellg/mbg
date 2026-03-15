@@ -182,3 +182,19 @@ def test_process_payment_raises_404_if_customer_is_wrong(mock_order_repo):
             payload=VALID_PAYLOAD,
         )
     assert exc.value.status_code == 403
+
+@patch("backend.app.services.payment_service.order_repo")
+def test_process_payment_raises_400_if_order_not_pending(mock_order_repo):
+    """SHould raise 400 when the order is not in Pending state."""
+    mock_order_repo.get_order_record.return_value = {
+        **FAKE_ORDER,
+        "status": "Cooking",
+    }
+
+    with pytest.raises(HTTPException) as exc:
+        payment_service.process_payment(
+            order_id="abc1234",
+            customer_id=CUSTOMER_ID,
+            payload=VALID_PAYLOAD,
+        )
+    assert exc.value.status_code == 400
