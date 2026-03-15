@@ -92,7 +92,7 @@ def delete_menu_item_by_id(restaurant_id: int, item_id: int) -> None:
     if not removed:
         raise HTTPException(status_code=404, detail="Menu item not found")
 
-def create_new_restaurant(item: RestaurantCreate, owner_id: int) -> dict:
+def create_new_restaurant(item: RestaurantCreate, owner_id: str) -> dict:
     """Create a new restaurant record"""
     return create_restaurant(
         name=item.name,
