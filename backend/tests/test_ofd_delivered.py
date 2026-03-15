@@ -1,4 +1,4 @@
-"""Integration tests for PATCH /orders/{order_id}/status/out-for-delivery and /delivered endpoints"""
+"""Integration tests for PATCH /orders/{order_id}/status/out-for-delivery and /delivered"""
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 from backend.main import app
