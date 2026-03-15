@@ -10,6 +10,7 @@ _SEED: Dict[int, Dict[str, Any]] = {
         "address": "67 Bernard Ave, Kelowna, BC",
         "rating": 4,
         "opening_hours": "Mon-Sun 11:30-22:00",
+        "cuisine_type": "american",
         "menu": [
             {
                 "id": 1,
@@ -63,6 +64,7 @@ _SEED: Dict[int, Dict[str, Any]] = {
         "address": "123 Sushi St, Vancouver, BC",
         "rating": 5,
         "opening_hours": "Mon-Sun 12:00-23:00",
+        "cuisine_type": "japanese",
         "menu": [
             {
                 "id": 1,
