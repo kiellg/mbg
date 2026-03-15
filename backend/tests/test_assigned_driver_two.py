@@ -19,6 +19,7 @@ FAKE_ASSIGNED_ORDER = {
 @patch("backend.app.services.role_service.get_user_role")
 @patch("backend.app.services.role_service.get_current_user_session")
 def test_get_assigned_deliveries_returns_200(mock_get_session, mock_get_role, mock_get_user):
+    """GET /assigned should return 200 with list of assigned orders for the driver"""
     mock_get_session.return_value = {"user_id": "driver-123"}
     mock_get_role.return_value = "driver"
     mock_get_user.return_value = {"name": "Driver 1"}

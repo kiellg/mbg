@@ -2,7 +2,11 @@
 from typing import Optional
 from fastapi import APIRouter, Header
 
-from backend.app.schemas.delivery import DeliveryStatusResponse, DeliveryDetailsResponse, AssignedDeliveryResponse
+from backend.app.schemas.delivery import (
+    DeliveryStatusResponse, 
+    DeliveryDetailsResponse, 
+    AssignedDeliveryResponse
+)
 from backend.app.services import delivery_service
 from backend.app.services.role_service import require_driver
 from backend.app.repositories.user_repo import get_user_by_id
@@ -11,6 +15,7 @@ router = APIRouter(prefix="/orders", tags=["orders"])
 
 @router.get("/assigned", response_model=list[AssignedDeliveryResponse])
 def get_assigned_deliveries(session_token: Optional[str] = Header(default=None)):
+    """Driver views all orders currently assigned to them"""
     user = require_driver(session_token)
     user_id = user["user_id"]
     user_record = get_user_by_id(user_id)
