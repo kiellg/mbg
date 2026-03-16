@@ -2,6 +2,7 @@
 from unittest.mock import patch
 import pytest
 from fastapi import HTTPException
+from backend.app.data.notification_data import NOTIFICATIONS
 from backend.app.services import delivery_service
 from backend.app.schemas.order import OrderStatus, DeliveryMethod
 
@@ -16,6 +17,11 @@ FAKE_ORDER = {
     "delivery_distance": 3.5,
     "route_taken": "Main St -> Oak Ave",
 }
+
+
+def setup_function():
+    """Reset notification state before each test."""
+    NOTIFICATIONS.clear()
 
 @patch("backend.app.services.delivery_service.order_repo")
 def test_get_delivery_status_valid(mock_order_repo):
@@ -61,3 +67,43 @@ def test_get_delivery_details_not_found(mock_order_repo):
         delivery_service.get_delivery_details("nonexistent")
 
     assert exc.value.status_code == 404
+
+
+@patch("backend.app.services.delivery_service.notification_service")
+@patch("backend.app.services.delivery_service.order_repo")
+def test_update_delivery_status_creates_notification_for_valid_transition(
+    mock_order_repo,
+    mock_notification_service,
+):
+    """Valid delivery status updates should create a notification."""
+    mock_order_repo.get_order_record.return_value = FAKE_ORDER
+    mock_order_repo.set_order_status.return_value = {**FAKE_ORDER, "status": "Cooking"}
+
+    result = delivery_service.update_delivery_status("abc1234", "Cooking")
+
+    assert result["status"] == "Cooking"
+    mock_order_repo.set_order_status.assert_called_once_with("abc1234", "Cooking")
+    mock_notification_service.create_order_status_changed_notification.assert_called_once_with(
+        "abc1234",
+        "Cooking",
+    )
+
+
+@patch("backend.app.services.delivery_service.notification_service")
+@patch("backend.app.services.delivery_service.order_repo")
+def test_update_delivery_status_invalid_transition_does_not_create_notification(
+    mock_order_repo,
+    mock_notification_service,
+):
+    """Invalid delivery transitions should not create a notification."""
+    mock_order_repo.get_order_record.return_value = {
+        **FAKE_ORDER,
+        "status": "Delivered",
+    }
+
+    with pytest.raises(HTTPException) as exc:
+        delivery_service.update_delivery_status("abc1234", "Pending")
+
+    assert exc.value.status_code == 400
+    mock_order_repo.set_order_status.assert_not_called()
+    mock_notification_service.create_order_status_changed_notification.assert_not_called()
