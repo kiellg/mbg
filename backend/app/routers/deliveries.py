@@ -8,7 +8,7 @@ from backend.app.schemas.delivery import (
     AssignedDeliveryResponse
 )
 from backend.app.services import delivery_service
-from backend.app.services.role_service import require_driver
+from backend.app.services.role_service import require_driver, require_manager
 from backend.app.schemas.order import OrderStatus
 
 router = APIRouter(prefix="/orders", tags=["orders"])
@@ -65,3 +65,12 @@ def mark_order_delivered(
     """Driver marks an order as Delivered"""
     require_driver(session_token)
     return delivery_service.update_delivery_status(order_id, OrderStatus.DELIVERED.value)
+
+@router.patch("/{order_id}/status/cancelled")
+def mark_order_cancelled(
+    order_id: str,
+    session_token: Optional[str] = Header(default=None),
+):
+    """Manager marks an order as Cancelled"""
+    require_manager(session_token)
+    return delivery_service.update_delivery_status(order_id, OrderStatus.CANCELLED.value)

@@ -9,9 +9,9 @@ from backend.app.schemas.delivery import (
 from backend.app.schemas.order import DeliveryMethod, OrderStatus
 
 VALID_TRANSITIONS = {
-    OrderStatus.PENDING: [OrderStatus.COOKING, OrderStatus.CANCELLED],
+    OrderStatus.PENDING: [OrderStatus.COOKING],
     OrderStatus.COOKING: [OrderStatus.OUT_FOR_DELIVERY, OrderStatus.CANCELLED],
-    OrderStatus.OUT_FOR_DELIVERY: [OrderStatus.DELIVERED, OrderStatus.CANCELLED],
+    OrderStatus.OUT_FOR_DELIVERY: [OrderStatus.DELIVERED],
     OrderStatus.DELIVERED: [],
     OrderStatus.CANCELLED: [],
 }
@@ -61,7 +61,11 @@ def update_delivery_status(order_id: str, new_status: str) -> dict:
         )
 
     order_repo.set_order_status(order_id, new_status)
-    return {"order_id": order_id, "status": new_status}
+
+    response = {"order_id": order_id, "status": new_status}
+    if next_status == OrderStatus.CANCELLED:
+        response["message"] = f"Order has been cancelled. Refund of ${order['total']} is coming."
+    return response
 
 def get_assigned_deliveries(driver_id: str) -> list[AssignedDeliveryResponse]:
     """Return all orders assigned to the requesting driver"""
