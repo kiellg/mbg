@@ -52,3 +52,13 @@ def get_payment_by_order_id(order_id: str) -> Optional[Dict[str, Any]]:
 def list_payment_records() -> List[Dict[str, Any]]:
     """Return all payment records"""
     return list(payment_data._PAYMENTDB.values())
+
+def create_card_token(card_number: str) -> str:
+    """Generate and store a token representing a card number."""
+    card_token = shortuuid.ShortUUID().random(length=12)
+    payment_data._TOKENDB[card_token] = card_number
+    return card_token
+
+def resolve_card_token(card_token: str) -> Optional[str]:
+    """Retrieve the card number associated with a token."""
+    return payment_data._TOKENDB.get(card_token)

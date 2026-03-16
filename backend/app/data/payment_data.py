@@ -3,3 +3,4 @@
 from typing import Any, Dict
 
 _PAYMENTDB: Dict[str, Dict[str, Any]] = {}
+_TOKENDB: Dict[str, str] = {}

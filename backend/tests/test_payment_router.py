@@ -11,7 +11,12 @@ from fastapi.testclient import TestClient
 
 from backend.app.dependencies import get_current_user
 from backend.main import app
-from backend.app.schemas.payment import PaymentReceipt, PaymentResponse, PaymentStatus
+from backend.app.schemas.payment import (
+    PaymentReceipt,
+    PaymentResponse,
+    PaymentStatus,
+    SavedPaymentMethod,
+)
 
 CUSTOMER_ID = "9c6dbfcb-72c5-4cc4-9f76-29200f0efda7"
 
@@ -47,6 +52,22 @@ VALID_PAYMENT_PAYLOAD = {
     "expiry_date": "12/99",
     "cvv": "123",
     "cardholder_name": "John Doe",
+}
+
+FAKE_SAVED_METHOD_RESPONSE = SavedPaymentMethod(
+    saved_method_id="sav1234",
+    last4="1121",
+    expiry_date="02/99",
+    cardholder_name="John Doe",
+    nickname="RBC Visa",
+)
+
+VALID_SAVE_PAYLOAD = {
+    "card_number": "1234567891011121",
+    "expiry_date": "02/99",
+    "cvv": "123",
+    "cardholder_name": "John Doe",
+    "nickname": "RBC Visa",
 }
 
 client = TestClient(app)
@@ -195,3 +216,89 @@ def test_get_receipt_raises_403_if_wrong_customer(mock_get_receipt):
     response = client.get("/payments/abc1234/receipt")
 
     assert response.status_code == 403
+
+# for POST /payments/methods
+@patch(f"{_SVC}.save_payment_method")
+def test_save_payment_method_returns_201(mock_save):
+    """Should return 201 with saved method details."""
+    mock_save.return_value = FAKE_SAVED_METHOD_RESPONSE
+
+    response = client.post("/payments/methods", json=VALID_SAVE_PAYLOAD)
+
+    assert response.status_code == 201
+    assert response.json()["last4"] == "1121"
+    assert response.json()["nickname"] == "RBC Visa"
+
+
+@patch(f"{_SVC}.save_payment_method")
+def test_save_payment_method_raises_400_for_invalid_card(mock_save):
+    """Should propagate 400 for invalid card details."""
+    mock_save.side_effect = HTTPException(
+        status_code=400, detail="Invalid card number. Must be exactly 16 digits."
+    )
+
+    response = client.post("/payments/methods", json=VALID_SAVE_PAYLOAD)
+
+    assert response.status_code == 400
+
+
+# for GET /payments/methods
+@patch(f"{_SVC}.get_saved_payment_methods")
+def test_get_saved_payment_methods_returns_200(mock_get):
+    """Should return 200 with list of saved methods."""
+    mock_get.return_value = [FAKE_SAVED_METHOD_RESPONSE]
+
+    response = client.get("/payments/methods")
+
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+    assert response.json()[0]["last4"] == "1121"
+
+
+@patch(f"{_SVC}.get_saved_payment_methods")
+def test_get_saved_payment_methods_returns_empty_list(mock_get):
+    """Should return 200 with empty list when no saved methods exist."""
+    mock_get.return_value = []
+
+    response = client.get("/payments/methods")
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+# for POST /payments/{order_id}/saved/{saved_method_id}
+@patch(f"{_SVC}.process_payment_with_saved_methods")
+def test_process_payment_with_saved_method_returns_201(mock_process):
+    """Should return 201 with Accepted status using saved method."""
+    mock_process.return_value = FAKE_PAYMENT_RESPONSE
+
+    response = client.post("/payments/abc1234/saved/sav1234")
+
+    assert response.status_code == 201
+    assert response.json()["status"] == "Accepted"
+
+
+@patch(f"{_SVC}.process_payment_with_saved_methods")
+def test_process_payment_with_saved_method_raises_404_if_not_found(mock_process):
+    """Should propagate 404 when saved method does not exist."""
+    mock_process.side_effect = HTTPException(
+        status_code=404, detail="Saved payment method not found."
+    )
+
+    response = client.post("/payments/abc1234/saved/whoisthis")
+
+    assert response.status_code == 404
+
+
+@patch(f"{_SVC}.process_payment_with_saved_methods")
+def test_process_payment_with_saved_method_passes_correct_args(mock_process):
+    """Should pass order_id, customer_id, and saved_method_id to the service."""
+    mock_process.return_value = FAKE_PAYMENT_RESPONSE
+
+    client.post("/payments/abc1234/saved/sav1234")
+
+    mock_process.assert_called_once_with(
+        order_id="abc1234",
+        customer_id=CUSTOMER_ID,
+        saved_method_id="sav1234",
+    )

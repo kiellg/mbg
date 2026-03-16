@@ -42,3 +42,21 @@ class PaymentReceipt(BaseModel):
     cardholder_name: str
     timestamp: datetime
     message: str = "Payment accepted. Your order is being prepared."
+
+class SavedPaymentMethod(BaseModel):
+    """A saved dummy payment method for reuse."""
+
+    saved_method_id: str
+    last4: str
+    expiry_date: str
+    cardholder_name: str
+    nickname: Optional[str] = None
+
+class SavedPaymentMethodRequest(BaseModel):
+    """Request payload for saving a payment method."""
+
+    card_number: str = Field(..., description="16 digit card number")
+    expiry_date: str = Field(..., description="Expiry date in MM/YY format")
+    cvv: str = Field(..., description="3 or 4 digit CVV")
+    cardholder_name: str = Field(..., description="Name on the card")
+    nickname: Optional[str] = Field(None, description="Optional nickname e.g. RBC Visa")
