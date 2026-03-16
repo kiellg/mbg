@@ -10,7 +10,12 @@ def test_filter_restaurants_router_returns_list():
     response = client.get("/restaurants/filter?cuisine_types=italian")
 
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+
+    data = response.json()
+    assert isinstance(data, list)
+
+    for restaurant in data:
+        assert restaurant["cuisine_type"] == "italian"
 
 def test_filter_restaurants_router_multiple_cuisines():
     """Router should accept multiple cuisine filters"""
