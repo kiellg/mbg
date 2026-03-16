@@ -187,9 +187,10 @@ def get_all_restaurants_paginated(page: int, limit: int):
 
 def get_restaurant_menu_paginated(restaurant_id: int, page: int, limit: int):
     """Fetch paginated menu items"""
-    record = get_restaurant_record(restaurant_id)
-
-    if record is None:
-        raise HTTPException(status_code=404, detail="Restaurant not found")
-
-    return get_menu_items_paginated(restaurant_id, page, limit)
+    try:
+        return get_menu_items_paginated(restaurant_id, page, limit)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=404,
+            detail="Restaurant not found"
+        ) from exc
