@@ -38,6 +38,7 @@ def test_delivery_details_response_valid():
     response = DeliveryDetailsResponse(
         order_id="abc1234",
         driver_name="John Doe",
+        driver_id="driver-123",
         delivery_method=DeliveryMethod.BIKE,
         delivery_distance=3.5,
         route_taken="Main St -> Oak Ave",
