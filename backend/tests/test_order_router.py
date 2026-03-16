@@ -1,4 +1,4 @@
-# pylint: disable=unused-argument
+# pylint: disable=unused-argument, duplicate-code
 """Unit tests for the pending order router endpoint."""
 
 from decimal import Decimal
