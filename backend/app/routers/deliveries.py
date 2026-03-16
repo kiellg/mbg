@@ -46,3 +46,22 @@ def update_delivery_status(
         raise HTTPException(status_code=400, detail="Missing status")
 
     return delivery_service.update_delivery_status(order_id, status)
+
+@router.patch("/{order_id}/status/out-for-delivery")
+def mark_order_out_for_delivery(
+    order_id: str,
+    session_token: Optional[str] = Header(default=None),
+):
+    """Driver marks an order as Out for Delivery"""
+    require_driver(session_token)
+    return delivery_service.update_delivery_status(order_id, OrderStatus.OUT_FOR_DELIVERY.value)
+
+
+@router.patch("/{order_id}/status/delivered")
+def mark_order_delivered(
+    order_id: str,
+    session_token: Optional[str] = Header(default=None),
+):
+    """Driver marks an order as Delivered"""
+    require_driver(session_token)
+    return delivery_service.update_delivery_status(order_id, OrderStatus.DELIVERED.value)
