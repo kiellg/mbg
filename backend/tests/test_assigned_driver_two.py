@@ -16,14 +16,14 @@ FAKE_ASSIGNED_ORDER = {
     "delivery_time": "30 mins",
 }
 
-@patch("backend.app.routers.deliveries.get_user_by_id")
 @patch("backend.app.services.role_service.get_user_role")
 @patch("backend.app.services.role_service.get_current_user_session")
-def test_get_assigned_deliveries_returns_200(mock_get_session, mock_get_role, mock_get_user):
+def test_get_assigned_deliveries_returns_200(
+    mock_get_session, mock_get_role
+):
     """GET /assigned should return 200 with list of assigned orders for the driver"""
     mock_get_session.return_value = {"user_id": "driver-123"}
     mock_get_role.return_value = "driver"
-    mock_get_user.return_value = {"name": "Driver 1"}
 
     with patch("backend.app.data.order_data._ORDERDB", {"abc1234": FAKE_ASSIGNED_ORDER}):
         response = client.get(
@@ -40,16 +40,14 @@ def test_get_assigned_deliveries_returns_200(mock_get_session, mock_get_role, mo
     assert data[0]["driver_name"] == "Driver 1"
     assert data[0]["status"] == "Out for Delivery"
 
-@patch("backend.app.routers.deliveries.get_user_by_id")
 @patch("backend.app.services.role_service.get_user_role")
 @patch("backend.app.services.role_service.get_current_user_session")
 def test_get_assigned_deliveries_returns_empty_list_when_no_assignments(
-    mock_get_session, mock_get_role, mock_get_user
+    mock_get_session, mock_get_role
 ):
     """GET /assigned should return empty list when driver has no assigned orders"""
     mock_get_session.return_value = {"user_id": "driver-123"}
     mock_get_role.return_value = "driver"
-    mock_get_user.return_value = {"name": "Driver 1"}
 
     with patch("backend.app.data.order_data._ORDERDB", {}):
         response = client.get(

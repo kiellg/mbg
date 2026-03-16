@@ -17,6 +17,7 @@ from backend.app.schemas.payment import (
     PaymentStatus,
     SavedPaymentMethod,
 )
+from backend.app.schemas.payment import PaymentReceipt, PaymentResponse, PaymentStatus
 
 CUSTOMER_ID = "9c6dbfcb-72c5-4cc4-9f76-29200f0efda7"
 

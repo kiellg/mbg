@@ -34,7 +34,7 @@ def checkout(cart_id: int,
     if cart["customer_id"] != customer_id:
         raise HTTPException(status_code=403, detail="Cart does not belong to the customer.")
 
-    if cart["checked_out"]:
+    if cart.get("checked_out", False):
         raise HTTPException(status_code=400, detail="Cart has already been checked out.")
 
     if not cart["items"]:
@@ -48,12 +48,14 @@ def checkout(cart_id: int,
     if not delivery_address:
         raise HTTPException(status_code=400, detail="Customer does not have a delivery address.")
 
+    validated_items = _validate_cart_items(cart)
+
     items = [
         OrderItemCreate(
             quantity=item["quantity"],
-            item_price=Decimal(item["unit_price_cents"]) / Decimal("100")
+            item_price=Decimal(item["price_cents"]) / Decimal("100")
         )
-        for item in cart["items"]
+        for item in validated_items
     ]
 
     payload = OrderCreate(
@@ -64,16 +66,15 @@ def checkout(cart_id: int,
         items=items,
     )
 
-    _validate_cart_items(cart)
-
     order = order_service.create_order(payload)
 
     cart_repo.mark_cart_checked_out(cart_id)
 
     return order
 
-def _validate_cart_items(cart: dict) -> None:
-    """Re-validate all cart items against current menu availability."""
+def _validate_cart_items(cart: dict) -> list[dict]:
+    """Re-validate cart items against current menu availability and pricing."""
+    validated_items = []
     unavailable = []
 
     for cart_item in cart["items"]:
@@ -84,9 +85,23 @@ def _validate_cart_items(cart: dict) -> None:
         if menu_item is None or not menu_item.get("is_available", False):
             name = menu_item["name"] if menu_item else f"item {cart_item['menu_item_id']}"
             unavailable.append(name)
+            continue
+
+        price_cents = menu_item.get("price_cents")
+        if price_cents is None or price_cents < 0:
+            raise HTTPException(status_code=500, detail="Invalid menu pricing data.")
+
+        validated_items.append(
+            {
+                "quantity": cart_item["quantity"],
+                "price_cents": price_cents,
+            }
+        )
 
     if unavailable:
         raise HTTPException(
             status_code=400,
             detail=f"The following items are no longer available: {', '.join(unavailable)}"
         )
+
+    return validated_items

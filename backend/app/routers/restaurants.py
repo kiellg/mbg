@@ -2,7 +2,7 @@
 
 from typing import Any, Optional, Dict
 
-from fastapi import APIRouter, Header, Request, status
+from fastapi import APIRouter, Header, Request, status, Query
 
 from backend.app.schemas.restaurant import (
     RestaurantOut, RestaurantCreate, RestaurantUpdate,
@@ -20,6 +20,7 @@ from backend.app.services.restaurants_service import (
     delete_menu_item_by_id,
     search_restaurant,
     search_menu_items,
+    filter_restaurants,
 )
 from backend.app.services.role_service import require_manager
 from backend.app.data.categories_data import VALID_CATEGORIES, VALID_DIETARY_TAGS
@@ -131,3 +132,8 @@ def search_restaurants_endpoint(q: str):
 def search_menu_items_endpoint(q: str):
     """Endpoint to search menu items by name"""
     return search_menu_items(q)
+
+@router.get("/filter")
+def filter_restaurants_endpoint(cuisine_types: Optional[list[str]] = Query(None)):
+    """Endpoint to filter restaurants by cuisine type"""
+    return filter_restaurants(cuisine_types)

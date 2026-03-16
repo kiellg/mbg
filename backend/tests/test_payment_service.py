@@ -258,6 +258,14 @@ def test_get_receipt_raises_404_if_payment_declined(mock_order_repo, mock_paymen
     assert exc.value.status_code == 404
 
 @patch("backend.app.services.payment_service.order_repo")
+def test_get_receipt_raises_404_if_order_not_found(mock_order_repo):
+    """Should raise 404 when the order is not found."""
+    mock_order_repo.get_order_record.return_value = None
+    with pytest.raises(HTTPException) as exc:
+        payment_service.get_receipt(order_id="fake", customer_id=CUSTOMER_ID)
+    assert exc.value.status_code == 404
+
+@patch("backend.app.services.payment_service.order_repo")
 def test_get_receipt_raises_403_if_wrong_customer(mock_order_repo):
     """Should raise 403 when the order belongs to a different customer."""
     mock_order_repo.get_order_record.return_value = FAKE_ORDER
