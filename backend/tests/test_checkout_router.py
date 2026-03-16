@@ -71,6 +71,32 @@ def test_checkout_passes_correct_args_to_service(mock_user, mock_checkout):
 
 @patch("backend.app.routers.checkouts.checkout_service.checkout")
 @patch("backend.app.dependencies.get_current_user", return_value={"user_id": CUSTOMER_ID})
+def test_checkout_ignores_extra_pricing_fields_in_request(mock_user, mock_checkout):
+    """Test that extra pricing fields do not affect the checkout request."""
+    app.dependency_overrides[get_current_user] = override_get_current_user
+    mock_checkout.return_value = FAKE_ORDER_RESPONSE
+
+    response = client.post(
+        "/checkout/1",
+        json={
+            "delivery_method": "walk",
+            "subtotal": "0.01",
+            "total": "0.02",
+            "item_price": "0.03",
+        },
+    )
+
+    app.dependency_overrides.clear()
+    assert response.status_code == 201
+    mock_checkout.assert_called_once_with(
+        cart_id=1,
+        customer_id=CUSTOMER_ID,
+        delivery_method=DeliveryMethod.WALK,
+    )
+
+
+@patch("backend.app.routers.checkouts.checkout_service.checkout")
+@patch("backend.app.dependencies.get_current_user", return_value={"user_id": CUSTOMER_ID})
 def test_checkout_raises_404_if_cart_not_found(mock_user, mock_checkout):
     """Test that 404 from the service propagates through the router."""
     app.dependency_overrides[get_current_user] = override_get_current_user
