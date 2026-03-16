@@ -1,5 +1,5 @@
 """Repository layer for user data access"""
-#pylint: disable=too-many-positional-argument
+#pylint: disable=too-many-arguments,too-many-positional-arguments
 import uuid
 from datetime import datetime
 from typing import Dict, Any, Optional
