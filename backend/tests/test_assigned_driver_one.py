@@ -23,7 +23,7 @@ def test_get_orders_assigned_to_driver_returns_matching_orders():
     """Should return only orders assigned to the given driver"""
     order_data._ORDERDB["order-1"] = {
         "order_id": "order-1",
-        "driver_name": "Driver 1",
+        "driver_id": "Driver 1",
         "status": "Out for Delivery",
     }
     order_data._ORDERDB["order-2"] = {
