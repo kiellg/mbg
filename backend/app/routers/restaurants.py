@@ -2,7 +2,7 @@
 
 from typing import Any, Optional, Dict
 
-from fastapi import APIRouter, Header, Request, status
+from fastapi import APIRouter, Header, Request, status, Query
 
 from backend.app.schemas.restaurant import (
     RestaurantOut, RestaurantCreate, RestaurantUpdate,
@@ -134,6 +134,6 @@ def search_menu_items_endpoint(q: str):
     return search_menu_items(q)
 
 @router.get("/filter")
-def filter_restaurants_endpoint(cuisine_types: Optional[list[str]] = None):
+def filter_restaurants_endpoint(cuisine_types: Optional[list[str]] = Query(None)):
     """Endpoint to filter restaurants by cuisine type"""
     return filter_restaurants(cuisine_types)
