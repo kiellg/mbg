@@ -85,3 +85,10 @@ class MenuItemSearchResult(BaseModel):
     name: str
     restaurant_id: int
     restaurant_name: str
+
+class PaginatedRestaurants(BaseModel):
+    """Schema for paginated restaurant results"""
+    item: List[RestaurantOut]
+    page: int
+    limit: int
+    total: int
