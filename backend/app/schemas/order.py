@@ -85,6 +85,21 @@ class OrderUpdate(OrderSchemaModel):
     items: Optional[list[OrderItemCreate]] = None
 
 
+class PendingOrderItemUpdate(OrderSchemaModel):
+    """Schema for replacing a pending order item from the public API."""
+
+    menu_item_id: int
+    quantity: int = Field(..., ge=1)
+
+
+class PendingOrderUpdate(OrderSchemaModel):
+    """Schema for updating a pending order through the public API."""
+
+    delivery_address: Optional[str] = None
+    delivery_method: Optional[DeliveryMethod] = None
+    items: Optional[list[PendingOrderItemUpdate]] = None
+
+
 class OrderResponse(OrderBase):
     """Schema for returning order details with cost breakdown."""
 
