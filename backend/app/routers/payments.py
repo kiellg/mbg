@@ -29,7 +29,7 @@ def save_payment_method(
         customer_id=current_user["user_id"],
         payload=payload,
     )
- 
+
 @router.get("/methods", response_model=list[SavedPaymentMethod])
 def get_saved_payment_methods(
     current_user: dict = Depends(get_current_user),

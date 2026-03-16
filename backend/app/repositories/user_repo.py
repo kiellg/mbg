@@ -1,10 +1,9 @@
 """Repository layer for user data access"""
-
+#pylint: disable=too-many-positional-argument
 import uuid
-import shortuuid
 from datetime import datetime
 from typing import Dict, Any, Optional
-
+import shortuuid
 from backend.app.data import users_data
 
 def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
@@ -186,7 +185,7 @@ def save_payment_method(
     customer = users_data.CUSTOMERS.get(customer_id)
     if customer is None:
         return None
-    
+
     method = {
         "saved_method_id": shortuuid.ShortUUID().random(length=7),
         "card_token": card_token,
@@ -198,7 +197,7 @@ def save_payment_method(
 
     if "saved_payment_methods" not in customer:
         customer["saved_payment_methods"] = []
-    
+
     customer["saved_payment_methods"].append(method)
     return method
 

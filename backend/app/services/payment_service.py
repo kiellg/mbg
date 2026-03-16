@@ -175,7 +175,7 @@ def save_payment_method(
 
     if method is None:
         raise HTTPException(status_code=404, detail="Customer profile not found.")
-    
+
     return SavedPaymentMethod(
         saved_method_id=method["saved_method_id"],
         last4=method["last4"],
@@ -203,6 +203,7 @@ def process_payment_with_saved_methods(
     customer_id: str,
     saved_method_id: str,
 ):
+    """Process payment using a previously saved payment method."""
     methods = user_repo.get_saved_payment_methods(customer_id)
     method = next(
         (m for m in methods if m["saved_method_id"] == saved_method_id), None

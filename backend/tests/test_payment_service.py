@@ -10,7 +10,6 @@ from fastapi import HTTPException
 from backend.app.schemas.payment import (
     PaymentRequest,
     PaymentStatus,
-    SavedPaymentMethod,
     SavedPaymentMethodRequest,
 )
 from backend.app.services import payment_service
