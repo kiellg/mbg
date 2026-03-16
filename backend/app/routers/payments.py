@@ -11,7 +11,6 @@ from backend.app.schemas.payment import (
     SavedPaymentMethod,
     SavedPaymentMethodRequest,
 )
-from backend.app.schemas.payment import PaymentRequest, PaymentResponse, PaymentReceipt
 from backend.app.services import payment_service
 
 router = APIRouter(prefix="/payments", tags=["payments"])
