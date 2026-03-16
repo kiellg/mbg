@@ -25,6 +25,8 @@ from backend.app.repositories.restaurant_repo import (
     search_menu_items_by_name,
     filter_restaurants_by_cuisine,
     filter_menu_items,
+    get_restaurants_paginated,
+    get_menu_items_paginated,
 )
 from backend.app.utils.formatting import format_cad_from_cents
 
@@ -178,3 +180,16 @@ def filter_menu_items_service(
         min_price,
         max_price,
     )
+
+def get_all_restaurants_paginated(page: int, limit: int):
+    """Fetch paginated restaurants"""
+    return get_restaurants_paginated(page, limit)
+
+def get_restaurant_menu_paginated(restaurant_id: int, page: int, limit: int):
+    """Fetch paginated menu items"""
+    record = get_restaurant_record(restaurant_id)
+
+    if record is None:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+
+    return get_menu_items_paginated(restaurant_id, page, limit)
