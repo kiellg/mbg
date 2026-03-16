@@ -32,7 +32,20 @@ from backend.app.utils.formatting import format_cad_from_cents
 
 def get_all_restaurants_list() -> list[RestaurantOut]:
     """Fetch all restaurants"""
-    return get_all_restaurants()
+    records = get_all_restaurants()
+
+    results = []
+
+    for record in records:
+        record = copy.deepcopy(record)
+        restaurant_id = record["id"]
+
+        for item in record.get("menu", []):
+            item["restaurant_id"] = restaurant_id
+
+        results.append(RestaurantOut(**record))
+
+    return results
 
 def get_restaurant_menu(restaurant_id: int) -> RestaurantOut:
     """Fetch restaurant data and process menu items for display"""
@@ -192,4 +205,9 @@ def get_restaurant_menu_paginated(restaurant_id: int, page: int, limit: int):
     if record is None:
         raise HTTPException(status_code=404, detail="Restaurant not found")
 
-    return get_menu_items_paginated(restaurant_id, page, limit)
+    result = get_menu_items_paginated(restaurant_id, page, limit)
+
+    for item in result["items"]:
+        item["restaurant_id"] = restaurant_id
+
+    return result
