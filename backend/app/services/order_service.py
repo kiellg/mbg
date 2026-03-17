@@ -11,6 +11,7 @@ from backend.app.schemas.order import (
     OrderItemResponse,
     OrderUpdate
 )
+from backend.app.services import notification_service
 from backend.app.services.pricing_service import PricingService
 
 def _validate_order_is_pending(order: dict) -> None:
@@ -98,6 +99,7 @@ def create_order(payload: OrderCreate) -> OrderResponse:
     if not stored_order:
         raise HTTPException(status_code=500, detail="Failed to update order")
 
+    notification_service.create_order_placed_notification(stored_order["order_id"])
     return _build_order_response(stored_order)
 
 def get_order(order_id: str) -> OrderResponse:
@@ -119,6 +121,7 @@ def update_order(order_id: str, payload: OrderUpdate) -> OrderResponse:
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 
+    previous_status = order["status"]
     patch: dict = {}
 
     if payload.status is not None:
@@ -145,6 +148,12 @@ def update_order(order_id: str, payload: OrderUpdate) -> OrderResponse:
     updated_order = order_repo.update_order_record(order_id, patch)
     if not updated_order:
         raise HTTPException(status_code=500, detail="Failed to update order")
+
+    if payload.status is not None and updated_order["status"] != previous_status:
+        notification_service.create_order_status_changed_notification(
+            updated_order["order_id"],
+            updated_order["status"],
+        )
     return _build_order_response(updated_order)
 
 def cancel_order(order_id: str) -> OrderResponse:
@@ -158,4 +167,9 @@ def cancel_order(order_id: str) -> OrderResponse:
     updated_order = order_repo.cancel_order_record(order_id)
     if not updated_order:
         raise HTTPException(status_code=500, detail="Failed to cancel order")
+
+    notification_service.create_order_status_changed_notification(
+        updated_order["order_id"],
+        updated_order["status"],
+    )
     return _build_order_response(updated_order)

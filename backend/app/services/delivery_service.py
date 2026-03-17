@@ -7,6 +7,7 @@ from backend.app.schemas.delivery import (
     AssignedDeliveryResponse
 )
 from backend.app.schemas.order import DeliveryMethod, OrderStatus
+from backend.app.services import notification_service
 
 VALID_TRANSITIONS = {
     OrderStatus.PENDING: [OrderStatus.COOKING],
@@ -60,7 +61,12 @@ def update_delivery_status(order_id: str, new_status: str) -> dict:
             detail=f"Cannot transition from {current.value} to {next_status.value}",
         )
 
-    order_repo.set_order_status(order_id, new_status)
+    updated_order = order_repo.set_order_status(order_id, new_status)
+    if updated_order:
+        notification_service.create_order_status_changed_notification(
+            updated_order["order_id"],
+            updated_order["status"],
+        )
 
     response = {"order_id": order_id, "status": new_status}
     if next_status == OrderStatus.CANCELLED:
