@@ -10,7 +10,9 @@ from backend.app.schemas.payment import (
     PaymentRequest,
     PaymentResponse,
     PaymentStatus,
+    PaymentReceipt,
 )
+from backend.app.services import notification_service
 
 def _validate_card_number(card_number: str) -> None:
     """Card number must be exactly 16 digits."""
@@ -121,4 +123,36 @@ def process_payment(
         cardholder_name=payload.cardholder_name,
     )
 
+    if status == PaymentStatus.ACCEPTED:
+        updated_order = order_repo.set_order_status(order_id, "Cooking")
+        if updated_order:
+            notification_service.create_order_status_changed_notification(
+                updated_order["order_id"],
+                updated_order["status"],
+            )
+
     return _build_payment_response(record)
+
+def get_receipt(order_id: str, customer_id: str) -> PaymentReceipt:
+    """Retrieve the payment receipt for a successfully paid order."""
+    order = order_repo.get_order_record(order_id)
+    if order is None:
+        raise HTTPException(status_code=404, detail="Order not found.")
+
+    if order["customer_id"] != customer_id:
+        raise HTTPException(status_code=403,
+                            detail="Not authorized to view this receipt.")
+
+    record = payment_repo.get_payment_by_order_id(order_id)
+    if record is None or record["status"] != PaymentStatus.ACCEPTED.value:
+        raise HTTPException(status_code=404,
+                            detail="No accepted payment found for this order.")
+
+    return PaymentReceipt(
+        payment_id=record["payment_id"],
+        order_id=order_id,
+        amount=Decimal(record["amount"]),
+        last4=record["last4"],
+        cardholder_name=record["cardholder_name"],
+        timestamp=datetime.fromisoformat(record["timestamp"]),
+    )

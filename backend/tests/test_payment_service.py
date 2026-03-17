@@ -7,6 +7,7 @@ from unittest.mock import patch
 import pytest
 from fastapi import HTTPException
 
+from backend.app.data.notification_data import NOTIFICATIONS
 from backend.app.schemas.payment import PaymentRequest, PaymentStatus
 from backend.app.services import payment_service
 
@@ -42,6 +43,11 @@ INVALID_PAYLOAD = PaymentRequest(
     cvv="123",
     cardholder_name="John Doe",
 )
+
+
+def setup_function():
+    """Reset notification state before each test."""
+    NOTIFICATIONS.clear()
 
 # for _validate_card_number
 def test_validate_card_number_accepts_16_digits():
@@ -122,11 +128,17 @@ def test_simulate_payments_declines_card_ending_in_0000():
     assert result == PaymentStatus.DECLINED
 
 # for process_payment
+@patch("backend.app.services.payment_service.notification_service")
 @patch("backend.app.services.payment_service.payment_repo")
 @patch("backend.app.services.payment_service.order_repo")
-def test_process_payment_accepted(mock_order_repo, mock_payment_repo):
+def test_process_payment_accepted(
+    mock_order_repo,
+    mock_payment_repo,
+    mock_notification_service,
+):
     """Should create a payment record and return Accepted status."""
     mock_order_repo.get_order_record.return_value = FAKE_ORDER
+    mock_order_repo.set_order_status.return_value = {**FAKE_ORDER, "status": "Cooking"}
     mock_payment_repo.create_payment_record.return_value = FAKE_PAYMENT_RECORD
 
     result = payment_service.process_payment(
@@ -138,10 +150,20 @@ def test_process_payment_accepted(mock_order_repo, mock_payment_repo):
     assert result.status == PaymentStatus.ACCEPTED
     assert result.last4 == "1234"
     mock_payment_repo.create_payment_record.assert_called_once()
+    mock_order_repo.set_order_status.assert_called_once_with("abc1234", "Cooking")
+    mock_notification_service.create_order_status_changed_notification.assert_called_once_with(
+        "abc1234",
+        "Cooking",
+    )
 
+@patch("backend.app.services.payment_service.notification_service")
 @patch("backend.app.services.payment_service.payment_repo")
 @patch("backend.app.services.payment_service.order_repo")
-def test_process_payment_declined(mock_order_repo, mock_payment_repo):
+def test_process_payment_declined(
+    mock_order_repo,
+    mock_payment_repo,
+    mock_notification_service,
+):
     """Should create a payment record and return Declined status."""
     mock_order_repo.get_order_record.return_value = FAKE_ORDER
     mock_payment_repo.create_payment_record.return_value = {
@@ -157,6 +179,8 @@ def test_process_payment_declined(mock_order_repo, mock_payment_repo):
     )
 
     assert result.status == PaymentStatus.DECLINED
+    mock_order_repo.set_order_status.assert_not_called()
+    mock_notification_service.create_order_status_changed_notification.assert_not_called()
 
 @patch("backend.app.services.payment_service.order_repo")
 def test_process_payment_raises_404_if_order_not_found(mock_order_repo):
@@ -199,3 +223,59 @@ def test_process_payment_raises_400_if_order_not_pending(mock_order_repo):
             payload=VALID_PAYLOAD,
         )
     assert exc.value.status_code == 400
+
+# for get_receipt
+@patch("backend.app.services.payment_service.payment_repo")
+@patch("backend.app.services.payment_service.order_repo")
+def test_get_receipt_returns_receipt_for_accepted_payment(mock_order_repo, mock_payment_repo):
+    """Should return a payment receipt for payment with Accepted status."""
+    mock_order_repo.get_order_record.return_value = FAKE_ORDER
+    mock_payment_repo.get_payment_by_order_id.return_value = FAKE_PAYMENT_RECORD
+
+    result = payment_service.get_receipt(
+        order_id="abc1234",
+        customer_id=CUSTOMER_ID,
+        )
+
+    assert result.payment_id == "visa123"
+    assert result.order_id == "abc1234"
+    assert result.last4 == "1234"
+    assert result.cardholder_name == "John Doe"
+    assert result.message == "Payment accepted. Your order is being prepared."
+
+@patch("backend.app.services.payment_service.payment_repo")
+@patch("backend.app.services.payment_service.order_repo")
+def test_get_receipt_raises_404_if_payment_declined(mock_order_repo, mock_payment_repo):
+    """Should raise 404 when the payment was declined."""
+    mock_order_repo.get_order_record.return_value = FAKE_ORDER
+    mock_payment_repo.get_payment_by_order_id.return_value = {
+        **FAKE_PAYMENT_RECORD,
+        "status": "Declined",
+        }
+
+    with pytest.raises(HTTPException) as exc:
+        payment_service.get_receipt(
+            order_id="abc1234",
+            customer_id=CUSTOMER_ID,
+            )
+    assert exc.value.status_code == 404
+
+@patch("backend.app.services.payment_service.order_repo")
+def test_get_receipt_raises_404_if_order_not_found(mock_order_repo):
+    """Should raise 404 when the order is not found."""
+    mock_order_repo.get_order_record.return_value = None
+    with pytest.raises(HTTPException) as exc:
+        payment_service.get_receipt(order_id="fake", customer_id=CUSTOMER_ID)
+    assert exc.value.status_code == 404
+
+@patch("backend.app.services.payment_service.order_repo")
+def test_get_receipt_raises_403_if_wrong_customer(mock_order_repo):
+    """Should raise 403 when the order belongs to a different customer."""
+    mock_order_repo.get_order_record.return_value = FAKE_ORDER
+
+    with pytest.raises(HTTPException) as exc:
+        payment_service.get_receipt(
+            order_id="abc1234",
+            customer_id="whoisthisguy",
+            )
+    assert exc.value.status_code == 403

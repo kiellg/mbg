@@ -2,7 +2,7 @@
 
 from typing import Any, Optional, Dict
 
-from fastapi import APIRouter, Header, Request, status
+from fastapi import APIRouter, Header, Request, status, Query
 
 from backend.app.schemas.restaurant import (
     RestaurantOut, RestaurantCreate, RestaurantUpdate,
@@ -12,6 +12,8 @@ from backend.app.schemas.menu import MenuItemOut
 from backend.app.services.restaurants_service import (
     get_restaurant_menu,
     get_all_restaurants_list,
+    get_all_restaurants_paginated,
+    get_restaurant_menu_paginated,
     create_new_restaurant,
     update_restaurant_by_id,
     delete_restaurant_by_id,
@@ -20,6 +22,7 @@ from backend.app.services.restaurants_service import (
     delete_menu_item_by_id,
     search_restaurant,
     search_menu_items,
+    filter_restaurants,
 )
 from backend.app.services.role_service import require_manager
 from backend.app.data.categories_data import VALID_CATEGORIES, VALID_DIETARY_TAGS
@@ -45,13 +48,30 @@ def authenticate_manager(
 
 @router.get("", response_model=list[RestaurantOut])
 def read_all_restaurants():
-    """Endpoint to get a list of all restaurants"""
+    """Return all restaurants"""
     return get_all_restaurants_list()
 
 @router.get("/{restaurant_id}/menu", response_model=RestaurantOut)
 def read_restaurant_menu(restaurant_id: int):
-    """Endpoint to get a restaurant menu with price formatting and status"""
+    """Endpoint to get a restaurant menu with price formatting and status (supports pagination)"""
     return get_restaurant_menu(restaurant_id)
+
+@router.get("/paginated")
+def read_all_restaurants_paginated(
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1),
+):
+    """Return paginated restaurants"""
+    return get_all_restaurants_paginated(page, limit)
+
+@router.get("/{restaurant_id}/menu/paginated")
+def read_restaurant_menu_paginated(
+    restaurant_id: int,
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1),
+):
+    """Return paginated restaurant menu"""
+    return get_restaurant_menu_paginated(restaurant_id, page, limit)
 
 @router.delete("/{restaurant_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_restaurant(restaurant_id: int,
@@ -131,3 +151,8 @@ def search_restaurants_endpoint(q: str):
 def search_menu_items_endpoint(q: str):
     """Endpoint to search menu items by name"""
     return search_menu_items(q)
+
+@router.get("/filter")
+def filter_restaurants_endpoint(cuisine_types: Optional[list[str]] = Query(None)):
+    """Endpoint to filter restaurants by cuisine type"""
+    return filter_restaurants(cuisine_types)
