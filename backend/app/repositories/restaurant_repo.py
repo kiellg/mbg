@@ -241,12 +241,7 @@ def get_menu_items_paginated(restaurant_id: int, page: int, limit: int):
     restaurant = _DB.get(restaurant_id)
 
     if not restaurant:
-        return {
-            "items": [],
-            "page": page,
-            "limit": limit,
-            "total": 0,
-        }
+        raise ValueError("Restaurant not found")
 
     menu = restaurant.get("menu", [])
     total = len(menu)

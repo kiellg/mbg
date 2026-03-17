@@ -1,4 +1,5 @@
 # pylint: disable=unused-argument
+# pylint: disable=protected-access
 """Unit tests for checkout_service.py with mocked dependencies."""
 
 from decimal import Decimal
@@ -7,6 +8,8 @@ from unittest.mock import patch
 import pytest
 from fastapi import HTTPException
 
+from backend.app.data import cart_data
+from backend.app.repositories import cart_repo, restaurant_repo, user_repo
 from backend.app.schemas.order import DeliveryMethod, OrderStatus
 from backend.app.services import checkout_service
 
@@ -18,7 +21,7 @@ FAKE_CART = {
     "restaurant_id": 1,
     "checked_out": False,
     "items": [
-        {"menu_item_id": 1, "quantity": 2, "unit_price_cents": 1000},
+        {"menu_item_id": 1, "quantity": 2},
     ],
     "delivery_address": "123 Test St",
 }
@@ -38,6 +41,15 @@ FAKE_ORDER_RESPONSE_DICT = {
 }
 
 
+def setup_function():
+    """Reset shared state before each test."""
+    cart_data._CARTDB.clear()
+    cart_data.NEXT_CART_ID = 1
+    cart_data.NEXT_ITEM_ID = 1
+    user_repo.reset_users()
+    restaurant_repo.reset_restaurants()
+
+
 # for successful checkout
 @patch("backend.app.services.checkout_service.restaurant_repo")
 @patch("backend.app.services.checkout_service.user_repo")
@@ -48,7 +60,11 @@ def test_checkout_creates_order_and_marks_cart(mock_order_service,
                                                mock_user_repo,
                                                mock_restaurant_repo):
     """Test that checkout creates an order and marks the cart as checked out."""
-    mock_restaurant_repo.get_menu_item.return_value = {"id": 1, "is_available": True}
+    mock_restaurant_repo.get_menu_item.return_value = {
+        "id": 1,
+        "is_available": True,
+        "price_cents": 1000,
+    }
     mock_user_repo.get_customer_by_user_id.return_value = {"user_id": CUSTOMER_ID,
                                                            "delivery_address": "123 Test St"}
     mock_cart_repo.get_cart_by_id.return_value = FAKE_CART
@@ -63,17 +79,24 @@ def test_checkout_creates_order_and_marks_cart(mock_order_service,
     mock_order_service.create_order.assert_called_once()
     mock_cart_repo.mark_cart_checked_out.assert_called_once_with(1)
 
+@patch("backend.app.services.checkout_service.restaurant_repo")
 @patch("backend.app.services.checkout_service.user_repo")
 @patch("backend.app.services.checkout_service.cart_repo")
 @patch("backend.app.services.checkout_service.order_service")
-def test_checkout_converts_price_cents_to_decimal(mock_order_service,
-                                                  mock_cart_repo,
-                                                  mock_user_repo):
-    """Test that price_cents are correctly converted to Decimal item_price."""
+def test_checkout_uses_official_menu_price_for_order_items(mock_order_service,
+                                                           mock_cart_repo,
+                                                           mock_user_repo,
+                                                           mock_restaurant_repo):
+    """Test that checkout uses backend menu pricing for order items."""
     mock_cart_repo.get_cart_by_id.return_value = FAKE_CART
     mock_order_service.create_order.return_value = FAKE_ORDER_RESPONSE_DICT
     mock_user_repo.get_customer_by_user_id.return_value = {"user_id": CUSTOMER_ID,
                                                            "delivery_address": "123 Test St"}
+    mock_restaurant_repo.get_menu_item.return_value = {
+        "id": 1,
+        "is_available": True,
+        "price_cents": 2599,
+    }
 
     checkout_service.checkout(
         cart_id=1,
@@ -82,8 +105,33 @@ def test_checkout_converts_price_cents_to_decimal(mock_order_service,
     )
 
     call_args = mock_order_service.create_order.call_args[0][0]
-    assert call_args.items[0].item_price == Decimal("10.00")
+    assert call_args.items[0].item_price == Decimal("25.99")
     assert call_args.items[0].quantity == 2
+
+
+@patch("backend.app.services.checkout_service.order_service")
+def test_checkout_does_not_require_unit_price_cents_on_cart_items(mock_order_service):
+    """Test that checkout works with the raw cart repo item shape."""
+    user = user_repo.create_user("cust", "cust@test.com", "pw123")
+    user_repo.create_customer(user["user_id"], "123 Test St")
+
+    cart = cart_repo.create_cart(user["user_id"], 1)
+    cart_repo.add_item_to_cart(cart["id"], 1, 2)
+
+    mock_order_service.create_order.return_value = FAKE_ORDER_RESPONSE_DICT
+
+    checkout_service.checkout(
+        cart_id=cart["id"],
+        customer_id=user["user_id"],
+        delivery_method=DeliveryMethod.WALK,
+    )
+
+    stored_cart = cart_repo.get_cart_by_id(cart["id"])
+    call_args = mock_order_service.create_order.call_args[0][0]
+
+    assert "unit_price_cents" not in stored_cart["items"][0]
+    assert call_args.items[0].item_price == Decimal("49.99")
+    assert stored_cart["checked_out"] is True
 
 
 # for cart not found
