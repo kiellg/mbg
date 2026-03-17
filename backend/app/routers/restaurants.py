@@ -12,6 +12,8 @@ from backend.app.schemas.menu import MenuItemOut
 from backend.app.services.restaurants_service import (
     get_restaurant_menu,
     get_all_restaurants_list,
+    get_all_restaurants_paginated,
+    get_restaurant_menu_paginated,
     create_new_restaurant,
     update_restaurant_by_id,
     delete_restaurant_by_id,
@@ -46,13 +48,30 @@ def authenticate_manager(
 
 @router.get("", response_model=list[RestaurantOut])
 def read_all_restaurants():
-    """Endpoint to get a list of all restaurants"""
+    """Return all restaurants"""
     return get_all_restaurants_list()
 
 @router.get("/{restaurant_id}/menu", response_model=RestaurantOut)
 def read_restaurant_menu(restaurant_id: int):
-    """Endpoint to get a restaurant menu with price formatting and status"""
+    """Endpoint to get a restaurant menu with price formatting and status (supports pagination)"""
     return get_restaurant_menu(restaurant_id)
+
+@router.get("/paginated")
+def read_all_restaurants_paginated(
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1),
+):
+    """Return paginated restaurants"""
+    return get_all_restaurants_paginated(page, limit)
+
+@router.get("/{restaurant_id}/menu/paginated")
+def read_restaurant_menu_paginated(
+    restaurant_id: int,
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1),
+):
+    """Return paginated restaurant menu"""
+    return get_restaurant_menu_paginated(restaurant_id, page, limit)
 
 @router.delete("/{restaurant_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_restaurant(restaurant_id: int,

@@ -32,7 +32,20 @@ from backend.app.utils.formatting import format_cad_from_cents
 
 def get_all_restaurants_list() -> list[RestaurantOut]:
     """Fetch all restaurants"""
-    return get_all_restaurants()
+    records = get_all_restaurants()
+
+    results = []
+
+    for record in records:
+        record = copy.deepcopy(record)
+        restaurant_id = record["id"]
+
+        for item in record.get("menu", []):
+            item["restaurant_id"] = restaurant_id
+
+        results.append(RestaurantOut(**record))
+
+    return results
 
 def get_restaurant_menu(restaurant_id: int) -> RestaurantOut:
     """Fetch restaurant data and process menu items for display"""
@@ -187,10 +200,39 @@ def get_all_restaurants_paginated(page: int, limit: int):
 
 def get_restaurant_menu_paginated(restaurant_id: int, page: int, limit: int):
     """Fetch paginated menu items"""
-    try:
-        return get_menu_items_paginated(restaurant_id, page, limit)
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=404,
-            detail="Restaurant not found"
-        ) from exc
+    record = get_restaurant_record(restaurant_id)
+
+    if record is None:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+
+    result = get_menu_items_paginated(restaurant_id, page, limit)
+
+    for item in result["items"]:
+        item["restaurant_id"] = restaurant_id
+
+        cat = item.get("category") or {}
+        cat_id = cat.get("id") if isinstance(cat, dict) else None
+        if cat_id and cat_id in VALID_CATEGORIES:
+            item["category"] = {
+                "id": cat_id,
+                "name": VALID_CATEGORIES[cat_id],
+            }
+
+        visible = item.get("is_available", True)
+        active = item.get("is_active", True)
+        cents = item.get("price_cents", None)
+
+        if not (visible and active):
+            item["display_price"] = None
+            item["price_status"] = PriceStatus.OK
+        elif cents is None:
+            item["display_price"] = None
+            item["price_status"] = PriceStatus.MISSING
+        elif cents < 0:
+            item["display_price"] = None
+            item["price_status"] = PriceStatus.INVALID
+        else:
+            item["display_price"] = format_cad_from_cents(cents)
+            item["price_status"] = PriceStatus.OK
+
+    return result
