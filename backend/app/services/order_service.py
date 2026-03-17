@@ -3,12 +3,15 @@ and interactions with the order repository."""
 from decimal import Decimal
 from types import SimpleNamespace
 from fastapi import HTTPException
-from backend.app.repositories import order_repo
+from backend.app.repositories import order_repo, restaurant_repo, user_repo
 from backend.app.schemas.order import (
     DeliveryMethod,
     OrderCreate,
+    OrderItemCreate,
     OrderResponse,
     OrderItemResponse,
+    PendingOrderItemUpdate,
+    PendingOrderUpdate,
     OrderUpdate
 )
 from backend.app.services.pricing_service import PricingService
@@ -45,6 +48,57 @@ def _calculate_totals_patch(order: dict) -> dict:
         "delivery_fee": pricing_order.delivery_fee,
         "total": pricing_order.total,
     }
+
+def _authorize_pending_order_editor(order: dict, user_id: str) -> None:
+    """Ensure the current user can edit the pending order."""
+    if order["customer_id"] == user_id:
+        return
+
+    if user_repo.get_user_role(user_id) != "manager":
+        raise HTTPException(status_code=403, detail="Not authorized to modify this order.")
+
+    restaurant = restaurant_repo.get_restaurant_record(order["restaurant_id"])
+    if restaurant is None or restaurant.get("owner_id") != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to modify this order.")
+
+def _resolve_pending_order_items(
+    restaurant_id: int,
+    items: list[PendingOrderItemUpdate],
+) -> list[OrderItemCreate]:
+    """Resolve pending order item prices from official menu data."""
+    resolved_items = []
+    unavailable = []
+
+    for item in items:
+        menu_item = restaurant_repo.get_menu_item(restaurant_id, item.menu_item_id)
+        if menu_item is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Menu item {item.menu_item_id} not found.",
+            )
+
+        if not menu_item.get("is_available", False):
+            unavailable.append(menu_item.get("name", f"item {item.menu_item_id}"))
+            continue
+
+        price_cents = menu_item.get("price_cents")
+        if price_cents is None or price_cents < 0:
+            raise HTTPException(status_code=500, detail="Invalid menu pricing data.")
+
+        resolved_items.append(
+            OrderItemCreate(
+                quantity=item.quantity,
+                item_price=Decimal(price_cents) / Decimal("100"),
+            )
+        )
+
+    if unavailable:
+        raise HTTPException(
+            status_code=400,
+            detail=f"The following items are not available: {', '.join(unavailable)}",
+        )
+
+    return resolved_items
 
 def _build_order_response(order: dict) -> OrderResponse:
     """Helper to build an OrderResponse from a raw order dict."""
@@ -146,6 +200,32 @@ def update_order(order_id: str, payload: OrderUpdate) -> OrderResponse:
     if not updated_order:
         raise HTTPException(status_code=500, detail="Failed to update order")
     return _build_order_response(updated_order)
+
+def update_pending_order(
+    order_id: str,
+    user_id: str,
+    payload: PendingOrderUpdate,
+) -> OrderResponse:
+    """Update an editable pending order for the owner or restaurant manager."""
+    order = order_repo.get_order_record(order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    _authorize_pending_order_editor(order, user_id)
+    _validate_order_is_pending(order)
+
+    resolved_items = None
+    if payload.items is not None:
+        resolved_items = _resolve_pending_order_items(order["restaurant_id"], payload.items)
+
+    return update_order(
+        order_id,
+        OrderUpdate(
+            delivery_address=payload.delivery_address,
+            delivery_method=payload.delivery_method,
+            items=resolved_items,
+        ),
+    )
 
 def cancel_order(order_id: str) -> OrderResponse:
     """Cancel an order by setting its status to Cancelled."""
