@@ -260,6 +260,37 @@ def test_update_order_does_not_create_notification_when_status_is_unchanged(
 
     mock_notification_service.create_order_status_changed_notification.assert_not_called()
 
+@patch("backend.app.services.order_service.restaurant_repo")
+@patch("backend.app.services.order_service.order_repo")
+def test_update_pending_order_recalculates_and_persists_totals(
+        mock_repo,
+        mock_restaurant_repo,
+):
+    """Test that pending order item edits use menu pricing and persist totals."""
+    mock_repo.get_order_record.return_value = FAKE_RAW_ORDER
+    mock_repo.update_order_record.side_effect = _update_order_record_with_items_side_effect
+    mock_restaurant_repo.get_menu_item.return_value = {
+        "id": 7,
+        "name": "Taco",
+        "is_available": True,
+        "price_cents": 750,
+    }
+
+    result = order_service.update_pending_order(
+        "1",
+        FAKE_RAW_ORDER["customer_id"],
+        PendingOrderUpdate(items=[PendingOrderItemUpdate(menu_item_id=7, quantity=3)]),
+    )
+
+    order_patch = mock_repo.update_order_record.call_args[0][1]
+    assert order_patch["items"] == [{"quantity": 3, "item_price": Decimal("7.50")}]
+    assert order_patch["subtotal"] == Decimal("22.50")
+    assert order_patch["tax"] == Decimal("2.25")
+    assert order_patch["delivery_fee"] == Decimal("5.00")
+    assert order_patch["total"] == Decimal("29.75")
+    assert result.subtotal == Decimal("22.50")
+    assert result.total == Decimal("29.75")
+
 @patch("backend.app.services.order_service.order_repo")
 def test_update_order_raises_400_if_not_pending(mock_repo):
     """Test that update_order rejects changes when the order is not pending."""
