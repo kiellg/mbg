@@ -277,6 +277,13 @@ def sort_menu_items(
     reverse = order == "desc"
 
     if sort_by == "price":
-        return sorted(menu_items, key=lambda m: m.get("price_cents", 0), reverse=reverse)
+        return sorted(
+            menu_items,
+            key=lambda m: (
+                m.get("price_cents") is None,
+                m.get("price_cents") or 0
+            ),
+            reverse=reverse
+        )
 
     return menu_items
