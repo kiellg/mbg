@@ -210,4 +210,29 @@ def get_restaurant_menu_paginated(restaurant_id: int, page: int, limit: int):
     for item in result["items"]:
         item["restaurant_id"] = restaurant_id
 
+        cat = item.get("category") or {}
+        cat_id = cat.get("id") if isinstance(cat, dict) else None
+        if cat_id and cat_id in VALID_CATEGORIES:
+            item["category"] = {
+                "id": cat_id,
+                "name": VALID_CATEGORIES[cat_id],
+            }
+
+        visible = item.get("is_available", True)
+        active = item.get("is_active", True)
+        cents = item.get("price_cents", None)
+
+        if not (visible and active):
+            item["display_price"] = None
+            item["price_status"] = PriceStatus.OK
+        elif cents is None:
+            item["display_price"] = None
+            item["price_status"] = PriceStatus.MISSING
+        elif cents < 0:
+            item["display_price"] = None
+            item["price_status"] = PriceStatus.INVALID
+        else:
+            item["display_price"] = format_cad_from_cents(cents)
+            item["price_status"] = PriceStatus.OK
+
     return result
