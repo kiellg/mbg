@@ -1,4 +1,6 @@
+# pylint: disable=protected-access
 """Unit tests for the PricingService class in pricing_service.py."""
+
 
 from dataclasses import dataclass
 from decimal import Decimal
