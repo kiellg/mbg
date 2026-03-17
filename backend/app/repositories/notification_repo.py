@@ -1,7 +1,7 @@
 """Repository for notification records."""
 
 from datetime import datetime, timezone
-from typing import Dict
+from typing import Dict, List
 
 from backend.app.data.notification_data import NOTIFICATIONS
 
@@ -15,3 +15,8 @@ def create_notification(message: str, order_id: str) -> Dict[str, str]:
     }
     NOTIFICATIONS.append(record)
     return record
+
+
+def list_notification_records() -> List[Dict[str, str]]:
+    """Return notification records in newest-first order."""
+    return list(reversed(NOTIFICATIONS))
