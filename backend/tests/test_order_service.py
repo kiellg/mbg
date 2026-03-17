@@ -12,6 +12,8 @@ from backend.app.schemas.order import (
     OrderCreate,
     OrderItemCreate,
     OrderStatus,
+    PendingOrderItemUpdate,
+    PendingOrderUpdate,
     OrderUpdate,
 )
 
@@ -54,6 +56,31 @@ def _order_with_stringified_patch(order_patch: dict) -> dict:
 def _update_order_record_side_effect(_order_id: str, order_patch: dict) -> dict:
     """Mimic the repository updating an order record."""
     return _order_with_stringified_patch(order_patch)
+
+def _update_order_record_with_items_side_effect(_order_id: str, order_patch: dict) -> dict:
+    """Mimic the repository updating totals and replacing items."""
+    updated_order = dict(FAKE_RAW_ORDER)
+
+    if "items" in order_patch:
+        updated_order["items"] = [
+            {
+                "order_item_id": index,
+                "order_id": FAKE_RAW_ORDER["order_id"],
+                "quantity": item["quantity"],
+                "item_price": str(item["item_price"]),
+            }
+            for index, item in enumerate(order_patch["items"], start=1)
+        ]
+
+    for key, value in order_patch.items():
+        if key == "items":
+            continue
+        if key in {"subtotal", "tax", "delivery_fee", "total"}:
+            updated_order[key] = str(value)
+            continue
+        updated_order[key] = value
+
+    return updated_order
 
 # for create order
 @patch("backend.app.services.order_service.PricingService.calculate_totals")
@@ -233,6 +260,37 @@ def test_update_order_does_not_create_notification_when_status_is_unchanged(
 
     mock_notification_service.create_order_status_changed_notification.assert_not_called()
 
+@patch("backend.app.services.order_service.restaurant_repo")
+@patch("backend.app.services.order_service.order_repo")
+def test_update_pending_order_recalculates_and_persists_totals(
+        mock_repo,
+        mock_restaurant_repo,
+):
+    """Test that pending order item edits use menu pricing and persist totals."""
+    mock_repo.get_order_record.return_value = FAKE_RAW_ORDER
+    mock_repo.update_order_record.side_effect = _update_order_record_with_items_side_effect
+    mock_restaurant_repo.get_menu_item.return_value = {
+        "id": 7,
+        "name": "Taco",
+        "is_available": True,
+        "price_cents": 750,
+    }
+
+    result = order_service.update_pending_order(
+        "1",
+        FAKE_RAW_ORDER["customer_id"],
+        PendingOrderUpdate(items=[PendingOrderItemUpdate(menu_item_id=7, quantity=3)]),
+    )
+
+    order_patch = mock_repo.update_order_record.call_args[0][1]
+    assert order_patch["items"] == [{"quantity": 3, "item_price": Decimal("7.50")}]
+    assert order_patch["subtotal"] == Decimal("22.50")
+    assert order_patch["tax"] == Decimal("2.25")
+    assert order_patch["delivery_fee"] == Decimal("5.00")
+    assert order_patch["total"] == Decimal("29.75")
+    assert result.subtotal == Decimal("22.50")
+    assert result.total == Decimal("29.75")
+
 @patch("backend.app.services.order_service.order_repo")
 def test_update_order_raises_400_if_not_pending(mock_repo):
     """Test that update_order rejects changes when the order is not pending."""
@@ -252,6 +310,21 @@ def test_update_order_raises_400_if_not_pending(mock_repo):
 
         assert exc.value.status_code == 400
         mock_repo.update_order_record.assert_not_called()
+
+@patch("backend.app.services.order_service.order_repo")
+def test_update_pending_order_raises_400_if_not_pending(mock_repo):
+    """Test that pending order edits are rejected once the order is not pending."""
+    mock_repo.get_order_record.return_value = {**FAKE_RAW_ORDER, "status": "Cooking"}
+
+    with pytest.raises(HTTPException) as exc:
+        order_service.update_pending_order(
+            "1",
+            FAKE_RAW_ORDER["customer_id"],
+            PendingOrderUpdate(delivery_address="456 New St"),
+        )
+
+    assert exc.value.status_code == 400
+    mock_repo.update_order_record.assert_not_called()
 
 @patch("backend.app.services.order_service.order_repo")
 def test_update_order_raises_404_if_not_found(mock_repo):
