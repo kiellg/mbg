@@ -1,4 +1,5 @@
 """Service layer for restaurant-related business logic"""
+# pylint: disable=duplicate-code
 
 import copy
 
@@ -25,14 +26,19 @@ from backend.app.repositories.restaurant_repo import (
     search_menu_items_by_name,
     filter_restaurants_by_cuisine,
     filter_menu_items,
-    get_restaurants_paginated,
-    get_menu_items_paginated,
+    sort_restaurants,
+    sort_menu_items,
 )
 from backend.app.utils.formatting import format_cad_from_cents
+from backend.app.pagination import paginate
 
-def get_all_restaurants_list() -> list[RestaurantOut]:
-    """Fetch all restaurants"""
+def get_all_restaurants_list(
+        sort_by: str = "rating",
+        order: str = "desc",
+) -> list[RestaurantOut]:
+    """Fetch all restaurants with sorting"""
     records = get_all_restaurants()
+    records = sort_restaurants(records, sort_by, order)
 
     results = []
 
@@ -54,6 +60,12 @@ def get_restaurant_menu(restaurant_id: int) -> RestaurantOut:
         raise HTTPException(status_code=404, detail="Restaurant not found")
 
     record = copy.deepcopy(record)
+
+    record["menu"] = sort_menu_items(
+        record.get("menu", []),
+        sort_by="price",
+        order="asc",
+    )
 
     for item in record.get("menu", []):
         item["restaurant_id"] = restaurant_id
@@ -194,20 +206,51 @@ def filter_menu_items_service(
         max_price,
     )
 
-def get_all_restaurants_paginated(page: int, limit: int):
-    """Fetch paginated restaurants"""
-    return get_restaurants_paginated(page, limit)
+def get_all_restaurants_paginated(
+        page: int,
+        limit: int,
+        sort_by: str = "rating",
+        order: str = "desc",
+):
+    """Fetch paginated restaurants with sorting"""
+    records = get_all_restaurants()
 
-def get_restaurant_menu_paginated(restaurant_id: int, page: int, limit: int):
-    """Fetch paginated menu items"""
+    sorted_records = sort_restaurants(records, sort_by, order)
+
+    total = len(sorted_records)
+
+    items = paginate(sorted_records, page, limit)
+
+    return {
+        "items": items,
+        "page": page,
+        "limit": limit,
+        "total": total,
+    }
+
+# pylint:disable=too-many-locals
+def get_restaurant_menu_paginated(
+        restaurant_id: int,
+        page: int,
+        limit: int,
+        sort_by: str = "price",
+        order: str = "asc",
+):
+    """Fetch paginated menu items with sorting"""
     record = get_restaurant_record(restaurant_id)
 
     if record is None:
         raise HTTPException(status_code=404, detail="Restaurant not found")
 
-    result = get_menu_items_paginated(restaurant_id, page, limit)
+    menu = record.get("menu", [])
 
-    for item in result["items"]:
+    sorted_menu = sort_menu_items(menu, sort_by, order)
+
+    total = len(sorted_menu)
+
+    items = paginate(sorted_menu, page, limit)
+
+    for item in items:
         item["restaurant_id"] = restaurant_id
 
         cat = item.get("category") or {}
@@ -235,4 +278,9 @@ def get_restaurant_menu_paginated(restaurant_id: int, page: int, limit: int):
             item["display_price"] = format_cad_from_cents(cents)
             item["price_status"] = PriceStatus.OK
 
-    return result
+    return {
+        "items": items,
+        "page": page,
+        "limit": limit,
+        "total": total,
+    }

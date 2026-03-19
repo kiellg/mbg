@@ -254,3 +254,36 @@ def get_menu_items_paginated(restaurant_id: int, page: int, limit: int):
         "limit": limit,
         "total": total,
     }
+
+def sort_restaurants(
+        restaurants: list[Dict[str, Any]],
+        sort_by: str,
+        order: str,
+) -> list[Dict[str, Any]]:
+    """Sort restaurants by supported fields"""
+    reverse = order == "desc"
+
+    if sort_by == "rating":
+        return sorted(restaurants, key=lambda r: r.get("rating", 0), reverse=reverse)
+
+    return restaurants
+
+def sort_menu_items(
+        menu_items: list[Dict[str, Any]],
+        sort_by: str,
+        order: str,
+) -> list[Dict[str, Any]]:
+    """Sort menu items by supported fields"""
+    reverse = order == "desc"
+
+    if sort_by == "price":
+        return sorted(
+            menu_items,
+            key=lambda m: (
+                m.get("price_cents") is None,
+                m.get("price_cents") or 0
+            ),
+            reverse=reverse
+        )
+
+    return menu_items
