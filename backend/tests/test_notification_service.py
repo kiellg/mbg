@@ -1,6 +1,8 @@
 """Unit tests for notification_service.py."""
 # pylint: disable=protected-access
 
+from unittest.mock import patch
+
 from backend.app.data import order_data
 from backend.app.data.notification_data import NOTIFICATIONS
 from backend.app.repositories import order_repo, restaurant_repo, user_repo
@@ -48,6 +50,27 @@ def test_create_order_status_changed_notification_stores_minimal_record():
     assert record["order_id"] == "abc1234"
     assert "timestamp" in record
     assert NOTIFICATIONS == [record]
+
+
+@patch("backend.app.services.notification_service.logger")
+@patch("backend.app.services.notification_service.create_notification")
+def test_create_order_placed_notification_logs_failure(mock_create_notification, mock_logger):
+    """Notification creation failures should be logged and suppressed."""
+    mock_create_notification.side_effect = RuntimeError("notification write failed")
+
+    record = notification_service.create_order_placed_notification("abc1234")
+
+    assert not record
+    assert not NOTIFICATIONS
+    mock_logger.exception.assert_called_once()
+    log_args = mock_logger.exception.call_args[0]
+    assert log_args[0] == (
+        "Notification creation failed. event_type=%s order_id=%s timestamp=%s error=%s"
+    )
+    assert log_args[1] == "order_placed"
+    assert log_args[2] == "abc1234"
+    assert isinstance(log_args[3], str)
+    assert log_args[4] == "notification write failed"
 
 
 def test_list_notifications_for_customer_returns_only_own_newest_first():
