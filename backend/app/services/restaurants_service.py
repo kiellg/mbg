@@ -284,3 +284,48 @@ def get_restaurant_menu_paginated(
         "limit": limit,
         "total": total,
     }
+
+def get_menu_item_detail(restaurant_id: int, item_id: int):
+    """Fetch a menu item with full detail and price formatting"""
+    record = get_restaurant_record(restaurant_id)
+
+    if record is None:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+
+    item = None
+    for i in record.get("menu", []):
+        if i["id"] == item_id:
+            item = copy.deepcopy(i)
+            break
+
+    if item is None:
+        raise HTTPException(status_code=404, detail="Menu item not found")
+
+    item["restaurant_id"] = restaurant_id
+
+    cat = item.get("category") or {}
+    cat_id = cat.get("id") if isinstance(cat, dict) else None
+    if cat_id and cat_id in VALID_CATEGORIES:
+        item["category"] = {
+            "id": cat_id,
+            "name": VALID_CATEGORIES[cat_id],
+        }
+
+    visible = item.get("is_available", True)
+    active = item.get("is_active", True)
+    cents = item.get("price_cents", None)
+
+    if not (visible and active):
+        item["display_price"] = None
+        item["price_status"] = PriceStatus.OK
+    elif cents is None:
+        item["display_price"] = None
+        item["price_status"] = PriceStatus.MISSING
+    elif cents < 0:
+        item["display_price"] = None
+        item["price_status"] = PriceStatus.INVALID
+    else:
+        item["display_price"] = format_cad_from_cents(cents)
+        item["price_status"] = PriceStatus.OK
+
+    return item
