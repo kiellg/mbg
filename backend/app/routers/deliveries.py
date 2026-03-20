@@ -7,6 +7,7 @@ from backend.app.schemas.delivery import (
     DeliveryDetailsResponse,
     AssignedDeliveryResponse
 )
+from backend.app.schemas.order import OrderResponse
 from backend.app.services import delivery_service
 from backend.app.services.role_service import require_driver, require_manager
 from backend.app.schemas.order import OrderStatus
@@ -46,6 +47,19 @@ def update_delivery_status(
         raise HTTPException(status_code=400, detail="Missing status")
 
     return delivery_service.update_delivery_status(order_id, status)
+
+@router.get("/kitchen/{restaurant_id}",
+            response_model=list[OrderResponse])
+def get_kitchen_queue(
+    restaurant_id: int,
+    session_token: Optional[str] = Header(default=None)
+):
+    """Manager views orders ready for preparation for their restaurant"""
+    manager =  require_manager(session_token)
+    return delivery_service.get_kitchen_queue(
+        restaurant_id = restaurant_id,
+        manager_id = manager["user_id"],
+    )
 
 @router.patch("/{order_id}/status/out-for-delivery")
 def mark_order_out_for_delivery(

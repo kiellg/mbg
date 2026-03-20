@@ -142,3 +142,26 @@ def test_driver_invalid_status_transition(mock_require_driver, mock_order_repo):
     )
 
     assert response.status_code == 400
+
+@patch("backend.app.services.delivery_service.order_repo")
+@patch("backend.app.services.delivery_service.restaurant_repo")
+@patch("backend.app.routers.deliveries.require_manager")
+def test_get_kitchen_queue_returns_200(mock_require_manager,
+                                       mock_restaurant_repo,
+                                       mock_order_repo):
+    """GET /orders/kitchen/{restaurant_id} should return 200 for a valid manager."""
+    mock_require_manager.return_value = {"user_id": "josemou"}
+    mock_restaurant_repo.get_restaurant_record.return_value = {"id": 1, "owner_id": "josemou"}
+    mock_order_repo.list_order_records.return_value = []
+
+    response = client.get("/orders/kitchen/1",
+                          headers={"session-token": "valid-manager-token"},
+                          )
+    assert response.status_code == 200
+
+@patch("backend.app.routers.deliveries.require_manager")
+def test_get_kitchen_queue_raises_403_if_not_manager(mock_require_manager):
+    """GET /orders/kitchen/{restaurant_id} should return 403 for non-managers."""
+    mock_require_manager.side_effect = HTTPException(status_code=403, detail="Access denied")
+    response = client.get("/orders/kitchen/1")
+    assert response.status_code == 403
