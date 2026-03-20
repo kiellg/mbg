@@ -12,6 +12,8 @@ from backend.app.schemas.menu import MenuItemOut
 from backend.app.services.restaurants_service import (
     get_restaurant_menu,
     get_all_restaurants_list,
+    get_all_restaurants_paginated,
+    get_restaurant_menu_paginated,
     create_new_restaurant,
     update_restaurant_by_id,
     delete_restaurant_by_id,
@@ -46,13 +48,65 @@ def authenticate_manager(
 
 @router.get("", response_model=list[RestaurantOut])
 def read_all_restaurants():
-    """Endpoint to get a list of all restaurants"""
+    """Return all restaurants"""
     return get_all_restaurants_list()
 
 @router.get("/{restaurant_id}/menu", response_model=RestaurantOut)
 def read_restaurant_menu(restaurant_id: int):
-    """Endpoint to get a restaurant menu with price formatting and status"""
+    """Endpoint to get a restaurant menu with price formatting and status (supports pagination)"""
     return get_restaurant_menu(restaurant_id)
+
+@router.get("/paginated")
+def read_all_restaurants_paginated(
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1),
+):
+    """Return paginated restaurants"""
+    return get_all_restaurants_paginated(page, limit)
+
+@router.get("/{restaurant_id}/menu/paginated")
+def read_restaurant_menu_paginated(
+    restaurant_id: int,
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1),
+):
+    """Return paginated restaurant menu"""
+    return get_restaurant_menu_paginated(restaurant_id, page, limit)
+
+@router.get("/sorted", response_model=list[RestaurantOut])
+def read_all_restaurants_sorted(
+    sort_by: str = Query("rating"),
+    order: str = Query("desc"),
+):
+    """Return all restaurants sorted by given criteria"""
+    return get_all_restaurants_list(sort_by, order)
+
+@router.get("/paginated/sorted")
+def read_all_restaurants_paginated_sorted(
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1),
+    sort_by: str = Query("rating"),
+    order: str = Query("desc"),
+):
+    """Return paginated restaurants with sorting"""
+    return get_all_restaurants_paginated(page, limit, sort_by, order)
+
+@router.get("/{restaurant_id}/menu/paginated/sorted")
+def read_restaurant_menu_paginated_sorted(
+    restaurant_id: int,
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1),
+    sort_by: str = Query("price"),
+    order: str = Query("asc"),
+):
+    """Return sorted paginated menu items"""
+    return get_restaurant_menu_paginated(
+        restaurant_id,
+        page,
+        limit,
+        sort_by,
+        order,
+    )
 
 @router.delete("/{restaurant_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_restaurant(restaurant_id: int,

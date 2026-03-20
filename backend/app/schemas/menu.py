@@ -33,3 +33,10 @@ class MenuItemOut(BaseModel):
     is_available: bool = True
 
     category: Optional[MenuCategory] = None
+
+class PaginatedMenuItems(BaseModel):
+    """Schema for paginated menu items"""
+    items: list[MenuItemOut]
+    page: int
+    limit: int
+    total: int
