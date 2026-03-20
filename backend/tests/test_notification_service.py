@@ -101,3 +101,28 @@ def test_list_notifications_for_manager_returns_only_owned_restaurant_orders():
         newest_order["order_id"],
         first_order["order_id"],
     ]
+
+
+def test_list_notifications_for_driver_returns_only_assigned_orders():
+    """Drivers should only see notifications for orders assigned to them."""
+    driver = user_repo.create_user("driver", "driver@email.com", "pw123")
+    user_repo.create_driver(driver["user_id"])
+
+    other_driver = user_repo.create_user("other-driver", "otherdriver@email.com", "pw123")
+    user_repo.create_driver(other_driver["user_id"])
+
+    matching_order = _create_order("customer-1", 1)
+    matching_order["driver_id"] = driver["user_id"]
+    matching_order["status"] = "Cooking"
+    create_notification("Match", matching_order["order_id"])
+
+    non_matching_order = _create_order("customer-2", 1)
+    non_matching_order["driver_id"] = other_driver["user_id"]
+    create_notification("Other Driver", non_matching_order["order_id"])
+
+    unassigned_order = _create_order("customer-3", 2)
+    create_notification("Unassigned", unassigned_order["order_id"])
+
+    result = notification_service.list_notifications_for_user(driver["user_id"])
+
+    assert [item.order_id for item in result] == [matching_order["order_id"]]

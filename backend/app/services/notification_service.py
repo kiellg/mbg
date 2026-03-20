@@ -13,6 +13,21 @@ ORDER_PLACED_MESSAGE = "Order placed."
 ORDER_STATUS_CHANGED_MESSAGE_TEMPLATE = "Order status changed to {status}."
 
 
+def _notification_is_visible_to_user(order: dict, user_id: str, role: str) -> bool:
+    """Return whether the user can view notifications for the given order."""
+    if role == "customer":
+        return order["customer_id"] == user_id
+
+    if role == "manager":
+        restaurant = get_restaurant_record(order["restaurant_id"])
+        return restaurant is not None and restaurant.get("owner_id") == user_id
+
+    if role == "driver":
+        return order.get("driver_id") == user_id
+
+    return False
+
+
 def create_order_placed_notification(order_id: str) -> dict:
     """Create a notification for a newly placed order."""
     return create_notification(ORDER_PLACED_MESSAGE, order_id)
@@ -28,7 +43,7 @@ def list_notifications_for_user(user_id: str) -> list[NotificationResponse]:
     """Return newest-first notifications visible to the current user."""
     role = get_user_role(user_id)
 
-    if role not in {"customer", "manager"}:
+    if role not in {"customer", "manager", "driver"}:
         return []
 
     visible_notifications = []
@@ -38,13 +53,8 @@ def list_notifications_for_user(user_id: str) -> list[NotificationResponse]:
         if order is None:
             continue
 
-        if role == "customer":
-            if order["customer_id"] != user_id:
-                continue
-        else:
-            restaurant = get_restaurant_record(order["restaurant_id"])
-            if restaurant is None or restaurant.get("owner_id") != user_id:
-                continue
+        if not _notification_is_visible_to_user(order, user_id, role):
+            continue
 
         visible_notifications.append(NotificationResponse(**record))
 
