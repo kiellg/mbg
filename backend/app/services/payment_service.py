@@ -5,12 +5,14 @@ from decimal import Decimal
 
 from fastapi import HTTPException
 
-from backend.app.repositories import order_repo, payment_repo
+from backend.app.repositories import order_repo, payment_repo, user_repo
 from backend.app.schemas.payment import (
     PaymentRequest,
     PaymentResponse,
     PaymentStatus,
     PaymentReceipt,
+    SavedPaymentMethod,
+    SavedPaymentMethodRequest,
 )
 from backend.app.services import notification_service
 
@@ -156,3 +158,74 @@ def get_receipt(order_id: str, customer_id: str) -> PaymentReceipt:
         cardholder_name=record["cardholder_name"],
         timestamp=datetime.fromisoformat(record["timestamp"]),
     )
+
+def save_payment_method(
+    customer_id: str,
+    payload: SavedPaymentMethodRequest,
+) -> SavedPaymentMethod:
+    """Validate card details, tokenize, and save for future use"""
+    _validate_card_number(payload.card_number)
+    _validate_expiry_date(payload.expiry_date)
+    _validate_cvv(payload.cvv)
+
+    card_token = payment_repo.create_card_token(payload.card_number)
+
+    method = user_repo.save_payment_method(
+        customer_id=customer_id,
+        card_token=card_token,
+        last4=payload.card_number[-4:],
+        expiry_date=payload.expiry_date,
+        cardholder_name=payload.cardholder_name,
+        nickname=payload.nickname,
+    )
+
+    if method is None:
+        raise HTTPException(status_code=404, detail="Customer profile not found.")
+
+    return SavedPaymentMethod(
+        saved_method_id=method["saved_method_id"],
+        last4=method["last4"],
+        expiry_date=method["expiry_date"],
+        cardholder_name=method["cardholder_name"],
+        nickname=method["nickname"],
+    )
+
+def get_saved_payment_methods(customer_id: str):
+    """Return all saved payment methods for a customer."""
+    methods = user_repo.get_saved_payment_methods(customer_id)
+    return [
+        SavedPaymentMethod(
+            saved_method_id=m["saved_method_id"],
+            last4=m["last4"],
+            expiry_date=m["expiry_date"],
+            cardholder_name=m["cardholder_name"],
+            nickname=m["nickname"],
+        )
+        for m in methods
+    ]
+
+def process_payment_with_saved_methods(
+    order_id: str,
+    customer_id: str,
+    saved_method_id: str,
+):
+    """Process payment using a previously saved payment method."""
+    methods = user_repo.get_saved_payment_methods(customer_id)
+    method = next(
+        (m for m in methods if m["saved_method_id"] == saved_method_id), None
+    )
+    if method is None:
+        raise HTTPException(status_code=404, detail="Saved payment method not found.")
+
+    card_number = payment_repo.resolve_card_token(method["card_token"])
+    if card_number is None:
+        raise HTTPException(status_code=500, detail="Card token could not be resolved.")
+
+    payload = PaymentRequest(
+        card_number=card_number,
+        expiry_date=method["expiry_date"],
+        cvv="000",
+        cardholder_name=method["cardholder_name"],
+    )
+
+    return process_payment(order_id, customer_id, payload)

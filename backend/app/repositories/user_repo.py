@@ -1,9 +1,9 @@
 """Repository layer for user data access"""
-
+#pylint: disable=too-many-arguments,too-many-positional-arguments
 import uuid
 from datetime import datetime
 from typing import Dict, Any, Optional
-
+import shortuuid
 from backend.app.data import users_data
 
 def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
@@ -172,3 +172,38 @@ def reset_users():
     users_data.CUSTOMERS.clear()
     users_data.MANAGERS.clear()
     users_data.DRIVERS.clear()
+
+def save_payment_method(
+        customer_id: str,
+        card_token: str,
+        last4: str,
+        expiry_date: str,
+        cardholder_name: str,
+        nickname: None,
+):
+    """Save a tokenized payment method to the customer profile."""
+    customer = users_data.CUSTOMERS.get(customer_id)
+    if customer is None:
+        return None
+
+    method = {
+        "saved_method_id": shortuuid.ShortUUID().random(length=7),
+        "card_token": card_token,
+        "last4": last4,
+        "expiry_date": expiry_date,
+        "cardholder_name": cardholder_name,
+        "nickname": nickname,
+    }
+
+    if "saved_payment_methods" not in customer:
+        customer["saved_payment_methods"] = []
+
+    customer["saved_payment_methods"].append(method)
+    return method
+
+def get_saved_payment_methods(customer_id: str):
+    """Return all saved payment methods for a customer"""
+    customer = users_data.CUSTOMERS.get(customer_id)
+    if customer is None:
+        return []
+    return customer.get("saved_payment_methods", [])

@@ -7,8 +7,12 @@ from unittest.mock import patch
 import pytest
 from fastapi import HTTPException
 
+from backend.app.schemas.payment import (
+    PaymentRequest,
+    PaymentStatus,
+    SavedPaymentMethodRequest,
+)
 from backend.app.data.notification_data import NOTIFICATIONS
-from backend.app.schemas.payment import PaymentRequest, PaymentStatus
 from backend.app.services import payment_service
 
 CUSTOMER_ID = "9c6dbfcb-72c5-4cc4-9f76-29200f0efda7"
@@ -44,6 +48,22 @@ INVALID_PAYLOAD = PaymentRequest(
     cardholder_name="John Doe",
 )
 
+FAKE_SAVED_METHOD = {
+    "saved_method_id": "sav1234",
+    "card_token": "tok1234567890",
+    "last4": "1121",
+    "expiry_date": "02/99",
+    "cardholder_name": "John Doe",
+    "nickname": "RBC Visa",
+}
+
+VALID_SAVE_PAYLOAD = SavedPaymentMethodRequest(
+    card_number="1234567891011121",
+    expiry_date="02/99",
+    cvv="123",
+    cardholder_name="John Doe",
+    nickname="RBC Visa",
+)
 
 def setup_function():
     """Reset notification state before each test."""
@@ -279,3 +299,130 @@ def test_get_receipt_raises_403_if_wrong_customer(mock_order_repo):
             customer_id="whoisthisguy",
             )
     assert exc.value.status_code == 403
+
+# for save_payment_method
+@patch("backend.app.services.payment_service.user_repo")
+@patch("backend.app.services.payment_service.payment_repo")
+def test_save_payment_method_returns_saved_method(mock_payment_repo, mock_user_repo):
+    """Should validate, tokenize, and return a SavedPaymentMethod."""
+    mock_payment_repo.create_card_token.return_value = "tok1234567890"
+    mock_user_repo.save_payment_method.return_value = FAKE_SAVED_METHOD
+
+    result = payment_service.save_payment_method(
+        customer_id=CUSTOMER_ID,
+        payload=VALID_SAVE_PAYLOAD,
+    )
+
+    assert result.last4 == "1121"
+    assert result.cardholder_name == "John Doe"
+    assert result.nickname == "RBC Visa"
+    mock_payment_repo.create_card_token.assert_called_once_with("1234567891011121")
+
+
+@patch("backend.app.services.payment_service.user_repo")
+@patch("backend.app.services.payment_service.payment_repo")
+def test_save_payment_method_raises_404_if_customer_not_found(mock_payment_repo, mock_user_repo):
+    """Should raise 404 when customer profile does not exist."""
+    mock_payment_repo.create_card_token.return_value = "tok1234567890"
+    mock_user_repo.save_payment_method.return_value = None
+
+    with pytest.raises(HTTPException) as exc:
+        payment_service.save_payment_method(
+            customer_id="whoisthis",
+            payload=VALID_SAVE_PAYLOAD,
+        )
+    assert exc.value.status_code == 404
+
+
+@patch("backend.app.services.payment_service.user_repo")
+def test_save_payment_method_raises_400_for_invalid_card(mock_user_repo):
+    """Should raise 400 when card details are invalid."""
+    invalid_payload = SavedPaymentMethodRequest(
+        card_number="123",
+        expiry_date="02/99",
+        cvv="123",
+        cardholder_name="John Doe",
+    )
+
+    with pytest.raises(HTTPException) as exc:
+        payment_service.save_payment_method(
+            customer_id=CUSTOMER_ID,
+            payload=invalid_payload,
+        )
+    assert exc.value.status_code == 400
+
+
+# for get_saved_payment_methods
+@patch("backend.app.services.payment_service.user_repo")
+def test_get_saved_payment_methods_returns_list(mock_user_repo):
+    """Should return a list of SavedPaymentMethod for a customer."""
+    mock_user_repo.get_saved_payment_methods.return_value = [FAKE_SAVED_METHOD]
+
+    result = payment_service.get_saved_payment_methods(CUSTOMER_ID)
+
+    assert len(result) == 1
+    assert result[0].last4 == "1121"
+
+
+@patch("backend.app.services.payment_service.user_repo")
+def test_get_saved_payment_methods_returns_empty_list(mock_user_repo):
+    """Should return empty list when customer has no saved methods."""
+    mock_user_repo.get_saved_payment_methods.return_value = []
+
+    result = payment_service.get_saved_payment_methods(CUSTOMER_ID)
+
+    assert result == []
+
+
+# for process_payment_with_saved_method
+@patch("backend.app.services.payment_service.payment_repo")
+@patch("backend.app.services.payment_service.order_repo")
+@patch("backend.app.services.payment_service.user_repo")
+def test_process_payment_with_saved_method_accepted(
+    mock_user_repo, mock_order_repo, mock_payment_repo
+):
+    """Should process payment using saved method and return Accepted status."""
+    mock_user_repo.get_saved_payment_methods.return_value = [FAKE_SAVED_METHOD]
+    mock_payment_repo.resolve_card_token.return_value = "1234567891011121"
+    mock_order_repo.get_order_record.return_value = FAKE_ORDER
+    mock_payment_repo.create_payment_record.return_value = FAKE_PAYMENT_RECORD
+
+    result = payment_service.process_payment_with_saved_methods(
+        order_id="abc1234",
+        customer_id=CUSTOMER_ID,
+        saved_method_id="sav1234",
+    )
+
+    assert result.status == PaymentStatus.ACCEPTED
+
+
+@patch("backend.app.services.payment_service.user_repo")
+def test_process_payment_with_saved_method_raises_404_if_method_not_found(mock_user_repo):
+    """Should raise 404 when saved method does not exist."""
+    mock_user_repo.get_saved_payment_methods.return_value = []
+
+    with pytest.raises(HTTPException) as exc:
+        payment_service.process_payment_with_saved_methods(
+            order_id="abc1234",
+            customer_id=CUSTOMER_ID,
+            saved_method_id="whoisthis",
+        )
+    assert exc.value.status_code == 404
+
+
+@patch("backend.app.services.payment_service.payment_repo")
+@patch("backend.app.services.payment_service.user_repo")
+def test_process_payment_with_saved_method_raises_500_if_token_invalid(
+    mock_user_repo, mock_payment_repo
+):
+    """Should raise 500 when card token cannot be resolved."""
+    mock_user_repo.get_saved_payment_methods.return_value = [FAKE_SAVED_METHOD]
+    mock_payment_repo.resolve_card_token.return_value = None
+
+    with pytest.raises(HTTPException) as exc:
+        payment_service.process_payment_with_saved_methods(
+            order_id="abc1234",
+            customer_id=CUSTOMER_ID,
+            saved_method_id="sav1234",
+        )
+    assert exc.value.status_code == 500
