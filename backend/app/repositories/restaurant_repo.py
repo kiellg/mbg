@@ -5,6 +5,7 @@
 import copy
 from typing import Dict, Any, List, Optional
 from backend.app.data.restaurants_data import _DB, _SEED
+from backend.app.pagination import paginate
 
 def get_restaurant_record(restaurant_id: int) -> Optional[Dict[str, Any]]:
     """Simulate fetching a restaurant record from the database"""
@@ -220,3 +221,69 @@ def filter_menu_items(
         results.append(item)
 
     return results
+
+def get_restaurants_paginated(page: int, limit: int):
+    """Returned paginated restaurants records"""
+    restaurants = list(_DB.values())
+    total = len(restaurants)
+
+    items = paginate(restaurants, page, limit)
+
+    return {
+        "items": items,
+        "page": page,
+        "limit": limit,
+        "total": total,
+    }
+
+def get_menu_items_paginated(restaurant_id: int, page: int, limit: int):
+    """Return paginated menu items for a restaurant"""
+    restaurant = _DB.get(restaurant_id)
+
+    if not restaurant:
+        raise ValueError("Restaurant not found")
+
+    menu = restaurant.get("menu", [])
+    total = len(menu)
+
+    items = paginate(menu, page, limit)
+
+    return {
+        "items": items,
+        "page": page,
+        "limit": limit,
+        "total": total,
+    }
+
+def sort_restaurants(
+        restaurants: list[Dict[str, Any]],
+        sort_by: str,
+        order: str,
+) -> list[Dict[str, Any]]:
+    """Sort restaurants by supported fields"""
+    reverse = order == "desc"
+
+    if sort_by == "rating":
+        return sorted(restaurants, key=lambda r: r.get("rating", 0), reverse=reverse)
+
+    return restaurants
+
+def sort_menu_items(
+        menu_items: list[Dict[str, Any]],
+        sort_by: str,
+        order: str,
+) -> list[Dict[str, Any]]:
+    """Sort menu items by supported fields"""
+    reverse = order == "desc"
+
+    if sort_by == "price":
+        return sorted(
+            menu_items,
+            key=lambda m: (
+                m.get("price_cents") is None,
+                m.get("price_cents") or 0
+            ),
+            reverse=reverse
+        )
+
+    return menu_items

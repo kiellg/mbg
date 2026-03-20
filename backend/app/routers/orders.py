@@ -1,27 +1,23 @@
-"""Router for delivery endpoints"""
-#pylint: disable=duplicate-code, unused-import
+"""Router for editable pending order endpoints."""
 
-from typing import Optional
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Depends
 
-from backend.app.services.role_service import require_driver
+from backend.app.dependencies import get_current_user
+from backend.app.schemas.order import OrderResponse, PendingOrderUpdate
+from backend.app.services import order_service
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
-# @router.get("/assigned")
-# def get_assigned_deliveries(session_token: Optional[str] = Header(default=None)):
-#     """Drivers can view assigned deliveries"""
-#     require_driver(session_token)
-#     return {"message": "Assigned deliveries"}
 
-# @router.patch("/{order_id}/status")
-# def update_delivery_status(
-#     order_id: str,
-#     session_token: Optional[str] = Header(default=None),
-# ):
-#     """Drivers can update delivery status"""
-#     require_driver(session_token)
-#     return{
-#         "order_id": order_id,
-#         "message": "Delivery status updated",
-#     }
+@router.patch("/{order_id}", response_model=OrderResponse)
+def update_pending_order(
+    order_id: str,
+    payload: PendingOrderUpdate,
+    current_user: dict = Depends(get_current_user),
+):
+    """Update an editable pending order for the logged-in user."""
+    return order_service.update_pending_order(
+        order_id=order_id,
+        user_id=current_user["user_id"],
+        payload=payload,
+    )

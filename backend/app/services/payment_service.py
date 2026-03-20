@@ -14,6 +14,7 @@ from backend.app.schemas.payment import (
     SavedPaymentMethod,
     SavedPaymentMethodRequest,
 )
+from backend.app.services import notification_service
 
 def _validate_card_number(card_number: str) -> None:
     """Card number must be exactly 16 digits."""
@@ -125,7 +126,12 @@ def process_payment(
     )
 
     if status == PaymentStatus.ACCEPTED:
-        order_repo.set_order_status(order_id, "Cooking")
+        updated_order = order_repo.set_order_status(order_id, "Cooking")
+        if updated_order:
+            notification_service.create_order_status_changed_notification(
+                updated_order["order_id"],
+                updated_order["status"],
+            )
 
     return _build_payment_response(record)
 

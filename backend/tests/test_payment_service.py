@@ -12,6 +12,7 @@ from backend.app.schemas.payment import (
     PaymentStatus,
     SavedPaymentMethodRequest,
 )
+from backend.app.data.notification_data import NOTIFICATIONS
 from backend.app.services import payment_service
 
 CUSTOMER_ID = "9c6dbfcb-72c5-4cc4-9f76-29200f0efda7"
@@ -63,6 +64,10 @@ VALID_SAVE_PAYLOAD = SavedPaymentMethodRequest(
     cardholder_name="John Doe",
     nickname="RBC Visa",
 )
+
+def setup_function():
+    """Reset notification state before each test."""
+    NOTIFICATIONS.clear()
 
 # for _validate_card_number
 def test_validate_card_number_accepts_16_digits():
@@ -143,11 +148,17 @@ def test_simulate_payments_declines_card_ending_in_0000():
     assert result == PaymentStatus.DECLINED
 
 # for process_payment
+@patch("backend.app.services.payment_service.notification_service")
 @patch("backend.app.services.payment_service.payment_repo")
 @patch("backend.app.services.payment_service.order_repo")
-def test_process_payment_accepted(mock_order_repo, mock_payment_repo):
+def test_process_payment_accepted(
+    mock_order_repo,
+    mock_payment_repo,
+    mock_notification_service,
+):
     """Should create a payment record and return Accepted status."""
     mock_order_repo.get_order_record.return_value = FAKE_ORDER
+    mock_order_repo.set_order_status.return_value = {**FAKE_ORDER, "status": "Cooking"}
     mock_payment_repo.create_payment_record.return_value = FAKE_PAYMENT_RECORD
 
     result = payment_service.process_payment(
@@ -159,10 +170,20 @@ def test_process_payment_accepted(mock_order_repo, mock_payment_repo):
     assert result.status == PaymentStatus.ACCEPTED
     assert result.last4 == "1234"
     mock_payment_repo.create_payment_record.assert_called_once()
+    mock_order_repo.set_order_status.assert_called_once_with("abc1234", "Cooking")
+    mock_notification_service.create_order_status_changed_notification.assert_called_once_with(
+        "abc1234",
+        "Cooking",
+    )
 
+@patch("backend.app.services.payment_service.notification_service")
 @patch("backend.app.services.payment_service.payment_repo")
 @patch("backend.app.services.payment_service.order_repo")
-def test_process_payment_declined(mock_order_repo, mock_payment_repo):
+def test_process_payment_declined(
+    mock_order_repo,
+    mock_payment_repo,
+    mock_notification_service,
+):
     """Should create a payment record and return Declined status."""
     mock_order_repo.get_order_record.return_value = FAKE_ORDER
     mock_payment_repo.create_payment_record.return_value = {
@@ -178,6 +199,8 @@ def test_process_payment_declined(mock_order_repo, mock_payment_repo):
     )
 
     assert result.status == PaymentStatus.DECLINED
+    mock_order_repo.set_order_status.assert_not_called()
+    mock_notification_service.create_order_status_changed_notification.assert_not_called()
 
 @patch("backend.app.services.payment_service.order_repo")
 def test_process_payment_raises_404_if_order_not_found(mock_order_repo):
