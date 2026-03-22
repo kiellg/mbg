@@ -23,6 +23,7 @@ from backend.app.services.restaurants_service import (
     search_restaurant,
     search_menu_items,
     filter_restaurants,
+    get_menu_item_detail,
 )
 from backend.app.services.role_service import require_manager
 from backend.app.data.categories_data import VALID_CATEGORIES, VALID_DIETARY_TAGS
@@ -191,3 +192,8 @@ def search_menu_items_endpoint(q: str):
 def filter_restaurants_endpoint(cuisine_types: Optional[list[str]] = Query(None)):
     """Endpoint to filter restaurants by cuisine type"""
     return filter_restaurants(cuisine_types)
+
+@router.get("/{restaurant_id}/menu/{item_id}", response_model=MenuItemOut)
+def read_menu_item_detail(restaurant_id: int, item_id: int):
+    """Return detailed information for a single menu item"""
+    return get_menu_item_detail(restaurant_id, item_id)
