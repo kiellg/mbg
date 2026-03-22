@@ -2,6 +2,7 @@
 
 import logging
 from datetime import datetime, timezone
+from enum import Enum
 
 from backend.app.repositories.notification_repo import (
     create_notification,
@@ -17,18 +18,33 @@ ORDER_STATUS_CHANGED_MESSAGE_TEMPLATE = "Order status changed to {status}."
 logger = logging.getLogger(__name__)
 
 
-def _log_notification_failure(event_type: str, order_id: str, error: Exception) -> None:
+class NotificationEventType(str, Enum):
+    """Internal event types used for notification failure logging."""
+
+    ORDER_PLACED = "order_placed"
+    ORDER_STATUS_CHANGED = "order_status_changed"
+
+
+def _log_notification_failure(
+    event_type: NotificationEventType,
+    order_id: str,
+    error: Exception,
+) -> None:
     """Log notification creation failures without breaking the main action."""
     logger.exception(
         "Notification creation failed. event_type=%s order_id=%s timestamp=%s error=%s",
-        event_type,
+        event_type.value,
         order_id,
         datetime.now(timezone.utc).isoformat(),
         str(error),
     )
 
 
-def _create_notification_safely(message: str, order_id: str, event_type: str) -> dict:
+def _create_notification_safely(
+    message: str,
+    order_id: str,
+    event_type: NotificationEventType,
+) -> dict:
     """Create a notification and suppress only notification creation failures."""
     try:
         return create_notification(message, order_id)
@@ -42,7 +58,7 @@ def create_order_placed_notification(order_id: str) -> dict:
     return _create_notification_safely(
         ORDER_PLACED_MESSAGE,
         order_id,
-        "order_placed",
+        NotificationEventType.ORDER_PLACED,
     )
 
 
@@ -52,7 +68,7 @@ def create_order_status_changed_notification(order_id: str, new_status: str) -> 
     return _create_notification_safely(
         message,
         order_id,
-        "order_status_changed",
+        NotificationEventType.ORDER_STATUS_CHANGED,
     )
 
 
