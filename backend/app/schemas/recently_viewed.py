@@ -1,7 +1,7 @@
 """Schemas for recently viewed items"""
 
-from pydantic import BaseModel
 from typing import List, Literal
+from pydantic import BaseModel
 
 class RecentlyViewedItem(BaseModel):
     """Represents a recently viewed item"""
