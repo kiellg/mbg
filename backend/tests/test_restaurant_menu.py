@@ -12,10 +12,37 @@ FAKE_RESTAURANT = {
     "rating": 4,
     "opening_hours": "Mon-Sun 9-5",
     "menu": [
-        {"id": 1, "name": "Burger",        "price_cents": 4999, "is_visible": True,  "is_active": True, "description": "", "dietary_tag": "", "is_available": True, "category": None},
-        {"id": 2, "name": "Hidden Item",   "price_cents": 999,  "is_visible": False, "is_active": True, "description": "", "dietary_tag": "", "is_available": True, "category": None},
-        {"id": 3, "name": "Invalid Price", "price_cents": -100, "is_visible": True,  "is_active": True, "description": "", "dietary_tag": "", "is_available": True, "category": None},
-        {"id": 4, "name": "Missing Price", "price_cents": None, "is_visible": True,  "is_active": True, "description": "", "dietary_tag": "", "is_available": True, "category": None},
+        {"id": 1, "name": "Burger",        
+         "price_cents": 4999, 
+         "is_visible": True,  
+         "is_active": True, 
+         "description": "", 
+         "dietary_tag": "", 
+         "is_available": True, 
+         "category": None},
+        {"id": 2, "name": "Hidden Item",   
+         "price_cents": 999,  "is_visible": 
+         False, "is_active": True, 
+         "description": "", 
+         "dietary_tag": "", 
+         "is_available": True, 
+         "category": None},
+        {"id": 3, "name": "Invalid Price", 
+         "price_cents": -100, "is_visible": True,  
+         "is_active": True, 
+         "description": "", 
+         "dietary_tag": "", 
+         "is_available": True, 
+         "category": None},
+        {"id": 4, 
+         "name": "Missing Price", 
+         "price_cents": None, 
+         "is_visible": True,  
+         "is_active": True, 
+         "description": "", 
+         "dietary_tag": "", 
+         "is_available": True, 
+         "category": None},
     ],
 }
 
@@ -42,7 +69,7 @@ def test_restaurant_menu_returns_200():
 
 @patch(_REPO)
 def test_restaurant_menu_returns_404_for_missing_restaurant(mock_get_record):
-    """GET /restaurants/{id}/menu should return 404 when restaurant does not exist fault injection"""
+    """GET /restaurants/{id}/menu should return 404 when restaurant does not exist"""
     mock_get_record.return_value = None
     r = _get_menu(999)
     assert r.status_code == 404

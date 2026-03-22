@@ -1,8 +1,8 @@
 """Tests for the menu service"""
 
+from unittest.mock import patch
 import pytest
 from fastapi import HTTPException
-from unittest.mock import patch
 from backend.app.services.restaurants_service import (
     get_restaurant_menu,
     format_cad_from_cents)
@@ -15,10 +15,37 @@ FAKE_RESTAURANT = {
     "rating": 4,
     "opening_hours": "Mon-Sun 9-5",
     "menu": [
-        {"id": 1, "name": "Burger",        "price_cents": 4999, "is_visible": True,  "is_active": True, "description": "", "dietary_tag": "", "is_available": True, "category": None},
-        {"id": 2, "name": "Hidden Item",   "price_cents": 999,  "is_visible": False, "is_active": True, "description": "", "dietary_tag": "", "is_available": True, "category": None},
-        {"id": 3, "name": "Invalid Price", "price_cents": -100, "is_visible": True,  "is_active": True, "description": "", "dietary_tag": "", "is_available": True, "category": None},
-        {"id": 4, "name": "Missing Price", "price_cents": None, "is_visible": True,  "is_active": True, "description": "", "dietary_tag": "", "is_available": True, "category": None},
+        {"id": 1, "name": "Burger",        
+         "price_cents": 4999, 
+         "is_visible": True,  
+         "is_active": True, 
+         "description": "", 
+         "dietary_tag": "", 
+         "is_available": True, 
+         "category": None},
+        {"id": 2, "name": "Hidden Item",   
+         "price_cents": 999,  "is_visible": 
+         False, "is_active": True, 
+         "description": "", 
+         "dietary_tag": "", 
+         "is_available": True, 
+         "category": None},
+        {"id": 3, "name": "Invalid Price", 
+         "price_cents": -100, "is_visible": True,  
+         "is_active": True, 
+         "description": "", 
+         "dietary_tag": "", 
+         "is_available": True, 
+         "category": None},
+        {"id": 4, 
+         "name": "Missing Price", 
+         "price_cents": None, 
+         "is_visible": True,  
+         "is_active": True, 
+         "description": "", 
+         "dietary_tag": "", 
+         "is_available": True, 
+         "category": None},
     ],
 }
 
