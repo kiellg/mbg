@@ -138,6 +138,22 @@ def test_create_order_creates_notification_after_order_is_stored(
 
     mock_notification_service.create_order_placed_notification.assert_called_once_with("1")
 
+@patch("backend.app.services.notification_service.create_notification")
+@patch("backend.app.services.order_service.order_repo")
+def test_create_order_still_succeeds_when_notification_creation_fails(
+    mock_repo,
+    mock_create_notification,
+):
+    """Test that create_order still succeeds when notification creation fails."""
+    mock_repo.create_order_record.return_value = FAKE_RAW_ORDER
+    mock_repo.update_order_record.return_value = FAKE_RAW_ORDER
+    mock_create_notification.side_effect = RuntimeError("notification write failed")
+
+    result = order_service.create_order(FAKE_PAYLOAD)
+
+    assert result.order_id == "1"
+    assert result.status == OrderStatus.PENDING
+
 # for get order
 @patch("backend.app.services.order_service.order_repo")
 def test_get_order_returns_order(mock_repo):

@@ -176,6 +176,29 @@ def test_process_payment_accepted(
         "Cooking",
     )
 
+@patch("backend.app.services.notification_service.create_notification")
+@patch("backend.app.services.payment_service.payment_repo")
+@patch("backend.app.services.payment_service.order_repo")
+def test_process_payment_still_succeeds_when_notification_creation_fails(
+    mock_order_repo,
+    mock_payment_repo,
+    mock_create_notification,
+):
+    """Should still succeed when accepted-payment notification creation fails."""
+    mock_order_repo.get_order_record.return_value = FAKE_ORDER
+    mock_order_repo.set_order_status.return_value = {**FAKE_ORDER, "status": "Cooking"}
+    mock_payment_repo.create_payment_record.return_value = FAKE_PAYMENT_RECORD
+    mock_create_notification.side_effect = RuntimeError("notification write failed")
+
+    result = payment_service.process_payment(
+        order_id="abc1234",
+        customer_id=CUSTOMER_ID,
+        payload=VALID_PAYLOAD,
+    )
+
+    assert result.status == PaymentStatus.ACCEPTED
+    mock_order_repo.set_order_status.assert_called_once_with("abc1234", "Cooking")
+
 @patch("backend.app.services.payment_service.notification_service")
 @patch("backend.app.services.payment_service.payment_repo")
 @patch("backend.app.services.payment_service.order_repo")

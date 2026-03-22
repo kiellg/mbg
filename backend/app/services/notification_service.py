@@ -1,5 +1,9 @@
 """Service layer for creating and reading order notifications."""
 
+import logging
+from datetime import datetime, timezone
+from enum import Enum
+
 from backend.app.repositories.notification_repo import (
     create_notification,
     list_notification_records,
@@ -11,6 +15,42 @@ from backend.app.schemas.notification import NotificationResponse
 
 ORDER_PLACED_MESSAGE = "Order placed."
 ORDER_STATUS_CHANGED_MESSAGE_TEMPLATE = "Order status changed to {status}."
+logger = logging.getLogger(__name__)
+
+
+class NotificationEventType(str, Enum):
+    """Internal event types used for notification failure logging."""
+
+    ORDER_PLACED = "order_placed"
+    ORDER_STATUS_CHANGED = "order_status_changed"
+
+
+def _log_notification_failure(
+    event_type: NotificationEventType,
+    order_id: str,
+    error: Exception,
+) -> None:
+    """Log notification creation failures without breaking the main action."""
+    logger.exception(
+        "Notification creation failed. event_type=%s order_id=%s timestamp=%s error=%s",
+        event_type.value,
+        order_id,
+        datetime.now(timezone.utc).isoformat(),
+        str(error),
+    )
+
+
+def _create_notification_safely(
+    message: str,
+    order_id: str,
+    event_type: NotificationEventType,
+) -> dict:
+    """Create a notification and suppress only notification creation failures."""
+    try:
+        return create_notification(message, order_id)
+    except Exception as error:  # pylint: disable=broad-exception-caught
+        _log_notification_failure(event_type, order_id, error)
+        return {}
 
 
 def _notification_is_visible_to_user(order: dict, user_id: str, role: str) -> bool:
@@ -30,13 +70,21 @@ def _notification_is_visible_to_user(order: dict, user_id: str, role: str) -> bo
 
 def create_order_placed_notification(order_id: str) -> dict:
     """Create a notification for a newly placed order."""
-    return create_notification(ORDER_PLACED_MESSAGE, order_id)
+    return _create_notification_safely(
+        ORDER_PLACED_MESSAGE,
+        order_id,
+        NotificationEventType.ORDER_PLACED,
+    )
 
 
 def create_order_status_changed_notification(order_id: str, new_status: str) -> dict:
     """Create a notification for an order status change."""
     message = ORDER_STATUS_CHANGED_MESSAGE_TEMPLATE.format(status=new_status)
-    return create_notification(message, order_id)
+    return _create_notification_safely(
+        message,
+        order_id,
+        NotificationEventType.ORDER_STATUS_CHANGED,
+    )
 
 
 def list_notifications_for_user(user_id: str) -> list[NotificationResponse]:
