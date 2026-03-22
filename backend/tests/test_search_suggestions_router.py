@@ -6,7 +6,7 @@ from backend.main import app
 def test_search_suggestions_success(monkeypatch):
     """Endpoint should return mocked suggestions"""
 
-    def mock_get_search_suggestions(query: str):
+    def mock_get_search_suggestions(_query: str):
         return {
             "suggestions": [
                 {
@@ -46,7 +46,7 @@ def test_search_suggestions_success(monkeypatch):
 def test_search_suggestions_empty_result(monkeypatch):
     """Endpoint should return empty list when no suggestions"""
 
-    def mock_get_search_suggestions(query: str):
+    def mock_get_search_suggestions(_query: str):
         return {"suggestions": []}
 
     monkeypatch.setattr(
