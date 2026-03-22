@@ -2,7 +2,7 @@
 
 #pylint: disable=protected-access
 from typing import Any, Dict, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from backend.app.data import cart_data
 
 def get_cart_by_customer_and_restaurant(customer_id: str,
@@ -25,7 +25,7 @@ def create_cart(customer_id: str, restaurant_id: int) -> Dict[str, Any]:
         "id": cart_id,
         "customer_id": customer_id,
         "restaurant_id": restaurant_id,
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
         "items": []
     }
     cart_data._CARTDB[cart_id] = new_cart
