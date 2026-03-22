@@ -2,24 +2,23 @@
 
 from fastapi import HTTPException
 
-from backend.app.data.restaurants_data import _DB as RESTAURANT_DB
 from backend.app.schemas.cart import CartItemCreate, CartItemUpdate, CartResponse, CartItemResponse
-from backend.app.repositories import cart_repo
+from backend.app.repositories import cart_repo, restaurant_repo
 from backend.app.utils.formatting import format_cad_from_cents
 
 def _get_menu_item(restaurant_id: int, menu_item_id: int) -> dict:
     """Fetch a menu from the restaurant database. Raises HTTPException if not found."""
-    restaurant = RESTAURANT_DB.get(restaurant_id)
+    restaurant = restaurant_repo.get_restaurant_record(restaurant_id)
     if restaurant is None:
         raise HTTPException(status_code=404, detail=f"Restaurant {restaurant_id} not found")
 
-    for item in restaurant.get("menu", []):
-        if item["id"] == menu_item_id:
-            return item
-
-    raise HTTPException(
-        status_code=404,
-        detail=f"Menu item {menu_item_id} not found in restaurant {restaurant_id}")
+    item = restaurant_repo.get_menu_item(restaurant_id, menu_item_id)
+    if item is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Menu item {menu_item_id} not found in restaurant {restaurant_id}"
+        )
+    return item
 
 def _build_cart_response(cart: dict) -> CartResponse:
     """Convert a cart dictionary into a CartResponse schema."""
