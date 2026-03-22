@@ -1,9 +1,9 @@
 # pylint: disable=unused-argument
 """Unit tests for the cart_service module."""
 from datetime import datetime, timezone
+from unittest.mock import patch
 import pytest
 from fastapi import HTTPException
-from unittest.mock import patch
 from backend.app.services import cart_service
 from backend.app.repositories import cart_repo
 from backend.app.schemas.cart import CartItemCreate, CartItemUpdate
