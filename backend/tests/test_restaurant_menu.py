@@ -1,6 +1,7 @@
 """Tests for the restaurant menu endpoint"""
 
 from unittest.mock import patch
+import pytest
 from fastapi.testclient import TestClient
 from backend.main import app
 
@@ -107,19 +108,16 @@ def test_visible_missing_price_is_flagged(mock_get_record):
     assert item["price_status"] == "missing"
     assert item["display_price"] is None
 
-def test_all_items_linked_to_correct_restaurant():
-    """Test that all menu items have the correct restaurant_id set"""
-    r = client.get("/restaurants/1/menu")
-    data = r.json()
+def _assert_all_items_belong_to(restaurant_id: int) -> None:
+    """Assert every menu item in the response carries the correct restaurant_id"""
+    r = client.get(f"/restaurants/{restaurant_id}/menu")
+    assert r.status_code == 200
+    for item in r.json()["menu"]:
+        assert item["restaurant_id"] == restaurant_id, (
+            f"Expected restaurant_id={restaurant_id}, got {item['restaurant_id']}"
+        )
 
-    for item in data["menu"]:
-        assert item["restaurant_id"] == 1
-
-def test_items_are_not_shared_across_restaurants():
-    """Test that menu items returned for restaurant 2 must not be linked to restaurant 1"""
-    r = client.get("/restaurants/2/menu")
-    data = r.json()
-
-    for item in data["menu"]:
-        assert item["restaurant_id"] == 2
-        assert item["restaurant_id"] != 1
+@pytest.mark.parametrize("restaurant_id", [1, 2])
+def test_all_items_linked_to_correct_restaurant(restaurant_id):
+    """All menu items in the response must carry the id of the restaurant they belong to"""
+    _assert_all_items_belong_to(restaurant_id)
