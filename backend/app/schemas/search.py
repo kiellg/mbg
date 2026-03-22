@@ -5,8 +5,8 @@ from pydantic import BaseModel
 
 class SuggestionItem(BaseModel):
     """Represents a single search suggestion"""
-    type: str
-    id: str
+    suggestion_type: str
+    id: int
     name: str
     restaurant_id: Optional[int] = None
 
