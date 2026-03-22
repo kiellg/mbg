@@ -24,9 +24,11 @@ from backend.app.services.restaurants_service import (
     search_menu_items,
     filter_restaurants,
     get_menu_item_detail,
+    get_search_suggestions,
 )
 from backend.app.services.role_service import require_manager
 from backend.app.data.categories_data import VALID_CATEGORIES, VALID_DIETARY_TAGS
+from backend.app.schemas.search import SuggestionResponse
 
 router = APIRouter(prefix="/restaurants", tags=["restaurants"])
 
@@ -187,6 +189,11 @@ def search_restaurants_endpoint(q: str):
 def search_menu_items_endpoint(q: str):
     """Endpoint to search menu items by name"""
     return search_menu_items(q)
+
+@router.get("/search/suggestions", response_model=SuggestionResponse)
+def search_suggestions_endpoint(q: str):
+    """Return search suggestions as user types"""
+    return get_search_suggestions(q)
 
 @router.get("/filter")
 def filter_restaurants_endpoint(cuisine_types: Optional[list[str]] = Query(None)):
