@@ -52,6 +52,16 @@ def test_create_order_status_changed_notification_stores_minimal_record():
     assert NOTIFICATIONS == [record]
 
 
+def test_create_driver_assigned_notification_stores_minimal_record():
+    """Driver assignment notifications should store message, timestamp, and order_id."""
+    record = notification_service.create_driver_assigned_notification("abc1234")
+
+    assert record["message"] == "You have been assigned a delivery."
+    assert record["order_id"] == "abc1234"
+    assert "timestamp" in record
+    assert NOTIFICATIONS == [record]
+
+
 @patch("backend.app.services.notification_service.logger")
 @patch("backend.app.services.notification_service.create_notification")
 def test_create_order_placed_notification_logs_failure(mock_create_notification, mock_logger):

@@ -119,6 +119,118 @@ def test_get_kitchen_queue_raises_403_if_wrong_manager(mock_restaurant_repo):
         delivery_service.get_kitchen_queue(restaurant_id=1, manager_id="josemou")
     assert exc.value.status_code == 403
 
+
+@patch("backend.app.services.delivery_service.notification_service")
+@patch("backend.app.services.delivery_service.user_repo")
+@patch("backend.app.services.delivery_service.restaurant_repo")
+@patch("backend.app.services.delivery_service.order_repo")
+def test_assign_driver_to_order_creates_notification(
+    mock_order_repo,
+    mock_restaurant_repo,
+    mock_user_repo,
+    mock_notification_service,
+):
+    """Driver assignment should store the driver and create a notification."""
+    mock_order_repo.get_order_record.return_value = {
+        **FAKE_ORDER,
+        "order_id": "abc1234",
+        "restaurant_id": 1,
+    }
+    mock_restaurant_repo.get_restaurant_record.return_value = {
+        "id": 1,
+        "owner_id": "manager-123",
+    }
+    mock_user_repo.get_user_by_id.return_value = {
+        "user_id": "driver-123",
+        "name": "John Doe",
+    }
+    mock_user_repo.get_user_role.return_value = "driver"
+    mock_order_repo.assign_driver_to_order.return_value = {
+        **FAKE_ORDER,
+        "order_id": "abc1234",
+        "restaurant_id": 1,
+        "driver_id": "driver-123",
+        "driver_name": "John Doe",
+    }
+
+    result = delivery_service.assign_driver_to_order("abc1234", "driver-123", "manager-123")
+
+    assert result["driver_id"] == "driver-123"
+    assert result["driver_name"] == "John Doe"
+    mock_order_repo.assign_driver_to_order.assert_called_once_with(
+        "abc1234",
+        "driver-123",
+        "John Doe",
+    )
+    mock_notification_service.create_driver_assigned_notification.assert_called_once_with(
+        "abc1234"
+    )
+
+
+@patch("backend.app.services.delivery_service.notification_service")
+@patch("backend.app.services.delivery_service.user_repo")
+@patch("backend.app.services.delivery_service.restaurant_repo")
+@patch("backend.app.services.delivery_service.order_repo")
+def test_assign_driver_to_order_rejects_non_driver_target(
+    mock_order_repo,
+    mock_restaurant_repo,
+    mock_user_repo,
+    mock_notification_service,
+):
+    """Non-driver users should not be assignable to delivery orders."""
+    mock_order_repo.get_order_record.return_value = {
+        **FAKE_ORDER,
+        "order_id": "abc1234",
+        "restaurant_id": 1,
+    }
+    mock_restaurant_repo.get_restaurant_record.return_value = {
+        "id": 1,
+        "owner_id": "manager-123",
+    }
+    mock_user_repo.get_user_by_id.return_value = {
+        "user_id": "user-123",
+        "name": "Not A Driver",
+    }
+    mock_user_repo.get_user_role.return_value = "customer"
+
+    with pytest.raises(HTTPException) as exc:
+        delivery_service.assign_driver_to_order("abc1234", "user-123", "manager-123")
+
+    assert exc.value.status_code == 400
+    mock_order_repo.assign_driver_to_order.assert_not_called()
+    mock_notification_service.create_driver_assigned_notification.assert_not_called()
+
+
+@patch("backend.app.services.delivery_service.notification_service")
+@patch("backend.app.services.delivery_service.user_repo")
+@patch("backend.app.services.delivery_service.restaurant_repo")
+@patch("backend.app.services.delivery_service.order_repo")
+def test_assign_driver_to_order_rejects_non_owner_manager(
+    mock_order_repo,
+    mock_restaurant_repo,
+    mock_user_repo,
+    mock_notification_service,
+):
+    """Managers who do not own the order restaurant should be rejected."""
+    mock_order_repo.get_order_record.return_value = {
+        **FAKE_ORDER,
+        "order_id": "abc1234",
+        "restaurant_id": 1,
+    }
+    mock_restaurant_repo.get_restaurant_record.return_value = {
+        "id": 1,
+        "owner_id": "other-manager",
+    }
+
+    with pytest.raises(HTTPException) as exc:
+        delivery_service.assign_driver_to_order("abc1234", "driver-123", "manager-123")
+
+    assert exc.value.status_code == 403
+    mock_user_repo.get_user_by_id.assert_not_called()
+    mock_order_repo.assign_driver_to_order.assert_not_called()
+    mock_notification_service.create_driver_assigned_notification.assert_not_called()
+
+
 @patch("backend.app.services.delivery_service.notification_service")
 @patch("backend.app.services.delivery_service.order_repo")
 def test_update_delivery_status_creates_notification_for_valid_transition(

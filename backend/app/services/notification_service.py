@@ -15,6 +15,7 @@ from backend.app.schemas.notification import NotificationResponse
 
 ORDER_PLACED_MESSAGE = "Order placed."
 ORDER_STATUS_CHANGED_MESSAGE_TEMPLATE = "Order status changed to {status}."
+DRIVER_ASSIGNED_MESSAGE = "You have been assigned a delivery."
 logger = logging.getLogger(__name__)
 
 
@@ -23,6 +24,7 @@ class NotificationEventType(str, Enum):
 
     ORDER_PLACED = "order_placed"
     ORDER_STATUS_CHANGED = "order_status_changed"
+    DRIVER_ASSIGNED = "driver_assigned"
 
 
 def _log_notification_failure(
@@ -84,6 +86,15 @@ def create_order_status_changed_notification(order_id: str, new_status: str) -> 
         message,
         order_id,
         NotificationEventType.ORDER_STATUS_CHANGED,
+    )
+
+
+def create_driver_assigned_notification(order_id: str) -> dict:
+    """Create a notification for a newly assigned delivery driver."""
+    return _create_notification_safely(
+        DRIVER_ASSIGNED_MESSAGE,
+        order_id,
+        NotificationEventType.DRIVER_ASSIGNED,
     )
 
 

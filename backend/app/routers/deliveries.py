@@ -30,6 +30,27 @@ def get_delivery_details(order_id: str):
     """Customer views driver name and delivery method"""
     return delivery_service.get_delivery_details(order_id)
 
+
+@router.patch("/{order_id}/driver")
+def assign_driver_to_order(
+    order_id: str,
+    body: Optional[dict] = None,
+    session_token: Optional[str] = Header(default=None),
+):
+    """Manager assigns a driver to an order"""
+    manager = require_manager(session_token)
+
+    driver_id = None if body is None else body.get("driver_id")
+    if driver_id is None:
+        raise HTTPException(status_code=400, detail="Missing driver_id")
+
+    return delivery_service.assign_driver_to_order(
+        order_id=order_id,
+        driver_id=driver_id,
+        manager_id=manager["user_id"],
+    )
+
+
 @router.patch("/{order_id}/status")
 def update_delivery_status(
     order_id: str,

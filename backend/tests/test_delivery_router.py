@@ -78,6 +78,46 @@ def test_get_delivery_details_not_found(mock_order_repo):
 
     assert response.status_code == 404
 
+
+@patch("backend.app.routers.deliveries.delivery_service.assign_driver_to_order")
+@patch("backend.app.routers.deliveries.require_manager")
+def test_manager_assign_driver_returns_200(mock_require_manager, mock_assign_driver):
+    """PATCH /{order_id}/driver should assign the driver for a manager."""
+    mock_require_manager.return_value = {"user_id": "manager-123"}
+    mock_assign_driver.return_value = {
+        "order_id": "abc1234",
+        "driver_id": "driver-123",
+        "driver_name": "John Doe",
+    }
+
+    response = client.patch(
+        "/orders/abc1234/driver",
+        json={"driver_id": "driver-123"},
+        headers={"session-token": "valid-manager-token"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["driver_id"] == "driver-123"
+    mock_assign_driver.assert_called_once_with(
+        order_id="abc1234",
+        driver_id="driver-123",
+        manager_id="manager-123",
+    )
+
+
+@patch("backend.app.routers.deliveries.require_manager")
+def test_assign_driver_returns_403_if_not_manager(mock_require_manager):
+    """PATCH /{order_id}/driver should return 403 for non-managers."""
+    mock_require_manager.side_effect = HTTPException(status_code=403, detail="Access denied")
+
+    response = client.patch(
+        "/orders/abc1234/driver",
+        json={"driver_id": "driver-123"},
+    )
+
+    assert response.status_code == 403
+
+
 @patch("backend.app.services.delivery_service.order_repo")
 @patch("backend.app.routers.deliveries.require_driver")
 def test_driver_update_status_valid_transition(mock_require_driver, mock_order_repo):
