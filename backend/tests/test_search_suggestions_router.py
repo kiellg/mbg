@@ -3,6 +3,8 @@
 from fastapi.testclient import TestClient
 from backend.main import app
 
+client = TestClient(app)
+
 def test_search_suggestions_success(monkeypatch):
     """Endpoint should return mocked suggestions"""
 
@@ -29,8 +31,6 @@ def test_search_suggestions_success(monkeypatch):
         mock_get_search_suggestions,
     )
 
-    client = TestClient(app)
-
     response = client.get("/restaurants/search/suggestions?q=test")
 
     assert response.status_code == 200
@@ -54,8 +54,6 @@ def test_search_suggestions_empty_result(monkeypatch):
         mock_get_search_suggestions,
     )
 
-    client = TestClient(app)
-
     response = client.get("/restaurants/search/suggestions?q=none")
 
     assert response.status_code == 200
@@ -63,8 +61,6 @@ def test_search_suggestions_empty_result(monkeypatch):
 
 def test_search_suggestions_query_param_required():
     """missing query param should return validation error"""
-    client = TestClient(app)
-
     response = client.get("/restaurants/search/suggestions")
 
     assert response.status_code == 422
@@ -81,8 +77,6 @@ def test_search_suggestions_passes_query(monkeypatch):
         "backend.app.routers.restaurants.get_search_suggestions",
         mock_get_search_suggestions,
     )
-
-    client = TestClient(app)
 
     client.get("/restaurants/search/suggestions?q=burger")
 
