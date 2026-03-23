@@ -5,6 +5,8 @@ from fastapi.testclient import TestClient
 from backend.app.data import cart_data, order_data, payment_data
 from backend.app.dependencies import get_current_user
 from backend.app.repositories import user_repo, restaurant_repo
+from backend.app.schemas.order import OrderStatus
+from backend.app.schemas.payment import PaymentStatus
 from backend.main import app
 
 client = TestClient(app)
@@ -70,8 +72,8 @@ def test_accepted_payment_moves_order_to_cooking():
     response = client.post(f"/payments/{order_id}", json=VALID_CARD)
 
     assert response.status_code == 201
-    assert response.json()["status"] == "Accepted"
-    assert order_data._ORDERDB[order_id]["status"] == "Cooking"
+    assert response.json()["status"] == PaymentStatus.ACCEPTED.value
+    assert order_data._ORDERDB[order_id]["status"] == OrderStatus.COOKING.value
 
 
 def test_declined_payment_leaves_order_as_pending():
