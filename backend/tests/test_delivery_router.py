@@ -67,7 +67,7 @@ def test_get_delivery_status_returns_200():
     assert data["delivery_delay"] == 1.5
 
 def test_get_delivery_status_not_found():
-    """GET /{order_id}/status should return 404 for a non-existent order — fault injection"""
+    """GET /{order_id}/status should return 404 for a non-existent order"""
     response = client.get("/orders/nonexistent/status")
     assert response.status_code == 404
 
@@ -96,7 +96,7 @@ def test_get_delivery_details_returns_200():
     assert data["delivery_distance"] == 3.5
 
 def test_get_delivery_details_not_found():
-    """GET /{order_id}/details should return 404 for a non-existent order — fault injection"""
+    """GET /{order_id}/details should return 404 for a non-existent order"""
     response = client.get("/orders/nonexistent/details")
     assert response.status_code == 404
 
@@ -154,7 +154,7 @@ def test_driver_update_status_valid_transition():
 
 
 def test_driver_update_status_no_token():
-    """PATCH /{order_id}/status should return 403 with no valid driver token — exception handling"""
+    """PATCH /{order_id}/status should return 403 with no valid driver token"""
     with _as_driver() as mock_driver:
         mock_driver.side_effect = HTTPException(status_code=403, detail="Forbidden")
         response = client.patch(
@@ -166,7 +166,7 @@ def test_driver_update_status_no_token():
 
 
 def test_driver_update_status_order_not_found():
-    """PATCH /{order_id}/status should return 404 if order does not exist — fault injection"""
+    """PATCH /{order_id}/status should return 404 if order does not exist"""
     with _as_driver():
         response = client.patch(
             "/orders/nonexistent/status",
@@ -183,7 +183,7 @@ def test_driver_update_status_order_not_found():
     (OrderStatus.DELIVERED, OrderStatus.COOKING),
 ])
 def test_driver_invalid_status_transition(current_status, attempted_status):
-    """PATCH /{order_id}/status should reject invalid status transitions — fault injection"""
+    """PATCH /{order_id}/status should reject invalid status transitions"""
     _override_order(ORDER_ID, {"status": current_status})
 
     with _as_driver():
