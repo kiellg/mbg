@@ -10,4 +10,4 @@ class RecentlyViewedItem(BaseModel):
 
 class RecentlyViewedResponse(BaseModel):
     """Response schema for recently viewed items"""
-    item: List[RecentlyViewedItem]
+    items: List[RecentlyViewedItem]
