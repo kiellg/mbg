@@ -10,7 +10,7 @@ from backend.app.schemas.restaurant import (
 )
 from backend.app.schemas.menu import MenuItemOut
 from backend.app.services.restaurants_service import (
-    get_restaurant_menu,
+    get_restaurant_menu_with_tracking,
     get_all_restaurants_list,
     get_all_restaurants_paginated,
     get_restaurant_menu_paginated,
@@ -23,14 +23,12 @@ from backend.app.services.restaurants_service import (
     search_restaurant,
     search_menu_items,
     filter_restaurants,
-    get_menu_item_detail,
+    get_menu_item_detail_with_tracking,
     get_search_suggestions,
 )
 from backend.app.services.role_service import require_manager
 from backend.app.data.categories_data import VALID_CATEGORIES, VALID_DIETARY_TAGS
 from backend.app.schemas.search import SuggestionResponse
-from backend.app.services.recently_viewed_service import track_recently_viewed
-from backend.app.repositories.session_repo import get_session
 
 router = APIRouter(prefix="/restaurants", tags=["restaurants"])
 
@@ -62,19 +60,13 @@ def read_restaurant_menu(
     request: Request = None,
     session_token: Optional[str] = Header(default=None),
 ):
-    """Endpoint to get a restaurant menu with price formatting and status (supports pagination)"""
-    result = get_restaurant_menu(restaurant_id)
+    """Endpoint to get a restaurant menu with tracking"""
+    token = get_session_token(request, session_token)
 
-    if request:
-        try:
-            token = get_session_token(request, session_token)
-            session = get_session(token)
-
-            if session:
-                track_recently_viewed(session["user_id"], "restaurant", restaurant_id)
-        except (KeyError, TypeError):
-            pass
-    return result
+    return get_restaurant_menu_with_tracking(
+        restaurant_id,
+        token,
+    )
 
 @router.get("/paginated")
 def read_all_restaurants_paginated(
@@ -224,18 +216,11 @@ def read_menu_item_detail(
     request: Request = None,
     session_token: Optional[str] = Header(default=None),
 ):
-    """Return detailed information for a single menu item"""
-    result = get_menu_item_detail(restaurant_id, item_id)
+    """Return detailed information for a menu item with tracking"""
+    token = get_session_token(request, session_token)
 
-    if request:
-        try:
-            token = get_session_token(request, session_token)
-            session = get_session(token)
-
-            if session:
-                track_recently_viewed(session["user_id"], "menu_item", item_id)
-
-        except (KeyError, TypeError):
-            pass
-
-    return result
+    return get_menu_item_detail_with_tracking(
+        restaurant_id,
+        item_id,
+        token,
+    )

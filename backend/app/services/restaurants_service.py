@@ -3,6 +3,7 @@
 
 import copy
 
+from typing import Optional
 from fastapi import HTTPException
 
 from backend.app.data.categories_data import VALID_CATEGORIES
@@ -32,6 +33,8 @@ from backend.app.repositories.restaurant_repo import (
 from backend.app.utils.formatting import format_cad_from_cents
 from backend.app.pagination import paginate
 from backend.app.schemas.search import SuggestionItem, SuggestionResponse
+from backend.app.repositories.session_repo import get_session
+from backend.app.services.recently_viewed_service import track_recently_viewed
 
 def get_all_restaurants_list(
         sort_by: str = "rating",
@@ -361,3 +364,44 @@ def get_menu_item_detail(restaurant_id: int, item_id: int):
         item["price_status"] = PriceStatus.OK
 
     return item
+
+def get_restaurant_menu_with_tracking(
+        restaurant_id: int,
+        session_token: Optional[str],
+):
+    """Fetch restaurant menu and track recently viewed"""
+    result = get_restaurant_menu(restaurant_id)
+
+    try:
+        session = get_session(session_token)
+        if session:
+            track_recently_viewed(
+                session["user_id"],
+                "restaurant",
+                restaurant_id,
+            )
+    except (KeyError, TypeError):
+        pass
+
+    return result
+
+def get_menu_item_detail_with_tracking(
+        restaurant_id: int,
+        item_id: int,
+        session_token: Optional[str]
+):
+    """Fetch menu item detail and track recently viewed"""
+    result = get_menu_item_detail(restaurant_id, item_id)
+
+    try:
+        session = get_session(session_token)
+        if session:
+            track_recently_viewed(
+                session["user_id"],
+                "menu_item",
+                item_id,
+            )
+    except (KeyError, TypeError):
+        pass
+
+    return result
