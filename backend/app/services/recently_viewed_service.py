@@ -1,6 +1,6 @@
 """Service layer for recently viewed items"""
 
-import time
+from datetime import datetime
 from backend.app.repositories.recently_viewed_repo import(
     get_recently_viewed,
     add_recently_viewed,
@@ -11,7 +11,7 @@ def track_recently_viewed(user_id: str, item_type: str, item_id: int) -> None:
     item = {
         "type": item_type,
         "id": item_id,
-        "timestamp": int(time.time()),
+        "timestamp": datetime.utcnow().isoformat(),
     }
 
     add_recently_viewed(user_id, item)
