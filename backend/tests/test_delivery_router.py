@@ -71,7 +71,12 @@ def test_get_delivery_status_not_found():
     response = client.get("/orders/nonexistent/status")
     assert response.status_code == 404
 
-@pytest.mark.parametrize("status", [OrderStatus.PENDING, OrderStatus.COOKING, OrderStatus.OUT_FOR_DELIVERY, OrderStatus.DELIVERED])
+@pytest.mark.parametrize("status", [
+    OrderStatus.PENDING, 
+    OrderStatus.COOKING, 
+    OrderStatus.OUT_FOR_DELIVERY, 
+    OrderStatus.DELIVERED
+    ])
 def test_get_delivery_status_reflects_status(status):
     """GET /{order_id}/status should reflect whatever status the order currently has"""
     _override_order(ORDER_ID, {"status": status})
