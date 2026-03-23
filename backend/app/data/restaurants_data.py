@@ -56,6 +56,17 @@ _SEED: Dict[int, Dict[str, Any]] = {
                 "is_available": True,
                 "category": {"id": 30, "name": "Starters"},
             },
+            {
+                "id": 5,
+                "name": "Scallops",
+                "price_cents": 999,
+                "description": "Market price item, check with server",
+                "dietary_tag": "",
+                "is_visible": False,
+                "is_active": True,
+                "is_available": False,
+                "category": {"id": 10, "name": "Mains"},
+            },
         ],
     },
     2: {
