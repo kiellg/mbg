@@ -1,5 +1,5 @@
 # pylint: disable=unused-argument
-# pylint: disable=protected-access
+# pylint: disable=protected-access, duplicate-code
 """Unit tests for checkout_service.py with mocked dependencies."""
 
 from decimal import Decimal

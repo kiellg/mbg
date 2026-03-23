@@ -1,5 +1,5 @@
 """Integration tests for checkout flow."""
-# pylint: disable = protected-access
+# pylint: disable=protected-access, duplicate-code
 from fastapi.testclient import TestClient
 
 from backend.app.data import cart_data, order_data

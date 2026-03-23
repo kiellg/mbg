@@ -1,5 +1,5 @@
 """Integration tests for pricing through checkout and pending-order routes."""
-# pylint: disable=protected-access
+# pylint: disable=protected-access, duplicate-code
 
 from fastapi.testclient import TestClient
 

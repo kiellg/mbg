@@ -1,5 +1,5 @@
 # pylint: disable=protected-access
-"""Unit tests for PricingService in isolation."""
+"""Unit tests for PricingService."""
 
 
 from dataclasses import dataclass
