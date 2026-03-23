@@ -2,13 +2,15 @@
 
 from fastapi.testclient import TestClient
 from backend.main import app
+from backend.app.services.recently_viewed_service import track_recently_viewed
 
 client = TestClient(app)
 
 def test_recently_viewed_empty(monkeypatch):
     """Should return empty list when user has no history"""
 
-    def mock_get_session(token):
+    def mock_get_session(_token):
+        """Mock session retrieval"""
         return {"user_id": "user_1"}
 
     monkeypatch.setattr(
@@ -24,15 +26,14 @@ def test_recently_viewed_empty(monkeypatch):
 def test_recently_viewed_after_tracking(monkeypatch):
     """Items should appear after being tracked"""
 
-    def mock_get_session(token):
+    def mock_get_session(_token):
+        """Mock session retrieval"""
         return {"user_id": "user_1"}
 
     monkeypatch.setattr(
         "backend.app.routers.recently_viewed.get_session",
         mock_get_session,
     )
-
-    from backend.app.services.recently_viewed_service import track_recently_viewed
 
     track_recently_viewed("user_1", "restaurant", 1)
 
@@ -48,15 +49,14 @@ def test_recently_viewed_after_tracking(monkeypatch):
 def test_recently_viewed_order_and_no_duplicates(monkeypatch):
     """Most recent item should appear fisrt and duplicates removed"""
 
-    def mock_get_session(token):
+    def mock_get_session(_token):
+        """Mock session retrieval"""
         return {"user_id": "user_1"}
 
     monkeypatch.setattr(
         "backend.app.routers.recently_viewed.get_session",
         mock_get_session,
     )
-
-    from backend.app.services.recently_viewed_service import track_recently_viewed
 
     track_recently_viewed("user_1", "restaurant", 1)
     track_recently_viewed("user_1", "restaurant", 2)
@@ -74,15 +74,14 @@ def test_recently_viewed_order_and_no_duplicates(monkeypatch):
 def test_recently_viewed_max_limit(monkeypatch):
     """Should keep only the 10 most recent items"""
 
-    def mock_get_session(token):
+    def mock_get_session(_token):
+        """Mock session retrieval"""
         return {"user_id": "user_1"}
 
     monkeypatch.setattr(
         "backend.app.routers.recently_viewed.get_session",
         mock_get_session,
     )
-
-    from backend.app.services.recently_viewed_service import track_recently_viewed
 
     for i in range(12):
         track_recently_viewed("user_1", "restaurant", i)
