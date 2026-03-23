@@ -7,6 +7,7 @@ from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
+from fastapi import HTTPException
 
 from backend.app.services.pricing_service import PricingService
 
@@ -153,8 +154,11 @@ def test_calculate_delivery_fee_car():
 
 def test_validate_order_rejects_none_order():
     """Test that order validation rejects a missing order."""
-    with pytest.raises(ValueError, match="Order is required"):
+    with pytest.raises(HTTPException) as exc:
         PricingService._validate_order(None)
+
+    assert exc.value.status_code == 400
+    assert exc.value.detail == "Order is required"
 
 
 def test_validate_order_rejects_missing_items():
@@ -167,62 +171,86 @@ def test_validate_order_rejects_missing_items():
         delivery_method="walk",
     )
 
-    with pytest.raises(ValueError, match="Order items are required"):
+    with pytest.raises(HTTPException) as exc:
         PricingService._validate_order(order)
+
+    assert exc.value.status_code == 400
+    assert exc.value.detail == "Order items are required"
 
 
 def test_validate_item_rejects_none_item():
     """Test that item validation rejects a missing order item."""
-    with pytest.raises(ValueError, match="Order item is required"):
+    with pytest.raises(HTTPException) as exc:
         PricingService._validate_item(None)
+
+    assert exc.value.status_code == 400
+    assert exc.value.detail == "Order item is required"
 
 
 def test_validate_item_rejects_none_quantity():
     """Test that item validation rejects an item with a missing quantity."""
     item = OrderItem(order_item_id=1, order_id=6, quantity=None, item_price="10.00")
 
-    with pytest.raises(ValueError, match="Order item quantity is required"):
+    with pytest.raises(HTTPException) as exc:
         PricingService._validate_item(item)
+
+    assert exc.value.status_code == 400
+    assert exc.value.detail == "Order item quantity is required"
 
 
 def test_validate_item_rejects_zero_quantity():
     """Test that item validation rejects an item with zero quantity."""
     item = OrderItem(order_item_id=1, order_id=7, quantity=0, item_price="10.00")
 
-    with pytest.raises(ValueError, match="Order item quantity must be greater than zero"):
+    with pytest.raises(HTTPException) as exc:
         PricingService._validate_item(item)
+
+    assert exc.value.status_code == 400
+    assert exc.value.detail == "Order item quantity must be greater than zero"
 
 
 def test_validate_item_rejects_negative_quantity():
     """Test that item validation rejects an item with a negative quantity."""
     item = OrderItem(order_item_id=1, order_id=8, quantity=-1, item_price="10.00")
 
-    with pytest.raises(ValueError, match="Order item quantity must be greater than zero"):
+    with pytest.raises(HTTPException) as exc:
         PricingService._validate_item(item)
+
+    assert exc.value.status_code == 400
+    assert exc.value.detail == "Order item quantity must be greater than zero"
 
 
 def test_validate_item_rejects_none_item_price():
     """Test that item validation rejects an item with a missing price."""
     item = OrderItem(order_item_id=1, order_id=9, quantity=1, item_price=None)
 
-    with pytest.raises(ValueError, match="Order item price is required"):
+    with pytest.raises(HTTPException) as exc:
         PricingService._validate_item(item)
+
+    assert exc.value.status_code == 400
+    assert exc.value.detail == "Order item price is required"
 
 
 def test_validate_item_rejects_invalid_item_price():
     """Test that item validation rejects an item with a non-numeric price."""
     item = OrderItem(order_item_id=1, order_id=10, quantity=1, item_price="abc")
 
-    with pytest.raises(ValueError, match="Order item price must be a valid number"):
+    with pytest.raises(HTTPException) as exc:
         PricingService._validate_item(item)
+
+    assert exc.value.status_code == 400
+    assert exc.value.detail == "Order item price must be a valid number"
 
 
 def test_validate_item_rejects_negative_item_price():
     """Test that item validation rejects an item with a negative price."""
     item = OrderItem(order_item_id=1, order_id=11, quantity=1, item_price="-5.00")
 
-    with pytest.raises(ValueError, match="Order item price cannot be negative"):
+    with pytest.raises(HTTPException) as exc:
         PricingService._validate_item(item)
+
+    assert exc.value.status_code == 400
+    assert exc.value.detail == "Order item price cannot be negative"
 
 
 def test_validate_tax_rate_rejects_invalid_tax_rate():
@@ -236,8 +264,11 @@ def test_validate_tax_rate_rejects_invalid_tax_rate():
         tax_rate="abc",
     )
 
-    with pytest.raises(ValueError, match="Tax rate must be a valid number"):
+    with pytest.raises(HTTPException) as exc:
         PricingService._validate_tax_rate(order)
+
+    assert exc.value.status_code == 400
+    assert exc.value.detail == "Tax rate must be a valid number"
 
 
 def test_validate_tax_rate_rejects_negative_tax_rate():
@@ -251,17 +282,26 @@ def test_validate_tax_rate_rejects_negative_tax_rate():
         tax_rate="-0.10",
     )
 
-    with pytest.raises(ValueError, match="Tax rate cannot be negative"):
+    with pytest.raises(HTTPException) as exc:
         PricingService._validate_tax_rate(order)
+
+    assert exc.value.status_code == 400
+    assert exc.value.detail == "Tax rate cannot be negative"
 
 
 def test_calculate_delivery_fee_rejects_invalid_delivery_method():
     """Test that delivery fee calculation rejects an unsupported delivery method."""
-    with pytest.raises(ValueError, match="Delivery method must be one of: walk, bike, car"):
+    with pytest.raises(HTTPException) as exc:
         PricingService.calculate_delivery_fee("plane")
+
+    assert exc.value.status_code == 400
+    assert exc.value.detail == "Delivery method must be one of: walk, bike, car"
 
 
 def test_calculate_delivery_fee_rejects_missing_delivery_method():
     """Test that delivery fee calculation rejects a missing delivery method."""
-    with pytest.raises(ValueError, match="Delivery method is required"):
+    with pytest.raises(HTTPException) as exc:
         PricingService.calculate_delivery_fee(None)
+
+    assert exc.value.status_code == 400
+    assert exc.value.detail == "Delivery method is required"

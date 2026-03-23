@@ -1,6 +1,7 @@
 """Pricing service logic for order totals."""
 
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from fastapi import HTTPException
 
 from backend.app.schemas.order import DeliveryMethod
 
@@ -31,39 +32,45 @@ class PricingService:  # pylint: disable=too-few-public-methods
     def _validate_order(order) -> None:
         """Validate required order-level fields."""
         if order is None:
-            raise ValueError("Order is required")
+            raise HTTPException(status_code=400, detail="Order is required")
 
         if not hasattr(order, "items") or order.items is None:
-            raise ValueError("Order items are required")
+            raise HTTPException(status_code=400, detail="Order items are required")
 
     @staticmethod
     def _validate_item(item) -> tuple[int, Decimal]:
         """Validate an order item and return quantity and decimal price."""
         if item is None:
-            raise ValueError("Order item is required")
+            raise HTTPException(status_code=400, detail="Order item is required")
 
         if not hasattr(item, "quantity"):
-            raise ValueError("Order item quantity is required")
+            raise HTTPException(status_code=400, detail="Order item quantity is required")
         if not hasattr(item, "item_price"):
-            raise ValueError("Order item price is required")
+            raise HTTPException(status_code=400, detail="Order item price is required")
 
         quantity = item.quantity
         if quantity is None:
-            raise ValueError("Order item quantity is required")
+            raise HTTPException(status_code=400, detail="Order item quantity is required")
         if quantity <= 0:
-            raise ValueError("Order item quantity must be greater than zero")
+            raise HTTPException(
+                status_code=400,
+                detail="Order item quantity must be greater than zero",
+            )
 
         price = item.item_price
         if price is None:
-            raise ValueError("Order item price is required")
+            raise HTTPException(status_code=400, detail="Order item price is required")
 
         try:
             price_decimal = Decimal(str(price))
         except (InvalidOperation, ValueError, TypeError) as exc:
-            raise ValueError("Order item price must be a valid number") from exc
+            raise HTTPException(
+                status_code=400,
+                detail="Order item price must be a valid number",
+            ) from exc
 
         if price_decimal < 0:
-            raise ValueError("Order item price cannot be negative")
+            raise HTTPException(status_code=400, detail="Order item price cannot be negative")
 
         return quantity, price_decimal
 
@@ -73,12 +80,15 @@ class PricingService:  # pylint: disable=too-few-public-methods
         method = getattr(delivery_method, "value", delivery_method)
 
         if method is None:
-            raise ValueError("Delivery method is required")
+            raise HTTPException(status_code=400, detail="Delivery method is required")
 
         try:
             method_enum = DeliveryMethod(str(method).strip().lower())
         except ValueError as exc:
-            raise ValueError("Delivery method must be one of: walk, bike, car") from exc
+            raise HTTPException(
+                status_code=400,
+                detail="Delivery method must be one of: walk, bike, car",
+            ) from exc
 
         return _to_money(DELIVERY_FEE_BY_METHOD[method_enum])
 
@@ -89,10 +99,10 @@ class PricingService:  # pylint: disable=too-few-public-methods
         try:
             tax_rate = Decimal(str(tax_rate_raw))
         except (InvalidOperation, ValueError, TypeError) as exc:
-            raise ValueError("Tax rate must be a valid number") from exc
+            raise HTTPException(status_code=400, detail="Tax rate must be a valid number") from exc
 
         if tax_rate < 0:
-            raise ValueError("Tax rate cannot be negative")
+            raise HTTPException(status_code=400, detail="Tax rate cannot be negative")
 
         return tax_rate
 
