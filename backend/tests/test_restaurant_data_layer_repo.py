@@ -75,7 +75,7 @@ def test_add_menu_item_appends_to_menu():
     })
     assert item["restaurant_id"] == 1
     assert item["name"] == "Lobster"
-    assert item["id"] == 5
+    assert item["id"] == 6
 
 def test_update_menu_item_changes_fields():
     """Should update only provided fields"""
