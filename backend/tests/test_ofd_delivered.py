@@ -69,7 +69,10 @@ def test_mark_out_for_delivery_returns_200():
     assert response.status_code == 200
     assert response.json()["status"] == "Out for Delivery"
 
-@pytest.mark.parametrize("invalid_status", [OrderStatus.PENDING, OrderStatus.DELIVERED, OrderStatus.CANCELLED])
+@pytest.mark.parametrize("invalid_status", [
+    OrderStatus.PENDING,
+    OrderStatus.DELIVERED,
+    OrderStatus.CANCELLED])
 def test_mark_out_for_delivery_returns_400_when_not_cooking(invalid_status):
     """PATCH /status/out-for-delivery should return 400 if order is not Cooking"""
     _override_order(ORDER_ID, {"status": invalid_status})
@@ -107,7 +110,9 @@ def test_mark_delivered_returns_200():
     assert response.status_code == 200
     assert response.json()["status"] == "Delivered"
 
-@pytest.mark.parametrize("invalid_status", [OrderStatus.PENDING, OrderStatus.COOKING, OrderStatus.CANCELLED])
+@pytest.mark.parametrize("invalid_status", [OrderStatus.PENDING,
+                                            OrderStatus.COOKING,
+                                            OrderStatus.CANCELLED])
 def test_mark_delivered_returns_400_when_not_out_for_delivery(invalid_status):
     """PATCH /status/delivered should return 400 if order is not Out for Delivery"""
     _override_order(ORDER_ID, {"status": invalid_status})
