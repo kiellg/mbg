@@ -37,6 +37,11 @@ def add_item_to_cart(cart_id: int, menu_item_id: int, quantity: int) -> Optional
     if not cart:
         return None
 
+    for item in cart["items"]:
+        if item["menu_item_id"] == menu_item_id:
+            item["quantity"] += quantity
+            return item
+
     item_id = cart_data.NEXT_ITEM_ID
     cart_data.NEXT_ITEM_ID += 1
 

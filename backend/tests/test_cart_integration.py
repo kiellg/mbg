@@ -55,6 +55,7 @@ def test_add_multiple_items_accumulates_in_cart():
 
     assert response.status_code == 201
     assert response.json()["cart_subtotal_cents"] > 0
+    assert response.json()["items"][0]["quantity"] == 3
 
 
 def test_get_cart_returns_correct_cart():
@@ -104,6 +105,7 @@ def test_cart_subtotal_reflects_item_prices():
     response = client.get("/cart/1")
 
     assert response.status_code == 200
+    assert len(response.json()["items"]) == 1
     assert response.json()["cart_subtotal_cents"] > 0
     assert response.json()["display_cart_subtotal"] != ""
 
