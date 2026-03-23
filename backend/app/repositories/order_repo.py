@@ -145,6 +145,22 @@ def cancel_order_record(order_id: str) -> Optional[Dict[str, Any]]:
     """Set an order status to Cancelled."""
     return set_order_status(order_id, "Cancelled")
 
+
+def assign_driver_to_order(
+    order_id: str,
+    driver_id: str,
+    driver_name: str,
+) -> Optional[Dict[str, Any]]:
+    """Assign a driver to an order record."""
+    order = order_data._ORDERDB.get(order_id)
+    if order is None:
+        return None
+
+    order["driver_id"] = driver_id
+    order["driver_name"] = driver_name
+    return order
+
+
 def get_orders_assigned_to_driver(driver_id: str) -> List[Dict[str, Any]]:
     """Return all orders assigned to a specific driver."""
     return [

@@ -282,3 +282,18 @@ def test_cancel_order_record_returns_none_for_missing_order_id():
     result = order_repo.cancel_order_record("missing")
 
     assert result is None
+
+
+def test_assign_driver_to_order_updates_driver_fields():
+    """Should store the assigned driver id and name on the order."""
+    order_repo.create_order_record(
+        customer_id="customer-1",
+        restaurant_id=5,
+        delivery_address="123 Test St",
+        items=[{"quantity": 2, "item_price": "12.50"}],
+    )
+
+    result = order_repo.assign_driver_to_order("order-1", "driver-123", "Driver One")
+
+    assert result["driver_id"] == "driver-123"
+    assert result["driver_name"] == "Driver One"
