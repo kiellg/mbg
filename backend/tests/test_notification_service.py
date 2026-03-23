@@ -2,7 +2,8 @@
 # pylint: disable=protected-access
 
 from unittest.mock import patch
-
+import pytest
+from fastapi import HTTPException
 from backend.app.data import order_data
 from backend.app.data.notification_data import NOTIFICATIONS
 from backend.app.repositories import order_repo, restaurant_repo, user_repo
@@ -33,9 +34,11 @@ def test_create_order_placed_notification_stores_minimal_record():
     """Order placement notifications should store message, timestamp, and order_id."""
     record = notification_service.create_order_placed_notification("abc1234")
 
+    assert "notification_id" in record
     assert record["message"] == "Order placed."
     assert record["order_id"] == "abc1234"
     assert "timestamp" in record
+    assert record["read_by_user_ids"] == []
     assert NOTIFICATIONS == [record]
 
 
@@ -46,9 +49,11 @@ def test_create_order_status_changed_notification_stores_minimal_record():
         "Cooking",
     )
 
+    assert "notification_id" in record
     assert record["message"] == "Order status changed to Cooking."
     assert record["order_id"] == "abc1234"
     assert "timestamp" in record
+    assert record["read_by_user_ids"] == []
     assert NOTIFICATIONS == [record]
 
 
@@ -56,9 +61,11 @@ def test_create_driver_assigned_notification_stores_minimal_record():
     """Driver assignment notifications should store message, timestamp, and order_id."""
     record = notification_service.create_driver_assigned_notification("abc1234")
 
+    assert "notification_id" in record
     assert record["message"] == "You have been assigned a delivery."
     assert record["order_id"] == "abc1234"
     assert "timestamp" in record
+    assert record["read_by_user_ids"] == []
     assert NOTIFICATIONS == [record]
 
 
@@ -106,6 +113,7 @@ def test_list_notifications_for_customer_returns_only_own_newest_first():
         newest_order["order_id"],
         first_order["order_id"],
     ]
+    assert [item.is_read for item in result] == [False, False]
 
 
 def test_list_notifications_for_manager_returns_only_owned_restaurant_orders():
@@ -159,3 +167,55 @@ def test_list_notifications_for_driver_returns_only_assigned_orders():
     result = notification_service.list_notifications_for_user(driver["user_id"])
 
     assert [item.order_id for item in result] == [matching_order["order_id"]]
+
+
+def test_mark_notification_as_read_updates_only_current_user():
+    """Marking a notification as read should only affect the current user."""
+    customer = user_repo.create_user("cust", "cust@email.com", "pw123")
+    user_repo.create_customer(customer["user_id"])
+
+    manager = user_repo.create_user("mgr", "mgr@email.com", "pw123")
+    user_repo.create_manager(manager["user_id"])
+    restaurant_repo.get_restaurant_record(1)["owner_id"] = manager["user_id"]
+
+    order = _create_order(customer["user_id"], 1)
+    record = create_notification("Order placed.", order["order_id"])
+
+    customer_notifications = notification_service.list_notifications_for_user(customer["user_id"])
+    manager_notifications = notification_service.list_notifications_for_user(manager["user_id"])
+    assert customer_notifications[0].is_read is False
+    assert manager_notifications[0].is_read is False
+
+    result = notification_service.mark_notification_as_read_for_user(
+        record["notification_id"],
+        customer["user_id"],
+    )
+
+    assert result.notification_id == record["notification_id"]
+    assert result.is_read is True
+
+    customer_notifications = notification_service.list_notifications_for_user(customer["user_id"])
+    manager_notifications = notification_service.list_notifications_for_user(manager["user_id"])
+    assert customer_notifications[0].is_read is True
+    assert manager_notifications[0].is_read is False
+
+
+def test_mark_notification_as_read_rejects_hidden_notification():
+    """Users should not be able to mark invisible notifications as read."""
+    customer = user_repo.create_user("cust", "cust@email.com", "pw123")
+    user_repo.create_customer(customer["user_id"])
+
+    other_customer = user_repo.create_user("other", "other@email.com", "pw123")
+    user_repo.create_customer(other_customer["user_id"])
+
+    order = _create_order(customer["user_id"], 1)
+    record = create_notification("Order placed.", order["order_id"])
+
+    with pytest.raises(HTTPException) as exc:
+        notification_service.mark_notification_as_read_for_user(
+            record["notification_id"],
+            other_customer["user_id"],
+        )
+
+    assert exc.value.status_code == 403
+    assert exc.value.detail == "Not authorized to view this notification."
