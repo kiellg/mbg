@@ -95,7 +95,7 @@ def test_checkout_fails_if_already_checked_out():
 
 
 def test_checkout_uses_official_menu_price():
-    """Order items should use the official menu price not any client-supplied price."""
+    """Order items should use the official menu price."""
     _register_customer()
     cart_id = _add_item_and_get_cart_id()
 
