@@ -70,6 +70,49 @@ def test_update_item_cart_not_found_raises(monkeypatch):
 
     assert excinfo.value.status_code == 404
 
+def test_update_item_returns_updated_cart(monkeypatch):
+    """Should return updated CartResponse when item quantity is changed."""
+    restaurant_id = 1
+    cart = {
+        "id": 1, "customer_id": "42", "restaurant_id": restaurant_id,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "items": [{"id": 1, "cart_id": 1, "menu_item_id": 1, "quantity": 3}]
+    }
+    monkeypatch.setattr(
+        cart_repo, "get_cart_by_customer_and_restaurant", lambda cid, rid: cart
+    )
+    monkeypatch.setattr(
+        cart_repo, "update_item_quantity",
+        lambda cart_id, item_id, qty: {"id": 1, "quantity": qty}
+    )
+    monkeypatch.setattr(cart_repo, "get_cart_by_id", lambda cart_id: cart)
+
+    with patch("backend.app.services.cart_service.restaurant_repo") as mock_restaurant_repo:
+        mock_restaurant_repo.get_restaurant_record.return_value = {"id": 1}
+        mock_restaurant_repo.get_menu_item.return_value = FAKE_MENU_ITEM
+
+        payload = CartItemUpdate(quantity=3)
+        resp = cart_service.update_item("42", restaurant_id, 1, payload)
+
+    assert resp.id == 1
+    assert resp.items[0].quantity == 3
+
+def test_update_item_raises_404_if_item_not_in_cart(monkeypatch):
+    """Should raise 404 when item does not exist in the cart."""
+    cart = {
+        "id": 1, "customer_id": "42", "restaurant_id": 1,
+        "created_at": datetime.now(timezone.utc).isoformat(), "items": []
+    }
+    monkeypatch.setattr(
+        cart_repo, "get_cart_by_customer_and_restaurant", lambda cid, rid: cart
+    )
+    monkeypatch.setattr(
+        cart_repo, "update_item_quantity", lambda cart_id, item_id, qty: None
+    )
+
+    with pytest.raises(HTTPException) as exc:
+        cart_service.update_item("42", 1, 99, CartItemUpdate(quantity=2))
+    assert exc.value.status_code == 404
 
 def test_remove_item_not_found_raises(monkeypatch):
     """Removing an item that doesn't exist in the cart should raise 404."""
@@ -84,3 +127,45 @@ def test_remove_item_not_found_raises(monkeypatch):
         cart_service.remove_item(customer_id="7", restaurant_id="1", item_id=1)
 
     assert excinfo.value.status_code == 404
+
+def test_remove_item_cart_not_found_raises(monkeypatch):
+    """Should raise 404 when cart does not exist."""
+    monkeypatch.setattr(
+        cart_repo, "get_cart_by_customer_and_restaurant", lambda cid, rid: None
+    )
+
+    with pytest.raises(HTTPException) as exc:
+        cart_service.remove_item("42", 1, 1)
+    assert exc.value.status_code == 404
+
+def test_get_cart_returns_cart_response(monkeypatch):
+    """Should return CartResponse when cart exists."""
+    restaurant_id = 1
+    cart = {
+        "id": 1, "customer_id": "42", "restaurant_id": restaurant_id,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "items": [{"id": 1, "cart_id": 1, "menu_item_id": 1, "quantity": 2}]
+    }
+    monkeypatch.setattr(
+        cart_repo, "get_cart_by_customer_and_restaurant", lambda cid, rid: cart
+    )
+
+    with patch("backend.app.services.cart_service.restaurant_repo") as mock_restaurant_repo:
+        mock_restaurant_repo.get_restaurant_record.return_value = {"id": 1}
+        mock_restaurant_repo.get_menu_item.return_value = FAKE_MENU_ITEM
+
+        resp = cart_service.get_cart("42", restaurant_id)
+
+    assert resp.id == 1
+    assert resp.customer_id == "42"
+    assert resp.cart_subtotal_cents == 500 * 2
+
+def test_get_cart_raises_404_if_not_found(monkeypatch):
+    """Should raise 404 when cart does not exist."""
+    monkeypatch.setattr(
+        cart_repo, "get_cart_by_customer_and_restaurant", lambda cid, rid: None
+    )
+
+    with pytest.raises(HTTPException) as exc:
+        cart_service.get_cart("42", 1)
+    assert exc.value.status_code == 404
