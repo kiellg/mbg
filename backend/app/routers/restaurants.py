@@ -29,6 +29,8 @@ from backend.app.services.restaurants_service import (
 from backend.app.services.role_service import require_manager
 from backend.app.data.categories_data import VALID_CATEGORIES, VALID_DIETARY_TAGS
 from backend.app.schemas.search import SuggestionResponse
+from backend.app.services.recently_viewed_service import track_recently_viewed
+from backend.app.repositories.session_repo import get_session
 
 router = APIRouter(prefix="/restaurants", tags=["restaurants"])
 
@@ -55,9 +57,24 @@ def read_all_restaurants():
     return get_all_restaurants_list()
 
 @router.get("/{restaurant_id}/menu", response_model=RestaurantOut)
-def read_restaurant_menu(restaurant_id: int):
+def read_restaurant_menu(
+    restaurant_id: int,
+    request: Request = None,
+    session_token: Optional[str] = Header(default=None),
+):
     """Endpoint to get a restaurant menu with price formatting and status (supports pagination)"""
-    return get_restaurant_menu(restaurant_id)
+    result = get_restaurant_menu(restaurant_id)
+
+    if request:
+        try:
+            token = get_session_token(request, session_token)
+            session = get_session(token)
+
+            if session:
+                track_recently_viewed(session["user_id"], "restaurant", restaurant_id)
+        except (KeyError, TypeError):
+            pass
+    return result
 
 @router.get("/paginated")
 def read_all_restaurants_paginated(
@@ -201,6 +218,24 @@ def filter_restaurants_endpoint(cuisine_types: Optional[list[str]] = Query(None)
     return filter_restaurants(cuisine_types)
 
 @router.get("/{restaurant_id}/menu/{item_id}", response_model=MenuItemOut)
-def read_menu_item_detail(restaurant_id: int, item_id: int):
+def read_menu_item_detail(
+    restaurant_id: int,
+    item_id: int,
+    request: Request = None,
+    session_token: Optional[str] = Header(default=None),
+):
     """Return detailed information for a single menu item"""
-    return get_menu_item_detail(restaurant_id, item_id)
+    result = get_menu_item_detail(restaurant_id, item_id)
+
+    if request:
+        try:
+            token = get_session_token(request, session_token)
+            session = get_session(token)
+
+            if session:
+                track_recently_viewed(session["user_id"], "menu_item", item_id)
+
+        except (KeyError, TypeError):
+            pass
+
+    return result
