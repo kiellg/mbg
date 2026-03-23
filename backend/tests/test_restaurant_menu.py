@@ -3,64 +3,14 @@
 from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
+from backend.app.repositories import restaurant_repo
 from backend.main import app
-
-#pylint: disable=duplicate-code
-FAKE_RESTAURANT = {
-    "id": 1,
-    "name": "Test Restaurant",
-    "address": "123 Test St",
-    "rating": 4,
-    "opening_hours": "Mon-Sun 9-5",
-   "menu": [
-        {"id": 1, "name": "Burger",
-         "price_cents": 4999,
-         "is_visible": True,
-         "is_active": True,
-         "description": "",
-         "dietary_tag": "",
-         "is_available": True,
-         "category": None},
-        {"id": 2, "name": "Hidden Item",
-         "price_cents": 999,  "is_visible":
-         False, "is_active": True,
-         "description": "",
-         "dietary_tag": "",
-         "is_available": True,
-         "category": None},
-        {"id": 3, "name": "Invalid Price",
-         "price_cents": -100, "is_visible": True,
-         "is_active": True,
-         "description": "",
-         "dietary_tag": "",
-         "is_available": True,
-         "category": None},
-        {"id": 4,
-         "name": "Missing Price",
-         "price_cents": None,
-         "is_visible": True,
-         "is_active": True,
-         "description": "",
-         "dietary_tag": "",
-         "is_available": True,
-         "category": None},
-    ],
-}
-
-_REPO = "backend.app.services.restaurants_service.get_restaurant_record"
 
 client = TestClient(app)
 
-def _get_menu_item(data: dict, item_id: int) -> dict:
-    """Extract a menu item by id with a clear failure message"""
-    item = next((i for i in data["menu"] if i["id"] == item_id), None)
-    assert item is not None, f"Expected item with id={item_id} in menu"
-    return item
-
-def _get_menu(restaurant_id: int = 1) -> dict:
-    """Perform GET /restaurants/{id}/menu and return parsed JSON"""
-    r = client.get(f"/restaurants/{restaurant_id}/menu")
-    return r
+def setup_function():
+    """Reset all in-memory state before each test"""
+    restaurant_repo.reset_restaurants()
 
 def test_restaurant_menu_returns_200():
     """GET /restaurants/{id}/menu should return 200 with menu data"""
@@ -68,43 +18,41 @@ def test_restaurant_menu_returns_200():
     assert r.status_code == 200
     assert "menu" in r.json()
 
-@patch(_REPO)
-def test_restaurant_menu_returns_404_for_missing_restaurant(mock_get_record):
+def test_restaurant_menu_returns_404_for_missing_restaurant():
     """GET /restaurants/{id}/menu should return 404 when restaurant does not exist"""
-    mock_get_record.return_value = None
-    r = _get_menu(999)
+    r = client.get("/restaurants/9999/menu")
     assert r.status_code == 404
     assert r.json()["detail"] == "Restaurant not found"
 
-@patch(_REPO)
-def test_visible_item_has_ok_status_and_display_price(mock_get_record):
+def test_visible_item_has_ok_status_and_display_price():
     """Visible item with valid price should have ok status and formatted display price"""
-    mock_get_record.return_value = FAKE_RESTAURANT
-    item = _get_menu_item(_get_menu().json(), 1)
+    r = client.get("/restaurants/1/menu")
+    data = r.json()
+    item = next(i for i in data["menu"] if i["is_visible"] and i["price_cents"] > 0)
     assert item["price_status"] == "ok"
     assert item["display_price"].startswith("$")
     assert len(item["display_price"]) > 1
 
-@patch(_REPO)
-def test_hidden_item_has_no_display_price(mock_get_record):
+def test_hidden_item_has_no_display_price():
     """Hidden item should return None display price"""
-    mock_get_record.return_value = FAKE_RESTAURANT
-    item = _get_menu_item(_get_menu().json(), 2)
+    r = client.get("/restaurants/1/menu")
+    item = next((i for i in r.json()["menu"] if i["id"] == 2), None)
+    assert item is not None
     assert item["display_price"] is None
 
-@patch(_REPO)
-def test_visible_negative_price_is_flagged(mock_get_record):
-    """Visible item with negative price should be flagged as invalid fault injection"""
-    mock_get_record.return_value = FAKE_RESTAURANT
-    item = _get_menu_item(_get_menu().json(), 3)
+def test_visible_negative_price_is_flagged():
+    """Visible item with negative price should be flagged as invalid"""
+    r = client.get("/restaurants/1/menu")
+    item = next((i for i in r.json()["menu"] if i["id"] == 3), None)
+    assert item is not None
     assert item["price_status"] == "invalid"
     assert item["display_price"] is None
 
-@patch(_REPO)
-def test_visible_missing_price_is_flagged(mock_get_record):
-    """Visible item with missing price should be flagged as missing fault injection"""
-    mock_get_record.return_value = FAKE_RESTAURANT
-    item = _get_menu_item(_get_menu().json(), 4)
+def test_visible_missing_price_is_flagged():
+    """Visible item with None price should be flagged as missing"""
+    r = client.get("/restaurants/1/menu")
+    item = next((i for i in r.json()["menu"] if i["id"] == 4), None)
+    assert item is not None
     assert item["price_status"] == "missing"
     assert item["display_price"] is None
 

@@ -1,5 +1,5 @@
 """In-memory storage for notification records."""
 
-from typing import Dict, List
+from typing import Any, Dict, List
 
-NOTIFICATIONS: List[Dict[str, str]] = []
+NOTIFICATIONS: List[Dict[str, Any]] = []

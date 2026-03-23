@@ -3,6 +3,7 @@
 
 import copy
 
+from typing import Optional
 from fastapi import HTTPException
 
 from backend.app.data.categories_data import VALID_CATEGORIES
@@ -31,6 +32,9 @@ from backend.app.repositories.restaurant_repo import (
 )
 from backend.app.utils.formatting import format_cad_from_cents
 from backend.app.pagination import paginate
+from backend.app.schemas.search import SuggestionItem, SuggestionResponse
+from backend.app.repositories.session_repo import get_session
+from backend.app.services.recently_viewed_service import track_recently_viewed
 
 def get_all_restaurants_list(
         sort_by: str = "rating",
@@ -181,6 +185,39 @@ def search_menu_items(query: str) -> list[MenuItemSearchResult]:
         for item in results
     ]
 
+def get_search_suggestions(query: str) -> SuggestionResponse:
+    """Return search suggestions for restaurants and menu items"""
+    if not query:
+        return SuggestionResponse(suggestions=[])
+
+    restaurant_results = search_restaurant_by_name(query)
+    menu_results = search_menu_items_by_name(query)
+
+    suggestions = []
+
+    for r in restaurant_results:
+        suggestions.append(
+            SuggestionItem(
+                suggestion_type="restaurant",
+                id=r["id"],
+                name=r["name"],
+            )
+        )
+
+    for item in menu_results:
+        suggestions.append(
+            SuggestionItem(
+                suggestion_type="menu_item",
+                id=item["id"],
+                name=item["name"],
+                restaurant_id=item["restaurant_id"],
+            )
+        )
+
+    suggestions = suggestions[:10]
+
+    return SuggestionResponse(suggestions=suggestions)
+
 def filter_restaurants(cuisine_types: list[str] | None):
     """Filter restaurants by cuisine type"""
     return filter_restaurants_by_cuisine(cuisine_types)
@@ -329,3 +366,44 @@ def get_menu_item_detail(restaurant_id: int, item_id: int):
         item["price_status"] = PriceStatus.OK
 
     return item
+
+def get_restaurant_menu_with_tracking(
+        restaurant_id: int,
+        session_token: Optional[str],
+):
+    """Fetch restaurant menu and track recently viewed"""
+    result = get_restaurant_menu(restaurant_id)
+
+    try:
+        session = get_session(session_token)
+        if session:
+            track_recently_viewed(
+                session["user_id"],
+                "restaurant",
+                restaurant_id,
+            )
+    except (KeyError, TypeError):
+        pass
+
+    return result
+
+def get_menu_item_detail_with_tracking(
+        restaurant_id: int,
+        item_id: int,
+        session_token: Optional[str]
+):
+    """Fetch menu item detail and track recently viewed"""
+    result = get_menu_item_detail(restaurant_id, item_id)
+
+    try:
+        session = get_session(session_token)
+        if session:
+            track_recently_viewed(
+                session["user_id"],
+                "menu_item",
+                item_id,
+            )
+    except (KeyError, TypeError):
+        pass
+
+    return result

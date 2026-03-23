@@ -1,6 +1,6 @@
 """Service layer for delivery status and details"""
 from fastapi import HTTPException
-from backend.app.repositories import order_repo, restaurant_repo
+from backend.app.repositories import order_repo, restaurant_repo, user_repo
 from backend.app.schemas.delivery import (
     DeliveryStatusResponse,
     DeliveryDetailsResponse,
@@ -46,6 +46,53 @@ def get_delivery_details(order_id: str) -> DeliveryDetailsResponse:
         delivery_distance=order.get("delivery_distance", 0.0),
         route_taken=order.get("route_taken", ""),
     )
+
+
+def assign_driver_to_order(order_id: str, driver_id: str, manager_id: str) -> dict:
+    """Assign a driver to an order and create a driver notification."""
+    order = order_repo.get_order_record(order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    restaurant = restaurant_repo.get_restaurant_record(order["restaurant_id"])
+    if restaurant is None:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+
+    if restaurant.get("owner_id") != manager_id:
+        raise HTTPException(
+            status_code=403,
+            detail="Not authorized to assign a driver to this order",
+        )
+
+    if order["status"] != OrderStatus.COOKING.value:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Driver can only be assigned to Cooking orders. "
+                   f"Current status is '{order['status']}'.",
+        )
+
+    driver = user_repo.get_user_by_id(driver_id)
+    if driver is None:
+        raise HTTPException(status_code=404, detail="Driver not found")
+
+    if user_repo.get_user_role(driver_id) != "driver":
+        raise HTTPException(status_code=400, detail="Assigned user is not a driver")
+
+    updated_order = order_repo.assign_driver_to_order(
+        order_id,
+        driver_id,
+        driver["name"],
+    )
+    if not updated_order:
+        raise HTTPException(status_code=500, detail="Failed to assign driver")
+
+    notification_service.create_driver_assigned_notification(updated_order["order_id"])
+    return {
+        "order_id": updated_order["order_id"],
+        "driver_id": updated_order["driver_id"],
+        "driver_name": updated_order["driver_name"],
+    }
+
 
 def update_delivery_status(order_id: str, new_status: str) -> dict:
     """Driver updates delivery status with transition validation"""
