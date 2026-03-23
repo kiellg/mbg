@@ -211,6 +211,8 @@ def get_search_suggestions(query: str) -> SuggestionResponse:
             )
         )
 
+    suggestions = suggestions[:10]
+
     return SuggestionResponse(suggestions=suggestions)
 
 def filter_restaurants(cuisine_types: list[str] | None):
