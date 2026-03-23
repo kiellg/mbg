@@ -64,6 +64,13 @@ def assign_driver_to_order(order_id: str, driver_id: str, manager_id: str) -> di
             detail="Not authorized to assign a driver to this order",
         )
 
+    if order["status"] != OrderStatus.COOKING.value:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Driver can only be assigned to Cooking orders. "
+                   f"Current status is '{order['status']}'.",
+        )
+
     driver = user_repo.get_user_by_id(driver_id)
     if driver is None:
         raise HTTPException(status_code=404, detail="Driver not found")

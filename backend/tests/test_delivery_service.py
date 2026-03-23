@@ -134,6 +134,7 @@ def test_assign_driver_to_order_creates_notification(
     mock_order_repo.get_order_record.return_value = {
         **FAKE_ORDER,
         "order_id": "abc1234",
+        "status": "Cooking",
         "restaurant_id": 1,
     }
     mock_restaurant_repo.get_restaurant_record.return_value = {
@@ -148,6 +149,7 @@ def test_assign_driver_to_order_creates_notification(
     mock_order_repo.assign_driver_to_order.return_value = {
         **FAKE_ORDER,
         "order_id": "abc1234",
+        "status": "Cooking",
         "restaurant_id": 1,
         "driver_id": "driver-123",
         "driver_name": "John Doe",
@@ -171,6 +173,42 @@ def test_assign_driver_to_order_creates_notification(
 @patch("backend.app.services.delivery_service.user_repo")
 @patch("backend.app.services.delivery_service.restaurant_repo")
 @patch("backend.app.services.delivery_service.order_repo")
+def test_assign_driver_to_order_rejects_non_cooking_order(
+    mock_order_repo,
+    mock_restaurant_repo,
+    mock_user_repo,
+    mock_notification_service,
+):
+    """Only Cooking orders should allow driver assignment."""
+    mock_order_repo.get_order_record.return_value = {
+        **FAKE_ORDER,
+        "order_id": "abc1234",
+        "status": "Cancelled",
+        "restaurant_id": 1,
+    }
+    mock_restaurant_repo.get_restaurant_record.return_value = {
+        "id": 1,
+        "owner_id": "manager-123",
+    }
+
+    with pytest.raises(HTTPException) as exc:
+        delivery_service.assign_driver_to_order("abc1234", "driver-123", "manager-123")
+
+    assert exc.value.status_code == 400
+    assert exc.value.detail == (
+        "Driver can only be assigned to Cooking orders. "
+        "Current status is 'Cancelled'."
+    )
+    mock_user_repo.get_user_by_id.assert_not_called()
+    mock_user_repo.get_user_role.assert_not_called()
+    mock_order_repo.assign_driver_to_order.assert_not_called()
+    mock_notification_service.create_driver_assigned_notification.assert_not_called()
+
+
+@patch("backend.app.services.delivery_service.notification_service")
+@patch("backend.app.services.delivery_service.user_repo")
+@patch("backend.app.services.delivery_service.restaurant_repo")
+@patch("backend.app.services.delivery_service.order_repo")
 def test_assign_driver_to_order_rejects_non_driver_target(
     mock_order_repo,
     mock_restaurant_repo,
@@ -181,6 +219,7 @@ def test_assign_driver_to_order_rejects_non_driver_target(
     mock_order_repo.get_order_record.return_value = {
         **FAKE_ORDER,
         "order_id": "abc1234",
+        "status": "Cooking",
         "restaurant_id": 1,
     }
     mock_restaurant_repo.get_restaurant_record.return_value = {
