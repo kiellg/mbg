@@ -10,6 +10,7 @@ from backend.app.routers.checkouts import router as checkout_router
 from backend.app.routers.payments import router as payment_router
 from backend.app.routers.deliveries import router as deliveries_router
 from backend.app.routers.notifications import router as notifications_router
+from backend.app.routers.recently_viewed import router as recently_viewed_router
 
 app = FastAPI()
 app.include_router(auth_router)
@@ -21,6 +22,7 @@ app.include_router(checkout_router)
 app.include_router(payment_router)
 app.include_router(deliveries_router)
 app.include_router(notifications_router)
+app.include_router(recently_viewed_router)
 
 @app.get("/health")
 def health():
