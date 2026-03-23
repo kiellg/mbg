@@ -1,58 +1,97 @@
 """Integration tests for PATCH /orders/{order_id}/status/cancelled"""
+
 from unittest.mock import patch
+import copy
+import pytest
 from fastapi.testclient import TestClient
 from backend.main import app
+from backend.app.data.order_data import _ORDERDB
+from backend.app.schemas.order import OrderStatus
 
 client = TestClient(app)
 
-@patch("backend.app.services.role_service.get_user_role")
-@patch("backend.app.services.role_service.get_current_user_session")
-def test_mark_cancelled_returns_200(mock_get_session, mock_get_role):
+ROLE_SERVICE = "backend.app.services.role_service"
+
+ORDER_ID        = "abc1234"
+MANAGER_ID      = "manager-123"
+MANAGER_HEADERS = {"session-token": "valid-manager-token"}
+
+FAKE_ORDER = {
+    "order_id": ORDER_ID,
+    "status": OrderStatus.COOKING,
+    "delivery_time": "",
+    "delivery_time_actual": 0.0,
+    "delivery_delay": 0.0,
+    "driver_name": "",
+    "delivery_method": "bike",
+    "delivery_distance": 0.0,
+    "route_taken": "",
+    "restaurant_id": 1,
+    "customer_id": "cust-001",
+    "delivery_address": "123 Test St",
+    "items": [],
+    "subtotal": "0.00",
+    "tax": "0.00",
+    "delivery_fee": "0.00",
+    "total": "25.99",
+}
+
+_ORIGINAL_ORDERDB = copy.deepcopy(_ORDERDB)
+
+def setup_function():  # pylint: disable=duplicate-code
+    """Reset all in-memory state before each test"""
+    _ORDERDB.clear()
+    _ORDERDB.update(copy.deepcopy(_ORIGINAL_ORDERDB))
+    _ORDERDB[ORDER_ID] = copy.deepcopy(FAKE_ORDER)
+
+def _override_order(order_id: str, overrides: dict) -> None:
+    """Mutate _ORDERDB to apply overrides to a specific order"""
+    _ORDERDB[order_id] = {**_ORDERDB.get(order_id, copy.deepcopy(FAKE_ORDER)), **overrides}
+
+def _as_manager():
+    """Patch role_service auth layer to simulate a valid manager session"""
+    return (
+        patch(f"{ROLE_SERVICE}.get_current_user_session",
+              return_value={"user_id": MANAGER_ID}),
+        patch(f"{ROLE_SERVICE}.get_user_role", return_value="manager"),
+    )
+
+def test_mark_cancelled_returns_200():
     """PATCH /status/cancelled should return 200 when order is Cooking"""
-    mock_get_session.return_value = {"user_id": "manager-123"}
-    mock_get_role.return_value = "manager"
-
-    fake_order = {"order_id": "abc1234", "status": "Cooking", "total": 25.99}
-
-    with patch("backend.app.data.order_data._ORDERDB", {"abc1234": fake_order}):
+    with _as_manager()[0], _as_manager()[1]:
         response = client.patch(
-            "/orders/abc1234/status/cancelled",
-            headers={"session-token": "valid-manager-token"},
+            f"/orders/{ORDER_ID}/status/cancelled",
+            headers=MANAGER_HEADERS,
         )
 
     assert response.status_code == 200
     assert response.json()["status"] == "Cancelled"
     assert "25.99" in response.json()["message"]
 
-@patch("backend.app.services.role_service.get_user_role")
-@patch("backend.app.services.role_service.get_current_user_session")
-def test_mark_cancelled_returns_400_when_not_cooking(mock_get_session, mock_get_role):
+@pytest.mark.parametrize("invalid_status", [
+    OrderStatus.PENDING,
+    OrderStatus.DELIVERED,
+    OrderStatus.OUT_FOR_DELIVERY,
+])
+def test_mark_cancelled_returns_400_when_not_cooking(invalid_status):
     """PATCH /status/cancelled should return 400 if order is not Cooking"""
-    mock_get_session.return_value = {"user_id": "manager-123"}
-    mock_get_role.return_value = "manager"
+    _override_order(ORDER_ID, {"status": invalid_status})
 
-    fake_order = {"order_id": "abc1234", "status": "Pending"}
-
-    with patch("backend.app.data.order_data._ORDERDB", {"abc1234": fake_order}):
+    with _as_manager()[0], _as_manager()[1]:
         response = client.patch(
-            "/orders/abc1234/status/cancelled",
-            headers={"session-token": "valid-manager-token"},
+            f"/orders/{ORDER_ID}/status/cancelled",
+            headers=MANAGER_HEADERS,
         )
 
     assert response.status_code == 400
     assert "Cannot transition" in response.json()["detail"]
 
-@patch("backend.app.services.role_service.get_user_role")
-@patch("backend.app.services.role_service.get_current_user_session")
-def test_mark_cancelled_returns_404_when_order_not_found(mock_get_session, mock_get_role):
-    """PATCH /status/cancelled should return 404 if order doesn't exist"""
-    mock_get_session.return_value = {"user_id": "manager-123"}
-    mock_get_role.return_value = "manager"
-
-    with patch("backend.app.data.order_data._ORDERDB", {}):
+def test_mark_cancelled_returns_404_when_order_not_found():
+    """PATCH /status/cancelled should return 404 if order does not exist"""
+    with _as_manager()[0], _as_manager()[1]:
         response = client.patch(
             "/orders/fake-id/status/cancelled",
-            headers={"session-token": "valid-manager-token"},
+            headers=MANAGER_HEADERS,
         )
 
     assert response.status_code == 404
