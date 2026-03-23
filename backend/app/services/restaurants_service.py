@@ -31,6 +31,7 @@ from backend.app.repositories.restaurant_repo import (
 )
 from backend.app.utils.formatting import format_cad_from_cents
 from backend.app.pagination import paginate
+from backend.app.schemas.search import SuggestionItem, SuggestionResponse
 
 def get_all_restaurants_list(
         sort_by: str = "rating",
@@ -180,6 +181,39 @@ def search_menu_items(query: str) -> list[MenuItemSearchResult]:
         MenuItemSearchResult(**item)
         for item in results
     ]
+
+def get_search_suggestions(query: str) -> SuggestionResponse:
+    """Return search suggestions for restaurants and menu items"""
+    if not query:
+        return SuggestionResponse(suggestions=[])
+
+    restaurant_results = search_restaurant_by_name(query)
+    menu_results = search_menu_items_by_name(query)
+
+    suggestions = []
+
+    for r in restaurant_results:
+        suggestions.append(
+            SuggestionItem(
+                suggestion_type="restaurant",
+                id=r["id"],
+                name=r["name"],
+            )
+        )
+
+    for item in menu_results:
+        suggestions.append(
+            SuggestionItem(
+                suggestion_type="menu_item",
+                id=item["id"],
+                name=item["name"],
+                restaurant_id=item["restaurant_id"],
+            )
+        )
+
+    suggestions = suggestions[:10]
+
+    return SuggestionResponse(suggestions=suggestions)
 
 def filter_restaurants(cuisine_types: list[str] | None):
     """Filter restaurants by cuisine type"""
