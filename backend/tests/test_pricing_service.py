@@ -1,10 +1,9 @@
 # pylint: disable=protected-access
-"""Unit tests for the PricingService class in pricing_service.py."""
+"""Unit tests for PricingService in isolation."""
 
 
 from dataclasses import dataclass
 from decimal import Decimal
-from unittest.mock import patch
 
 import pytest
 from fastapi import HTTPException
@@ -59,44 +58,29 @@ def test_calculate_totals_basic_walk_delivery():
     assert order.total == Decimal("30.85")
 
 
-@patch("backend.app.services.pricing_service.PricingService._validate_tax_rate")
-@patch("backend.app.services.pricing_service.PricingService.calculate_delivery_fee")
-@patch("backend.app.services.pricing_service.PricingService._validate_item")
-@patch("backend.app.services.pricing_service.PricingService._validate_order")
-def test_calculate_totals_uses_helpers_and_updates_order_fields(
-    mock_validate_order,
-    mock_validate_item,
-    mock_calculate_delivery_fee,
-    mock_validate_tax_rate,
-):
-    """calculate_totals should use its helpers and still update pricing fields."""
+def test_calculate_tax_rounds_half_up():
+    """Test tax calculation rounds half up to two decimal places."""
+    assert PricingService.calculate_tax(Decimal("99.95"), Decimal("0.10")) == Decimal("10.00")
+
+
+def test_calculate_totals_rounds_item_prices_before_storing_totals():
+    """Test calculate_totals normalizes item prices and totals to two decimal places."""
     order = Order(
         order_id=2,
         status="Pending",
         items=[
-            OrderItem(order_item_id=1, order_id=2, quantity=2, item_price="10.00"),
-            OrderItem(order_item_id=2, order_id=2, quantity=1, item_price="3.50"),
+            OrderItem(order_item_id=1, order_id=2, quantity=2, item_price="1.005"),
         ],
         delivery_address="123 Main St",
         delivery_method="walk",
     )
-    mock_validate_item.side_effect = [
-        (2, Decimal("10.00")),
-        (1, Decimal("3.50")),
-    ]
-    mock_calculate_delivery_fee.return_value = Decimal("5.00")
-    mock_validate_tax_rate.return_value = Decimal("0.10")
 
     PricingService.calculate_totals(order)
 
-    mock_validate_order.assert_called_once_with(order)
-    assert mock_validate_item.call_count == 2
-    mock_calculate_delivery_fee.assert_called_once_with("walk")
-    mock_validate_tax_rate.assert_called_once_with(order)
-    assert order.subtotal == Decimal("23.50")
+    assert order.subtotal == Decimal("2.02")
     assert order.delivery_fee == Decimal("5.00")
-    assert order.tax == Decimal("2.35")
-    assert order.total == Decimal("30.85")
+    assert order.tax == Decimal("0.20")
+    assert order.total == Decimal("7.22")
 
 
 def test_calculate_totals_empty_order_bike_delivery():
