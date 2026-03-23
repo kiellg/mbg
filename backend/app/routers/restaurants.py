@@ -24,9 +24,11 @@ from backend.app.services.restaurants_service import (
     search_menu_items,
     filter_restaurants,
     get_menu_item_detail,
+    get_search_suggestions,
 )
 from backend.app.services.role_service import require_manager
 from backend.app.data.categories_data import VALID_CATEGORIES, VALID_DIETARY_TAGS
+from backend.app.schemas.search import SuggestionResponse
 
 router = APIRouter(prefix="/restaurants", tags=["restaurants"])
 
@@ -136,17 +138,6 @@ def create_restaurant(body: RestaurantCreate,
     session = require_manager(token)
     return create_new_restaurant(body, owner_id=session["user_id"])
 
-@router.post("/{restaurant_id}/menu",
-             response_model=MenuItemOut,
-             status_code=status.HTTP_201_CREATED)
-def create_menu_item(restaurant_id: int,
-                     item: MenuItemCreate,
-                     request: Request,
-                     session_token: Optional[str] = Header(default=None),):
-    """Endpoint to add a new menu item to a restaurant"""
-    authenticate_manager(request, session_token)
-    return add_menu_item(restaurant_id, item)
-
 @router.patch("/{restaurant_id}", response_model=RestaurantOut)
 def patch_restaurant(
     restaurant_id: int,
@@ -170,13 +161,10 @@ def patch_menu_item(
     authenticate_manager(request, session_token)
     return update_menu_item_by_id(restaurant_id, item_id, body)
 
-@router.get("/categories")
-def list_categories():
-    """Test endpoint to list valid categories and dietary tags for menu items"""
-    return {
-        "categories": [{"id": k, "name": v} for k, v in VALID_CATEGORIES.items()],
-        "dietary_tags": list(VALID_DIETARY_TAGS),
-    }
+@router.get("/search/suggestions", response_model=SuggestionResponse)
+def search_suggestions_endpoint(q: str):
+    """Return search suggestions as user types"""
+    return get_search_suggestions(q)
 
 @router.get("/search")
 def search_restaurants_endpoint(q: str):
@@ -192,6 +180,25 @@ def search_menu_items_endpoint(q: str):
 def filter_restaurants_endpoint(cuisine_types: Optional[list[str]] = Query(None)):
     """Endpoint to filter restaurants by cuisine type"""
     return filter_restaurants(cuisine_types)
+
+@router.get("/categories")
+def list_categories():
+    """Test endpoint to list valid categories and dietary tags for menu items"""
+    return {
+        "categories": [{"id": k, "name": v} for k, v in VALID_CATEGORIES.items()],
+        "dietary_tags": list(VALID_DIETARY_TAGS),
+    }
+
+@router.post("/{restaurant_id}/menu",
+             response_model=MenuItemOut,
+             status_code=status.HTTP_201_CREATED)
+def create_menu_item(restaurant_id: int,
+                     item: MenuItemCreate,
+                     request: Request,
+                     session_token: Optional[str] = Header(default=None),):
+    """Endpoint to add a new menu item to a restaurant"""
+    authenticate_manager(request, session_token)
+    return add_menu_item(restaurant_id, item)
 
 @router.get("/{restaurant_id}/menu/{item_id}", response_model=MenuItemOut)
 def read_menu_item_detail(restaurant_id: int, item_id: int):
