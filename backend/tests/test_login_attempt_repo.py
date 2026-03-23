@@ -70,4 +70,4 @@ def test_reset_login_attempts_clear_records():
 
     reset_login_attempts()
 
-    assert LOGIN_ATTEMPTS == []
+    assert not LOGIN_ATTEMPTS
