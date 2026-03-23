@@ -87,7 +87,7 @@ def test_mark_out_for_delivery_returns_400_when_not_cooking(invalid_status):
     assert "Cannot transition" in response.json()["detail"]
 
 def test_mark_out_for_delivery_returns_404_when_order_not_found():
-    """PATCH /status/out-for-delivery should return 404 if order does not exist — fault injection"""
+    """PATCH /status/out-for-delivery should return 404 if order does not exist"""
     with _as_driver()[0], _as_driver()[1]:
         response = client.patch(
             "/orders/fake-id/status/out-for-delivery",
@@ -127,7 +127,7 @@ def test_mark_delivered_returns_400_when_not_out_for_delivery(invalid_status):
     assert "Cannot transition" in response.json()["detail"]
 
 def test_mark_delivered_returns_404_when_order_not_found():
-    """PATCH /status/delivered should return 404 if order does not exist — fault injection"""
+    """PATCH /status/delivered should return 404 if order does not exist"""
     with _as_driver()[0], _as_driver()[1]:
         response = client.patch(
             "/orders/fake-id/status/delivered",
