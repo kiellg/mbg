@@ -24,9 +24,11 @@ def test_read_notifications_returns_200_and_calls_service(mock_list_notification
     """GET /notifications should return the service payload for the current user."""
     mock_list_notifications.return_value = [
         {
+            "notification_id": "notif-123",
             "message": "Order placed.",
             "timestamp": "2026-03-16T10:00:00+00:00",
             "order_id": "abc1234",
+            "is_read": False,
         }
     ]
 
@@ -35,3 +37,21 @@ def test_read_notifications_returns_200_and_calls_service(mock_list_notification
     assert response.status_code == 200
     assert response.json() == mock_list_notifications.return_value
     mock_list_notifications.assert_called_once_with("user-123")
+
+
+@patch("backend.app.routers.notifications.notification_service.mark_notification_as_read_for_user")
+def test_mark_notification_as_read_returns_200_and_calls_service(mock_mark_notification):
+    """PATCH /notifications/{notification_id}/read should mark the notification as read."""
+    mock_mark_notification.return_value = {
+        "notification_id": "notif-123",
+        "message": "Order placed.",
+        "timestamp": "2026-03-16T10:00:00+00:00",
+        "order_id": "abc1234",
+        "is_read": True,
+    }
+
+    response = client.patch("/notifications/notif-123/read")
+
+    assert response.status_code == 200
+    assert response.json() == mock_mark_notification.return_value
+    mock_mark_notification.assert_called_once_with("notif-123", "user-123")
