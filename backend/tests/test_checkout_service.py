@@ -169,7 +169,7 @@ def test_checkout_raises_403_if_wrong_customer(mock_cart_repo):
 # for already checked out
 @patch("backend.app.services.checkout_service.cart_repo")
 def test_checkout_raises_400_if_already_checked_out(mock_cart_repo):
-    """Test that checkout raises 400 when the cart has already been checked out."""
+    """Test that checkout raises 400 when the cart is already checked out."""
     mock_cart_repo.get_cart_by_id.return_value = {**FAKE_CART, "checked_out": True}
 
     with pytest.raises(HTTPException) as exc:
