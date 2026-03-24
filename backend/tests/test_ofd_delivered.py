@@ -1,4 +1,5 @@
 """Integration tests for PATCH /orders/{order_id}/status/out-for-delivery and /delivered"""
+# pylint: disable=duplicate-code
 
 from unittest.mock import patch
 import copy
@@ -38,23 +39,26 @@ FAKE_ORDER = {
     "total": "0.00",
 }
 
-def setup_function():  # pylint: disable=duplicate-code
+
+def setup_function():
     """Reset all in-memory state before each test"""
     _ORDERDB.clear()
     _ORDERDB.update(copy.deepcopy(_ORIGINAL_ORDERDB))
     _ORDERDB[ORDER_ID] = copy.deepcopy(FAKE_ORDER)
 
+
 def _override_order(order_id: str, overrides: dict) -> None:
     """Mutate _ORDERDB to apply overrides to a specific order"""
     _ORDERDB[order_id] = {**_ORDERDB.get(order_id, copy.deepcopy(FAKE_ORDER)), **overrides}
 
+
 def _as_driver():
     """Patch role_service auth layer to simulate a valid driver session"""
     return (
-        patch(f"{ROLE_SERVICE}.get_current_user_session",
-              return_value={"user_id": DRIVER_ID}),
+        patch(f"{ROLE_SERVICE}.get_current_user_session", return_value={"user_id": DRIVER_ID}),
         patch(f"{ROLE_SERVICE}.get_user_role", return_value="driver"),
     )
+
 
 def test_mark_out_for_delivery_returns_200():
     """PATCH /status/out-for-delivery should return 200 when order is Cooking"""
@@ -69,10 +73,12 @@ def test_mark_out_for_delivery_returns_200():
     assert response.status_code == 200
     assert response.json()["status"] == "Out for Delivery"
 
+
 @pytest.mark.parametrize("invalid_status", [
     OrderStatus.PENDING,
     OrderStatus.DELIVERED,
-    OrderStatus.CANCELLED])
+    OrderStatus.CANCELLED,
+])
 def test_mark_out_for_delivery_returns_400_when_not_cooking(invalid_status):
     """PATCH /status/out-for-delivery should return 400 if order is not Cooking"""
     _override_order(ORDER_ID, {"status": invalid_status})
@@ -86,6 +92,7 @@ def test_mark_out_for_delivery_returns_400_when_not_cooking(invalid_status):
     assert response.status_code == 400
     assert "Cannot transition" in response.json()["detail"]
 
+
 def test_mark_out_for_delivery_returns_404_when_order_not_found():
     """PATCH /status/out-for-delivery should return 404 if order does not exist"""
     with _as_driver()[0], _as_driver()[1]:
@@ -96,6 +103,7 @@ def test_mark_out_for_delivery_returns_404_when_order_not_found():
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Order not found"
+
 
 def test_mark_delivered_returns_200():
     """PATCH /status/delivered should return 200 when order is Out for Delivery"""
@@ -110,9 +118,12 @@ def test_mark_delivered_returns_200():
     assert response.status_code == 200
     assert response.json()["status"] == "Delivered"
 
-@pytest.mark.parametrize("invalid_status", [OrderStatus.PENDING,
-                                            OrderStatus.COOKING,
-                                            OrderStatus.CANCELLED])
+
+@pytest.mark.parametrize("invalid_status", [
+    OrderStatus.PENDING,
+    OrderStatus.COOKING,
+    OrderStatus.CANCELLED,
+])
 def test_mark_delivered_returns_400_when_not_out_for_delivery(invalid_status):
     """PATCH /status/delivered should return 400 if order is not Out for Delivery"""
     _override_order(ORDER_ID, {"status": invalid_status})
@@ -125,6 +136,7 @@ def test_mark_delivered_returns_400_when_not_out_for_delivery(invalid_status):
 
     assert response.status_code == 400
     assert "Cannot transition" in response.json()["detail"]
+
 
 def test_mark_delivered_returns_404_when_order_not_found():
     """PATCH /status/delivered should return 404 if order does not exist"""
