@@ -1,6 +1,6 @@
 """Repository functions for order records."""
 
-# pylint: disable=protected-access, too-many-branches, similiar-code
+# pylint: disable=protected-access, too-many-branches, similiar-lines
 from typing import Any, Dict, List, Optional
 import shortuuid
 
