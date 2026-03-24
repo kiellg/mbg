@@ -1,5 +1,5 @@
 """Integration tests for cart flow."""
-# pylint: disable=protected-access
+# pylint: disable=protected-access, duplicate-code
 from fastapi.testclient import TestClient
 
 from backend.app.data import cart_data
@@ -10,7 +10,7 @@ from backend.main import app
 client = TestClient(app)
 
 
-def setup_function(): # pylint: disable=duplicate-code
+def setup_function():
     """Reset all in-memory state before each test."""
     cart_data._CARTDB.clear()
     cart_data.NEXT_CART_ID = 1

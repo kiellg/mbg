@@ -1,6 +1,5 @@
 """Tests for the restaurant menu endpoint"""
 
-from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
 from backend.app.repositories import restaurant_repo
