@@ -1,6 +1,6 @@
 """Repository functions for order records."""
 
-# pylint: disable=protected-access, too-many-branches
+# pylint: disable=protected-access, too-many-branches, duplicate-code
 from typing import Any, Dict, List, Optional
 import shortuuid
 
@@ -166,5 +166,5 @@ def get_orders_assigned_to_driver(driver_id: str) -> List[Dict[str, Any]]:
     return [
         order for order in order_data._ORDERDB.values()
         if order.get("driver_id") == driver_id
-        and order.get("status") == "Out for Delivery"
+        and order.get("status") in  ("Cooking","Out for Delivery")
     ]
