@@ -12,17 +12,19 @@ def setup_function():
 
 def login_user():
     """Helper to create and login user"""
-    client.post("/auth/register", json={
+    reg = client.post("/auth/register", json={
         "name": "user1",
         "email": "user1@email.com",
         "password": "pass123",
         "role": "customer",
     })
+    assert reg.status_code == 200
 
     response = client.post("/auth/login", json={
         "email":"user1@email.com",
         "password": "pass123",
     })
+    assert response.status_code == 200
 
     return response.cookies
 
@@ -37,12 +39,20 @@ def test_browse_restaurants_and_menu():
     assert "menu" in response.json()
 
 def test_search_and_filter():
-    "Search restaurants and menu items + filter"
+    "Search restaurants and menu items with filtering"
     response = client.get("/restaurants/search?q=keg")
     assert response.status_code == 200
 
+    data = response.json()
+    assert isinstance(data, list)
+    assert any("keg" in r["name"].lower() for r in data)
+
     response = client.get("/restaurants/filter?cuisine_types=Italian")
     assert response.status_code == 200
+
+    data = response.json()
+    for r in data:
+        assert r["cuisine_type"] == "Italian"
 
 def test_pagination_limits_results():
     """Pagination actually limits results"""
@@ -70,6 +80,8 @@ def test_menu_item_detail():
 
     data = response.json()
     assert "name" in data
+    assert "price_cents" in data or "display_price" in data
+    assert "description" in data
 
 def test_search_suggestions():
     """Provide search suggestions"""
@@ -89,10 +101,12 @@ def test_recently_viewed_flow():
     assert response.json()["items"] == []
 
     # View restaurant
-    client.get("/restaurants/1/menu", cookies=cookies)
+    res1 = client.get("/restaurants/1/menu", cookies=cookies)
+    assert res1.status_code == 200
 
     # View menu item
-    client.get("/restaurants/1/menu/1", cookies=cookies)
+    res2 = client.get("/restaurants/1/menu/1", cookies=cookies)
+    assert res2.status_code == 200
 
     # Now it should contain items
     response = client.get("/recently-viewed", cookies=cookies)
@@ -103,7 +117,7 @@ def test_recently_viewed_flow():
 
 def test_recently_viewed_no_login():
     """Should return empty when not logged in"""
-    response = client.get("/recently-viewed", cookies={})
+    response = client.get("/recently-viewed")
 
     assert response.status_code == 200
     assert response.json()["items"] == []
