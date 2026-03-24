@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 from backend.app.data import cart_data, notification_data, order_data, payment_data
 from backend.app.dependencies import get_current_user
 from backend.app.repositories import restaurant_repo, user_repo
+from backend.app.schemas.payment import PaymentStatus
 from backend.main import app
 
 client = TestClient(app)
@@ -92,7 +93,7 @@ def _pay_order(order_id: str) -> None:
     """Pay for an order through the real payment route."""
     payment_res = client.post(f"/payments/{order_id}", json=VALID_CARD)
     assert payment_res.status_code == 201
-    assert payment_res.json()["status"] == "Accepted"
+    assert payment_res.json()["status"] == PaymentStatus.ACCEPTED.value
 
 
 def test_customer_can_update_own_pending_order_delivery_address():
