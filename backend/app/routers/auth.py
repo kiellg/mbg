@@ -22,7 +22,7 @@ from backend.app.repositories.session_repo import create_session
 
 from backend.app.dependencies import get_current_user
 
-from backend.app.repositories.session_repo import get_session
+from backend.app.data import users_data
 from backend.app.data import session_store
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -103,9 +103,10 @@ def confirm_password_reset(payload: PasswordResetConfirm):
 
 @router.get("/debug/users")
 def debug_users():
-    from backend.app.data import users_data
+    """Debug to get lists of registered users."""
     return users_data.USERS
 
 @router.get("/debug/sessions")
 def debug_sessions():
+    """Debug to get lists of current sessions"""
     return session_store.SESSIONS

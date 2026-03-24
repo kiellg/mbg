@@ -44,7 +44,6 @@ FAKE_ORDER_RESPONSE_DICT = {
 def setup_function():
     """Reset shared state before each test."""
     cart_data._CARTDB.clear()
-    cart_data.NEXT_CART_ID = 1
     cart_data.NEXT_ITEM_ID = 1
     user_repo.reset_users()
     restaurant_repo.reset_restaurants()
@@ -67,17 +66,17 @@ def test_checkout_creates_order_and_marks_cart(mock_order_service,
     }
     mock_user_repo.get_customer_by_user_id.return_value = {"user_id": CUSTOMER_ID,
                                                            "delivery_address": "123 Test St"}
-    mock_cart_repo.get_cart_by_id.return_value = FAKE_CART
+    mock_cart_repo.get_cart_by_customer_and_restaurant.return_value = FAKE_CART
     mock_order_service.create_order.return_value = FAKE_ORDER_RESPONSE_DICT
 
     checkout_service.checkout(
-        cart_id=1,
+        restaurant_id=1,
         customer_id=CUSTOMER_ID,
         delivery_method=DeliveryMethod.WALK,
     )
 
     mock_order_service.create_order.assert_called_once()
-    mock_cart_repo.mark_cart_checked_out.assert_called_once_with(1)
+    mock_cart_repo.mark_cart_checked_out.assert_called_once_with(FAKE_CART["id"])
 
 @patch("backend.app.services.checkout_service.restaurant_repo")
 @patch("backend.app.services.checkout_service.user_repo")
@@ -88,7 +87,7 @@ def test_checkout_uses_official_menu_price_for_order_items(mock_order_service,
                                                            mock_user_repo,
                                                            mock_restaurant_repo):
     """Test that checkout uses backend menu pricing for order items."""
-    mock_cart_repo.get_cart_by_id.return_value = FAKE_CART
+    mock_cart_repo.get_cart_by_customer_and_restaurant.return_value = FAKE_CART
     mock_order_service.create_order.return_value = FAKE_ORDER_RESPONSE_DICT
     mock_user_repo.get_customer_by_user_id.return_value = {"user_id": CUSTOMER_ID,
                                                            "delivery_address": "123 Test St"}
@@ -99,7 +98,7 @@ def test_checkout_uses_official_menu_price_for_order_items(mock_order_service,
     }
 
     checkout_service.checkout(
-        cart_id=1,
+        restaurant_id=1,
         customer_id=CUSTOMER_ID,
         delivery_method=DeliveryMethod.WALK,
     )
@@ -121,7 +120,7 @@ def test_checkout_does_not_require_unit_price_cents_on_cart_items(mock_order_ser
     mock_order_service.create_order.return_value = FAKE_ORDER_RESPONSE_DICT
 
     checkout_service.checkout(
-        cart_id=cart["id"],
+        restaurant_id=1,
         customer_id=user["user_id"],
         delivery_method=DeliveryMethod.WALK,
     )
@@ -138,11 +137,11 @@ def test_checkout_does_not_require_unit_price_cents_on_cart_items(mock_order_ser
 @patch("backend.app.services.checkout_service.cart_repo")
 def test_checkout_raises_404_if_cart_not_found(mock_cart_repo):
     """Test that checkout raises 404 when the cart does not exist."""
-    mock_cart_repo.get_cart_by_id.return_value = None
+    mock_cart_repo.get_cart_by_customer_and_restaurant.return_value = None
 
     with pytest.raises(HTTPException) as exc:
         checkout_service.checkout(
-            cart_id=99,
+            restaurant_id=99,
             customer_id=CUSTOMER_ID,
             delivery_method=DeliveryMethod.WALK,
         )
@@ -154,11 +153,11 @@ def test_checkout_raises_404_if_cart_not_found(mock_cart_repo):
 @patch("backend.app.services.checkout_service.cart_repo")
 def test_checkout_raises_403_if_wrong_customer(mock_cart_repo):
     """Test that checkout raises 403 when the cart belongs to a different customer."""
-    mock_cart_repo.get_cart_by_id.return_value = FAKE_CART
+    mock_cart_repo.get_cart_by_customer_and_restaurant.return_value = FAKE_CART
 
     with pytest.raises(HTTPException) as exc:
         checkout_service.checkout(
-            cart_id=1,
+            restaurant_id=1,
             customer_id="different-customer-id",
             delivery_method=DeliveryMethod.WALK,
         )
@@ -174,7 +173,7 @@ def test_checkout_raises_400_if_already_checked_out(mock_cart_repo):
 
     with pytest.raises(HTTPException) as exc:
         checkout_service.checkout(
-            cart_id=1,
+            restaurant_id=1,
             customer_id=CUSTOMER_ID,
             delivery_method=DeliveryMethod.WALK,
         )
@@ -186,11 +185,11 @@ def test_checkout_raises_400_if_already_checked_out(mock_cart_repo):
 @patch("backend.app.services.checkout_service.cart_repo")
 def test_checkout_raises_400_if_cart_is_empty(mock_cart_repo):
     """Test that checkout raises 400 when the cart has no items."""
-    mock_cart_repo.get_cart_by_id.return_value = {**FAKE_CART, "items": []}
+    mock_cart_repo.get_cart_by_customer_and_restaurant.return_value = {**FAKE_CART, "items": []}
 
     with pytest.raises(HTTPException) as exc:
         checkout_service.checkout(
-            cart_id=1,
+            restaurant_id=1,
             customer_id=CUSTOMER_ID,
             delivery_method=DeliveryMethod.WALK,
         )
