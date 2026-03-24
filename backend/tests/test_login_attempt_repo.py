@@ -61,10 +61,10 @@ def test_get_login_attempts_by_user_returns_matching_attempts():
     assert LOGIN_ATTEMPTS[0]["reason"] is None
     assert "timestamp" in LOGIN_ATTEMPTS[0]
 
-    assert LOGIN_ATTEMPTS[0]["user_id"] == "1"
-    assert LOGIN_ATTEMPTS[0]["email"] == "ryan@email.com"
-    assert LOGIN_ATTEMPTS[0]["success"] is False
-    assert LOGIN_ATTEMPTS[0]["reason"] == ACCOUNT_LOCKED
+    assert attempts[1]["user_id"] == "1"
+    assert attempts[1]["email"] == "ryan@email.com"
+    assert attempts[1]["success"] is False
+    assert attempts[1]["reason"] == ACCOUNT_LOCKED
 
 def test_get_login_attempts_by_user_returns_empty_list():
     """Getting login attempts for unknown user should return empty list"""
