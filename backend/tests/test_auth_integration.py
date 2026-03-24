@@ -7,17 +7,19 @@ client = TestClient(app)
 
 def register_and_login(email="test@email.com"):
     """Helper to register and login user"""
-    client.post("/auth/register", json={
+    reg = client.post("/auth/register", json={
         "name": "test user",
         "email": email,
         "password": "pass123",
         "role": "customer",
     })
+    assert reg.status_code == 200
 
     response = client.post("/auth/login", json={
         "email": email,
         "password": "pass123",
     })
+    assert response.status_code == 200
 
     return response.cookies
 
