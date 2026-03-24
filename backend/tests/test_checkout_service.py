@@ -1,5 +1,5 @@
 # pylint: disable=unused-argument
-# pylint: disable=protected-access, duplicate-code
+# pylint: disable=protected-access, duplicate-code, mixed-line-endings
 """Unit tests for checkout_service.py with mocked dependencies."""
 
 from decimal import Decimal
@@ -169,7 +169,10 @@ def test_checkout_raises_403_if_wrong_customer(mock_cart_repo):
 @patch("backend.app.services.checkout_service.cart_repo")
 def test_checkout_raises_400_if_already_checked_out(mock_cart_repo):
     """Test that checkout raises 400 when the cart is already checked out."""
-    mock_cart_repo.get_cart_by_id.return_value = {**FAKE_CART, "checked_out": True}
+    mock_cart_repo.get_cart_by_customer_and_restaurant.return_value = {
+        **FAKE_CART,
+        "checked_out": True,
+    }
 
     with pytest.raises(HTTPException) as exc:
         checkout_service.checkout(

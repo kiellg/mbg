@@ -1,5 +1,5 @@
 """Integration tests for PATCH /orders/{order_id}/status/out-for-delivery and /delivered"""
-# pylint: disable=duplicate-code
+# pylint: disable=duplicate-code, mixed-line-endings
 
 from unittest.mock import patch
 import copy
