@@ -18,7 +18,7 @@ from backend.app.schemas.order import (
 )
 from backend.app.services import order_service
 
-def checkout(cart_id: int,
+def checkout(restaurant_id: int,
              customer_id: str,
              delivery_method: DeliveryMethod,
              ) -> OrderResponse:
@@ -27,7 +27,7 @@ def checkout(cart_id: int,
     Raises 403 if the cart does not belong to the customer.
     Raises 400 if the cart is empty or already checked out."""
 
-    cart = cart_repo.get_cart_by_id(cart_id)
+    cart = cart_repo.get_cart_by_customer_and_restaurant(customer_id, restaurant_id)
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found.")
 
@@ -68,7 +68,7 @@ def checkout(cart_id: int,
 
     order = order_service.create_order(payload)
 
-    cart_repo.mark_cart_checked_out(cart_id)
+    cart_repo.mark_cart_checked_out(cart["id"])
 
     return order
 

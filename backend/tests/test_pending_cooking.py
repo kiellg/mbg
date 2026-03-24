@@ -1,4 +1,5 @@
 """Integration tests for PATCH /orders/{order_id}/status/cancelled"""
+# pylint: disable=duplicate-code
 
 from unittest.mock import patch
 import copy
