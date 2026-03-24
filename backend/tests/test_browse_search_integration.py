@@ -7,6 +7,7 @@ from backend.app.data.recently_viewed_data import _RECENTLY_VIEWED
 client = TestClient(app)
 
 def setup_function():
+    """ Reser recently viewed data before each test"""
     _RECENTLY_VIEWED.clear()
 
 def login_user():
