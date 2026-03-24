@@ -2,220 +2,386 @@
 # pylint: disable=protected-access
 
 from unittest.mock import patch
+
 import pytest
 from fastapi import HTTPException
-from backend.app.data import order_data
-from backend.app.data.notification_data import NOTIFICATIONS
-from backend.app.repositories import order_repo, restaurant_repo, user_repo
-from backend.app.repositories.notification_repo import create_notification
+
 from backend.app.services import notification_service
 
-
-def setup_function():
-    """Reset notification state before each test."""
-    NOTIFICATIONS.clear()
-    order_data._ORDERDB.clear()
-    order_data.NEXT_ORDER_ITEM_ID = 1
-    user_repo.reset_users()
-    restaurant_repo.reset_restaurants()
+ORDER_ID = "order-123"
+USER_ID = "user-123"
 
 
-def _create_order(customer_id: str, restaurant_id: int) -> dict:
-    """Create a minimal stored order for notification tests."""
-    return order_repo.create_order_record(
-        customer_id=customer_id,
-        restaurant_id=restaurant_id,
-        delivery_address="123 Test St",
-        items=[{"quantity": 1, "item_price": "12.50"}],
+def test_create_order_placed_notification_calls_create_notification_with_expected_message():
+    """Order placed helper should pass the expected message to the repo layer."""
+    record = {
+        "notification_id": "notif-123",
+        "message": "Order placed.",
+        "timestamp": "2026-03-16T10:00:00+00:00",
+        "order_id": ORDER_ID,
+        "read_by_user_ids": [],
+    }
+
+    with patch(
+        "backend.app.services.notification_service.create_notification",
+        return_value=record,
+    ) as mock_create_notification:
+        result = notification_service.create_order_placed_notification(ORDER_ID)
+
+    assert result == record
+    mock_create_notification.assert_called_once_with("Order placed.", ORDER_ID)
+
+
+def test_create_order_status_changed_notification_formats_status_message():
+    """Status change helper should format the status into the notification message."""
+    record = {
+        "notification_id": "notif-123",
+        "message": "Order status changed to Cooking.",
+        "timestamp": "2026-03-16T10:00:00+00:00",
+        "order_id": ORDER_ID,
+        "read_by_user_ids": [],
+    }
+
+    with patch(
+        "backend.app.services.notification_service.create_notification",
+        return_value=record,
+    ) as mock_create_notification:
+        result = notification_service.create_order_status_changed_notification(
+            ORDER_ID,
+            "Cooking",
+        )
+
+    assert result == record
+    mock_create_notification.assert_called_once_with(
+        "Order status changed to Cooking.",
+        ORDER_ID,
     )
 
 
-def test_create_order_placed_notification_stores_minimal_record():
-    """Order placement notifications should store message, timestamp, and order_id."""
-    record = notification_service.create_order_placed_notification("abc1234")
+def test_create_driver_assigned_notification_calls_create_notification_with_expected_message():
+    """Driver assignment helper should pass the expected message to the repo layer."""
+    record = {
+        "notification_id": "notif-123",
+        "message": "You have been assigned a delivery.",
+        "timestamp": "2026-03-16T10:00:00+00:00",
+        "order_id": ORDER_ID,
+        "read_by_user_ids": [],
+    }
 
-    assert "notification_id" in record
-    assert record["message"] == "Order placed."
-    assert record["order_id"] == "abc1234"
-    assert "timestamp" in record
-    assert record["read_by_user_ids"] == []
-    assert NOTIFICATIONS == [record]
+    with patch(
+        "backend.app.services.notification_service.create_notification",
+        return_value=record,
+    ) as mock_create_notification:
+        result = notification_service.create_driver_assigned_notification(ORDER_ID)
 
-
-def test_create_order_status_changed_notification_stores_minimal_record():
-    """Status change notifications should store message, timestamp, and order_id."""
-    record = notification_service.create_order_status_changed_notification(
-        "abc1234",
-        "Cooking",
+    assert result == record
+    mock_create_notification.assert_called_once_with(
+        "You have been assigned a delivery.",
+        ORDER_ID,
     )
-
-    assert "notification_id" in record
-    assert record["message"] == "Order status changed to Cooking."
-    assert record["order_id"] == "abc1234"
-    assert "timestamp" in record
-    assert record["read_by_user_ids"] == []
-    assert NOTIFICATIONS == [record]
-
-
-def test_create_driver_assigned_notification_stores_minimal_record():
-    """Driver assignment notifications should store message, timestamp, and order_id."""
-    record = notification_service.create_driver_assigned_notification("abc1234")
-
-    assert "notification_id" in record
-    assert record["message"] == "You have been assigned a delivery."
-    assert record["order_id"] == "abc1234"
-    assert "timestamp" in record
-    assert record["read_by_user_ids"] == []
-    assert NOTIFICATIONS == [record]
 
 
 @patch("backend.app.services.notification_service.logger")
 @patch("backend.app.services.notification_service.create_notification")
-def test_create_order_placed_notification_logs_failure(mock_create_notification, mock_logger):
+def test_create_notification_safely_logs_failure_and_returns_empty_dict(
+    mock_create_notification,
+    mock_logger,
+):
     """Notification creation failures should be logged and suppressed."""
     mock_create_notification.side_effect = RuntimeError("notification write failed")
 
-    record = notification_service.create_order_placed_notification("abc1234")
+    result = notification_service._create_notification_safely(
+        "Order placed.",
+        ORDER_ID,
+        notification_service.NotificationEventType.ORDER_PLACED,
+    )
 
-    assert not record
-    assert not NOTIFICATIONS
+    assert not result
     mock_logger.exception.assert_called_once()
     log_args = mock_logger.exception.call_args[0]
     assert log_args[0] == (
         "Notification creation failed. event_type=%s order_id=%s timestamp=%s error=%s"
     )
     assert log_args[1] == "order_placed"
-    assert log_args[2] == "abc1234"
+    assert log_args[2] == ORDER_ID
     assert isinstance(log_args[3], str)
     assert log_args[4] == "notification write failed"
 
 
-def test_list_notifications_for_customer_returns_only_own_newest_first():
-    """Customers should only see their own notifications in newest-first order."""
-    customer = user_repo.create_user("cust", "cust@email.com", "pw123")
-    user_repo.create_customer(customer["user_id"])
+def test_notification_is_visible_to_user_returns_true_for_customer_order():
+    """Customers should see notifications for their own orders."""
+    order = {"customer_id": USER_ID, "restaurant_id": 1}
 
-    other_customer = user_repo.create_user("other", "other@email.com", "pw123")
-    user_repo.create_customer(other_customer["user_id"])
+    result = notification_service._notification_is_visible_to_user(order, USER_ID, "customer")
 
-    first_order = _create_order(customer["user_id"], 1)
-    create_notification("First", first_order["order_id"])
-
-    other_order = _create_order(other_customer["user_id"], 1)
-    create_notification("Other", other_order["order_id"])
-
-    newest_order = _create_order(customer["user_id"], 2)
-    create_notification("Newest", newest_order["order_id"])
-
-    result = notification_service.list_notifications_for_user(customer["user_id"])
-
-    assert [item.order_id for item in result] == [
-        newest_order["order_id"],
-        first_order["order_id"],
-    ]
-    assert [item.is_read for item in result] == [False, False]
+    assert result is True
 
 
-def test_list_notifications_for_manager_returns_only_owned_restaurant_orders():
-    """Managers should only see notifications for restaurants they own."""
-    manager = user_repo.create_user("mgr", "mgr@email.com", "pw123")
-    user_repo.create_manager(manager["user_id"])
+@patch("backend.app.services.notification_service.get_restaurant_record")
+def test_notification_is_visible_to_user_returns_true_for_restaurant_owner(
+    mock_get_restaurant_record,
+):
+    """Managers should see notifications for restaurants they own."""
+    mock_get_restaurant_record.return_value = {"id": 1, "owner_id": USER_ID}
+    order = {"customer_id": "other-user", "restaurant_id": 1}
 
-    other_manager = user_repo.create_user("other-mgr", "othermgr@email.com", "pw123")
-    user_repo.create_manager(other_manager["user_id"])
+    result = notification_service._notification_is_visible_to_user(order, USER_ID, "manager")
 
-    restaurant_repo.get_restaurant_record(1)["owner_id"] = manager["user_id"]
-    restaurant_repo.get_restaurant_record(2)["owner_id"] = other_manager["user_id"]
-
-    first_order = _create_order("customer-1", 1)
-    create_notification("First", first_order["order_id"])
-
-    other_order = _create_order("customer-2", 2)
-    create_notification("Other", other_order["order_id"])
-
-    newest_order = _create_order("customer-3", 1)
-    create_notification("Newest", newest_order["order_id"])
-
-    result = notification_service.list_notifications_for_user(manager["user_id"])
-
-    assert [item.order_id for item in result] == [
-        newest_order["order_id"],
-        first_order["order_id"],
-    ]
+    assert result is True
+    mock_get_restaurant_record.assert_called_once_with(1)
 
 
-def test_list_notifications_for_driver_returns_only_assigned_orders():
-    """Drivers should only see notifications for orders assigned to them."""
-    driver = user_repo.create_user("driver", "driver@email.com", "pw123")
-    user_repo.create_driver(driver["user_id"])
+def test_notification_is_visible_to_user_returns_true_for_assigned_driver():
+    """Drivers should see notifications for orders assigned to them."""
+    order = {"customer_id": "other-user", "restaurant_id": 1, "driver_id": USER_ID}
 
-    other_driver = user_repo.create_user("other-driver", "otherdriver@email.com", "pw123")
-    user_repo.create_driver(other_driver["user_id"])
+    result = notification_service._notification_is_visible_to_user(order, USER_ID, "driver")
 
-    matching_order = _create_order("customer-1", 1)
-    matching_order["driver_id"] = driver["user_id"]
-    matching_order["status"] = "Cooking"
-    create_notification("Match", matching_order["order_id"])
-
-    non_matching_order = _create_order("customer-2", 1)
-    non_matching_order["driver_id"] = other_driver["user_id"]
-    create_notification("Other Driver", non_matching_order["order_id"])
-
-    unassigned_order = _create_order("customer-3", 2)
-    create_notification("Unassigned", unassigned_order["order_id"])
-
-    result = notification_service.list_notifications_for_user(driver["user_id"])
-
-    assert [item.order_id for item in result] == [matching_order["order_id"]]
+    assert result is True
 
 
-def test_mark_notification_as_read_updates_only_current_user():
-    """Marking a notification as read should only affect the current user."""
-    customer = user_repo.create_user("cust", "cust@email.com", "pw123")
-    user_repo.create_customer(customer["user_id"])
+def test_notification_is_visible_to_user_returns_false_for_unknown_role():
+    """Unknown roles should never be able to view notifications."""
+    order = {"customer_id": USER_ID, "restaurant_id": 1, "driver_id": USER_ID}
 
-    manager = user_repo.create_user("mgr", "mgr@email.com", "pw123")
-    user_repo.create_manager(manager["user_id"])
-    restaurant_repo.get_restaurant_record(1)["owner_id"] = manager["user_id"]
+    result = notification_service._notification_is_visible_to_user(order, USER_ID, "guest")
 
-    order = _create_order(customer["user_id"], 1)
-    record = create_notification("Order placed.", order["order_id"])
+    assert result is False
 
-    customer_notifications = notification_service.list_notifications_for_user(customer["user_id"])
-    manager_notifications = notification_service.list_notifications_for_user(manager["user_id"])
-    assert customer_notifications[0].is_read is False
-    assert manager_notifications[0].is_read is False
 
-    result = notification_service.mark_notification_as_read_for_user(
-        record["notification_id"],
-        customer["user_id"],
-    )
+def test_build_notification_response_marks_notification_read_for_current_user():
+    """Response building should derive the read flag from read_by_user_ids."""
+    record = {
+        "notification_id": "notif-123",
+        "message": "Order placed.",
+        "timestamp": "2026-03-16T10:00:00+00:00",
+        "order_id": ORDER_ID,
+        "read_by_user_ids": [USER_ID],
+    }
 
-    assert result.notification_id == record["notification_id"]
+    result = notification_service._build_notification_response(record, USER_ID)
+
+    assert result.notification_id == "notif-123"
+    assert result.message == "Order placed."
+    assert result.order_id == ORDER_ID
     assert result.is_read is True
 
-    customer_notifications = notification_service.list_notifications_for_user(customer["user_id"])
-    manager_notifications = notification_service.list_notifications_for_user(manager["user_id"])
-    assert customer_notifications[0].is_read is True
-    assert manager_notifications[0].is_read is False
+
+@patch("backend.app.services.notification_service.get_user_role")
+def test_list_notifications_for_user_returns_empty_for_unsupported_role(mock_get_user_role):
+    """Unsupported roles should not receive any notifications."""
+    mock_get_user_role.return_value = "guest"
+
+    result = notification_service.list_notifications_for_user(USER_ID)
+
+    assert not result
 
 
-def test_mark_notification_as_read_rejects_hidden_notification():
-    """Users should not be able to mark invisible notifications as read."""
-    customer = user_repo.create_user("cust", "cust@email.com", "pw123")
-    user_repo.create_customer(customer["user_id"])
+@patch("backend.app.services.notification_service.get_order_record")
+@patch("backend.app.services.notification_service.list_notification_records")
+@patch("backend.app.services.notification_service.get_user_role")
+def test_list_notifications_for_user_returns_only_visible_customer_notifications(
+    mock_get_user_role,
+    mock_list_notification_records,
+    mock_get_order_record,
+):
+    """Customer listing should skip missing orders and orders owned by other users."""
+    mock_get_user_role.return_value = "customer"
+    mock_list_notification_records.return_value = [
+        {
+            "notification_id": "notif-visible",
+            "message": "Newest",
+            "timestamp": "2026-03-16T10:10:00+00:00",
+            "order_id": "order-visible",
+            "read_by_user_ids": [USER_ID],
+        },
+        {
+            "notification_id": "notif-missing",
+            "message": "Missing",
+            "timestamp": "2026-03-16T10:05:00+00:00",
+            "order_id": "order-missing",
+            "read_by_user_ids": [],
+        },
+        {
+            "notification_id": "notif-hidden",
+            "message": "Hidden",
+            "timestamp": "2026-03-16T10:00:00+00:00",
+            "order_id": "order-hidden",
+            "read_by_user_ids": [],
+        },
+    ]
+    orders_by_id = {
+        "order-visible": {
+            "order_id": "order-visible",
+            "customer_id": USER_ID,
+            "restaurant_id": 1,
+        },
+        "order-hidden": {
+            "order_id": "order-hidden",
+            "customer_id": "other-user",
+            "restaurant_id": 1,
+        },
+    }
+    mock_get_order_record.side_effect = orders_by_id.get
 
-    other_customer = user_repo.create_user("other", "other@email.com", "pw123")
-    user_repo.create_customer(other_customer["user_id"])
+    result = notification_service.list_notifications_for_user(USER_ID)
 
-    order = _create_order(customer["user_id"], 1)
-    record = create_notification("Order placed.", order["order_id"])
+    assert [item.order_id for item in result] == ["order-visible"]
+    assert [item.is_read for item in result] == [True]
+
+
+@patch("backend.app.services.notification_service.mark_notification_as_read")
+@patch("backend.app.services.notification_service.get_notification_record")
+@patch("backend.app.services.notification_service.get_user_role")
+def test_mark_notification_as_read_for_user_raises_403_for_unsupported_role(
+    mock_get_user_role,
+    mock_get_notification_record,
+    mock_mark_notification_as_read,
+):
+    """Unsupported roles should be rejected before any repo reads happen."""
+    mock_get_user_role.return_value = "guest"
 
     with pytest.raises(HTTPException) as exc:
-        notification_service.mark_notification_as_read_for_user(
-            record["notification_id"],
-            other_customer["user_id"],
-        )
+        notification_service.mark_notification_as_read_for_user("notif-123", USER_ID)
+
+    assert exc.value.status_code == 403
+    assert exc.value.detail == "Access denied"
+    mock_get_notification_record.assert_not_called()
+    mock_mark_notification_as_read.assert_not_called()
+
+
+@patch("backend.app.services.notification_service.get_notification_record")
+@patch("backend.app.services.notification_service.get_user_role")
+def test_mark_notification_as_read_for_user_raises_404_if_notification_not_found(
+    mock_get_user_role,
+    mock_get_notification_record,
+):
+    """Missing notifications should raise 404."""
+    mock_get_user_role.return_value = "customer"
+    mock_get_notification_record.return_value = None
+
+    with pytest.raises(HTTPException) as exc:
+        notification_service.mark_notification_as_read_for_user("notif-123", USER_ID)
+
+    assert exc.value.status_code == 404
+    assert exc.value.detail == "Notification not found"
+
+
+@patch("backend.app.services.notification_service.get_order_record")
+@patch("backend.app.services.notification_service.get_notification_record")
+@patch("backend.app.services.notification_service.get_user_role")
+def test_mark_notification_as_read_for_user_raises_404_if_order_not_found(
+    mock_get_user_role,
+    mock_get_notification_record,
+    mock_get_order_record,
+):
+    """Notifications for deleted orders should raise 404."""
+    mock_get_user_role.return_value = "customer"
+    mock_get_notification_record.return_value = {
+        "notification_id": "notif-123",
+        "order_id": ORDER_ID,
+    }
+    mock_get_order_record.return_value = None
+
+    with pytest.raises(HTTPException) as exc:
+        notification_service.mark_notification_as_read_for_user("notif-123", USER_ID)
+
+    assert exc.value.status_code == 404
+    assert exc.value.detail == "Notification not found"
+
+
+@patch("backend.app.services.notification_service.get_order_record")
+@patch("backend.app.services.notification_service.get_notification_record")
+@patch("backend.app.services.notification_service.get_user_role")
+def test_mark_notification_as_read_for_user_raises_403_for_hidden_notification(
+    mock_get_user_role,
+    mock_get_notification_record,
+    mock_get_order_record,
+):
+    """Users should not be able to mark invisible notifications as read."""
+    mock_get_user_role.return_value = "customer"
+    mock_get_notification_record.return_value = {
+        "notification_id": "notif-123",
+        "order_id": ORDER_ID,
+    }
+    mock_get_order_record.return_value = {
+        "order_id": ORDER_ID,
+        "customer_id": "other-user",
+        "restaurant_id": 1,
+    }
+
+    with pytest.raises(HTTPException) as exc:
+        notification_service.mark_notification_as_read_for_user("notif-123", USER_ID)
 
     assert exc.value.status_code == 403
     assert exc.value.detail == "Not authorized to view this notification."
+
+
+@patch("backend.app.services.notification_service.mark_notification_as_read")
+@patch("backend.app.services.notification_service.get_order_record")
+@patch("backend.app.services.notification_service.get_notification_record")
+@patch("backend.app.services.notification_service.get_user_role")
+def test_mark_notification_as_read_for_user_raises_500_if_update_fails(
+    mock_get_user_role,
+    mock_get_notification_record,
+    mock_get_order_record,
+    mock_mark_notification_as_read,
+):
+    """Repo update failures should raise 500."""
+    mock_get_user_role.return_value = "customer"
+    mock_get_notification_record.return_value = {
+        "notification_id": "notif-123",
+        "order_id": ORDER_ID,
+    }
+    mock_get_order_record.return_value = {
+        "order_id": ORDER_ID,
+        "customer_id": USER_ID,
+        "restaurant_id": 1,
+    }
+    mock_mark_notification_as_read.return_value = None
+
+    with pytest.raises(HTTPException) as exc:
+        notification_service.mark_notification_as_read_for_user("notif-123", USER_ID)
+
+    assert exc.value.status_code == 500
+    assert exc.value.detail == "Failed to update notification"
+
+
+@patch("backend.app.services.notification_service.mark_notification_as_read")
+@patch("backend.app.services.notification_service.get_order_record")
+@patch("backend.app.services.notification_service.get_notification_record")
+@patch("backend.app.services.notification_service.get_user_role")
+def test_mark_notification_as_read_for_user_returns_updated_response(
+    mock_get_user_role,
+    mock_get_notification_record,
+    mock_get_order_record,
+    mock_mark_notification_as_read,
+):
+    """Valid notification reads should return the updated notification response."""
+    mock_get_user_role.return_value = "customer"
+    mock_get_notification_record.return_value = {
+        "notification_id": "notif-123",
+        "message": "Order placed.",
+        "timestamp": "2026-03-16T10:00:00+00:00",
+        "order_id": ORDER_ID,
+        "read_by_user_ids": [],
+    }
+    mock_get_order_record.return_value = {
+        "order_id": ORDER_ID,
+        "customer_id": USER_ID,
+        "restaurant_id": 1,
+    }
+    mock_mark_notification_as_read.return_value = {
+        "notification_id": "notif-123",
+        "message": "Order placed.",
+        "timestamp": "2026-03-16T10:00:00+00:00",
+        "order_id": ORDER_ID,
+        "read_by_user_ids": [USER_ID],
+    }
+
+    result = notification_service.mark_notification_as_read_for_user("notif-123", USER_ID)
+
+    assert result.notification_id == "notif-123"
+    assert result.order_id == ORDER_ID
+    assert result.is_read is True
+    mock_mark_notification_as_read.assert_called_once_with("notif-123", USER_ID)
