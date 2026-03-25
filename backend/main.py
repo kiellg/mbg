@@ -1,16 +1,16 @@
 """Main FastAPI app"""
 
 from fastapi import FastAPI
-from backend.app.routers.auth import router as auth_router
-from backend.app.routers.restaurants import router as restaurants_router
-from backend.app.routers.carts import router as carts_router
-from backend.app.routers.orders import router as orders_router
-from backend.app.routers.profile import router as profile_router
-from backend.app.routers.checkouts import router as checkout_router
-from backend.app.routers.payments import router as payment_router
-from backend.app.routers.deliveries import router as deliveries_router
-from backend.app.routers.notifications import router as notifications_router
-from backend.app.routers.recently_viewed import router as recently_viewed_router
+from app.routers.auth import router as auth_router
+from app.routers.restaurants import router as restaurants_router
+from app.routers.carts import router as carts_router
+from app.routers.orders import router as orders_router
+from app.routers.profile import router as profile_router
+from app.routers.checkouts import router as checkout_router
+from app.routers.payments import router as payment_router
+from app.routers.deliveries import router as deliveries_router
+from app.routers.notifications import router as notifications_router
+from app.routers.recently_viewed import router as recently_viewed_router
 
 app = FastAPI()
 app.include_router(auth_router)
@@ -28,3 +28,13 @@ app.include_router(recently_viewed_router)
 def health():
     """Health check"""
     return {"status": "ok"}
+
+if __name__ == '__main__':
+    import uvicorn
+
+    uvicorn.run(
+        "main:app",
+        host='0.0.0.0',
+        port=8000,
+        reload=False
+    )
