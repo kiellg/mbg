@@ -1,8 +1,8 @@
 """Unit tests for cart_repo.py"""
 
 #pylint: disable=protected-access
-from backend.app.data import cart_data
-from backend.app.repositories import cart_repo
+from app.data import cart_data
+from app.repositories import cart_repo
 
 def setup_function():
     """Reset cart data before each test."""

@@ -3,8 +3,8 @@ and interactions with the order repository."""
 from decimal import Decimal
 from types import SimpleNamespace
 from fastapi import HTTPException
-from backend.app.repositories import order_repo, restaurant_repo, user_repo
-from backend.app.schemas.order import (
+from app.repositories import order_repo, restaurant_repo, user_repo
+from app.schemas.order import (
     DeliveryMethod,
     OrderCreate,
     OrderItemCreate,
@@ -14,8 +14,8 @@ from backend.app.schemas.order import (
     PendingOrderUpdate,
     OrderUpdate
 )
-from backend.app.services import notification_service
-from backend.app.services.pricing_service import PricingService
+from app.services import notification_service
+from app.services.pricing_service import PricingService
 
 def _validate_order_is_pending(order: dict) -> None:
     """Raise an HTTPException when an order is not editable."""

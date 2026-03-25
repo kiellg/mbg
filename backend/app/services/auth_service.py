@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 from fastapi import HTTPException
 
-from backend.app.repositories.user_repo import(
+from app.repositories.user_repo import(
     get_user_by_email,
     get_user_by_id,
     create_user,
@@ -24,12 +24,12 @@ from backend.app.repositories.user_repo import(
     delete_password_reset_token,
 )
 
-from backend.app.repositories.session_repo import(
+from app.repositories.session_repo import(
     get_session,
     delete_session,
 )
 
-from backend.app.repositories.login_attempt_repo import(
+from app.repositories.login_attempt_repo import(
     create_login_attempt,
 )
 

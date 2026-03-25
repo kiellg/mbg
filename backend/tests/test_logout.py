@@ -2,9 +2,9 @@
 
 from fastapi.testclient import TestClient
 
-from backend.main import app
-from backend.app.repositories.user_repo import reset_users
-from backend.app.repositories.session_repo import reset_session, get_session
+from main import app
+from app.repositories.user_repo import reset_users
+from app.repositories.session_repo import reset_session, get_session
 
 client = TestClient(app)
 

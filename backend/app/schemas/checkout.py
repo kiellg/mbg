@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel
 
-from backend.app.schemas.order import DeliveryMethod
+from app.schemas.order import DeliveryMethod
 
 
 class CheckoutRequest(BaseModel):

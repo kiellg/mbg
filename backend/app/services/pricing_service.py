@@ -3,7 +3,7 @@
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from fastapi import HTTPException
 
-from backend.app.schemas.order import DeliveryMethod
+from app.schemas.order import DeliveryMethod
 
 TWOPLACES = Decimal("0.01")
 DELIVERY_FEE_BY_METHOD = {

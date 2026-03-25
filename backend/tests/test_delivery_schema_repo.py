@@ -1,9 +1,9 @@
 """Unit tests for delivery schemas"""
 import pytest
 from pydantic import ValidationError
-from backend.app.schemas.delivery import DeliveryStatusResponse, DeliveryDetailsResponse
-from backend.app.schemas.order import OrderStatus, DeliveryMethod
-from backend.app.repositories import order_repo
+from app.schemas.delivery import DeliveryStatusResponse, DeliveryDetailsResponse
+from app.schemas.order import OrderStatus, DeliveryMethod
+from app.repositories import order_repo
 
 VALID_ORDER_ID = "abc1234"
 VALID_DELIVERY_TIME = "30 mins"

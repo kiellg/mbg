@@ -2,8 +2,8 @@
 # pylint: disable=duplicate-code
 
 from fastapi.testclient import TestClient
-from backend.main import app
-from backend.app.data.categories_data import VALID_CATEGORIES, VALID_DIETARY_TAGS
+from main import app
+from app.data.categories_data import VALID_CATEGORIES, VALID_DIETARY_TAGS
 
 client = TestClient(app)
 
@@ -20,8 +20,8 @@ BASE_RESTAURANT = {
     "menu": [],
 }
 
-SERVICE = "backend.app.services.restaurants_service"
-ROUTER = "backend.app.routers.restaurants"
+SERVICE = "app.services.restaurants_service"
+ROUTER = "app.routers.restaurants"
 
 def auth_headers(token=MANAGER_TOKEN):
     """Helper to create auth headers for requests"""

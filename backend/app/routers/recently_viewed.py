@@ -3,9 +3,9 @@
 from typing import Optional
 from fastapi import APIRouter, Request, Header
 
-from backend.app.services.recently_viewed_service import get_recent_items
-from backend.app.schemas.recently_viewed import RecentlyViewedResponse
-from backend.app.repositories.session_repo import get_session
+from app.services.recently_viewed_service import get_recent_items
+from app.schemas.recently_viewed import RecentlyViewedResponse
+from app.repositories.session_repo import get_session
 
 router = APIRouter(tags=["recently_viewed"])
 

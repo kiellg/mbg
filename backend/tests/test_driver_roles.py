@@ -3,9 +3,9 @@
 
 from fastapi.testclient import TestClient
 
-from backend.main import app
-from backend.app.repositories.session_repo import create_session, reset_session
-from backend.app.repositories.user_repo import(
+from main import app
+from app.repositories.session_repo import create_session, reset_session
+from app.repositories.user_repo import(
     create_user,
     create_customer,
     create_manager,

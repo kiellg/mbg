@@ -5,16 +5,16 @@ from datetime import datetime, timezone
 from enum import Enum
 from fastapi import HTTPException
 
-from backend.app.repositories.notification_repo import (
+from app.repositories.notification_repo import (
     create_notification,
     get_notification_record,
     list_notification_records,
     mark_notification_as_read,
 )
-from backend.app.repositories.order_repo import get_order_record
-from backend.app.repositories.restaurant_repo import get_restaurant_record
-from backend.app.repositories.user_repo import get_user_role
-from backend.app.schemas.notification import NotificationResponse
+from app.repositories.order_repo import get_order_record
+from app.repositories.restaurant_repo import get_restaurant_record
+from app.repositories.user_repo import get_user_role
+from app.schemas.notification import NotificationResponse
 
 ORDER_PLACED_MESSAGE = "Order placed."
 ORDER_STATUS_CHANGED_MESSAGE_TEMPLATE = "Order status changed to {status}."

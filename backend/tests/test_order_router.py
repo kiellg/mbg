@@ -6,9 +6,9 @@ from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
-from backend.app.dependencies import get_current_user
-from backend.app.schemas.order import DeliveryMethod, OrderResponse, OrderStatus
-from backend.main import app
+from app.dependencies import get_current_user
+from app.schemas.order import DeliveryMethod, OrderResponse, OrderStatus
+from main import app
 
 CUSTOMER_ID = "9c6dbfcb-72c5-4cc4-9f76-29200f0efda7"
 
@@ -34,7 +34,7 @@ def override_get_current_user():
     return {"user_id": CUSTOMER_ID}
 
 
-@patch("backend.app.routers.orders.order_service.update_pending_order")
+@patch("app.routers.orders.order_service.update_pending_order")
 def test_update_pending_order_returns_200_and_calls_service(mock_update):
     """Test that PATCH /orders/{order_id} updates a pending order."""
     app.dependency_overrides[get_current_user] = override_get_current_user

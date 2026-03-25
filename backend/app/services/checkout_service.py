@@ -7,16 +7,16 @@ Bridges the cart and order systems:
 
 from decimal import Decimal
 from fastapi import HTTPException
-from backend.app.repositories import cart_repo
-from backend.app.repositories import user_repo
-from backend.app.repositories import restaurant_repo
-from backend.app.schemas.order import (
+from app.repositories import cart_repo
+from app.repositories import user_repo
+from app.repositories import restaurant_repo
+from app.schemas.order import (
     DeliveryMethod,
     OrderCreate,
     OrderItemCreate,
     OrderResponse,
 )
-from backend.app.services import order_service
+from app.services import order_service
 
 def checkout(restaurant_id: int,
              customer_id: str,

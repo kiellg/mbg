@@ -1,8 +1,8 @@
 """Tests for recently viewed items"""
 
 from fastapi.testclient import TestClient
-from backend.main import app
-from backend.app.services.recently_viewed_service import track_recently_viewed
+from main import app
+from app.services.recently_viewed_service import track_recently_viewed
 
 client = TestClient(app)
 
@@ -14,7 +14,7 @@ def test_recently_viewed_empty(monkeypatch):
         return {"user_id": "user_1"}
 
     monkeypatch.setattr(
-        "backend.app.routers.recently_viewed.get_session",
+        "app.routers.recently_viewed.get_session",
         mock_get_session,
     )
 
@@ -31,7 +31,7 @@ def test_recently_viewed_after_tracking(monkeypatch):
         return {"user_id": "user_1"}
 
     monkeypatch.setattr(
-        "backend.app.routers.recently_viewed.get_session",
+        "app.routers.recently_viewed.get_session",
         mock_get_session,
     )
 
@@ -54,7 +54,7 @@ def test_recently_viewed_order_and_no_duplicates(monkeypatch):
         return {"user_id": "user_1"}
 
     monkeypatch.setattr(
-        "backend.app.routers.recently_viewed.get_session",
+        "app.routers.recently_viewed.get_session",
         mock_get_session,
     )
 
@@ -79,7 +79,7 @@ def test_recently_viewed_max_limit(monkeypatch):
         return {"user_id": "user_1"}
 
     monkeypatch.setattr(
-        "backend.app.routers.recently_viewed.get_session",
+        "app.routers.recently_viewed.get_session",
         mock_get_session,
     )
 

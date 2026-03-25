@@ -1,14 +1,14 @@
 """Service layer for delivery status and details"""
 from fastapi import HTTPException
-from backend.app.repositories import order_repo, restaurant_repo, user_repo
-from backend.app.schemas.delivery import (
+from app.repositories import order_repo, restaurant_repo, user_repo
+from app.schemas.delivery import (
     DeliveryStatusResponse,
     DeliveryDetailsResponse,
     AssignedDeliveryResponse
 )
-from backend.app.schemas.order import DeliveryMethod, OrderStatus, OrderResponse
-from backend.app.services.order_service import _build_order_response
-from backend.app.services import notification_service
+from app.schemas.order import DeliveryMethod, OrderStatus, OrderResponse
+from app.services.order_service import _build_order_response
+from app.services import notification_service
 
 VALID_TRANSITIONS = {
     OrderStatus.PENDING: [OrderStatus.COOKING],

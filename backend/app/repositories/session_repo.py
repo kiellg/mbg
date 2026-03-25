@@ -3,7 +3,7 @@
 import secrets
 from typing import Dict, Any, Optional
 
-from backend.app.data import session_store
+from app.data import session_store
 
 def create_session(user_id: str) -> str:
     """Create a new session for a user"""

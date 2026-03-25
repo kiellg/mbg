@@ -1,7 +1,7 @@
 """Repository for recently viewed items"""
 
 from typing import List, Dict, Any
-from backend.app.data.recently_viewed_data import _RECENTLY_VIEWED
+from app.data.recently_viewed_data import _RECENTLY_VIEWED
 
 MAX_ITEMS = 10
 

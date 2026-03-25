@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 
 import shortuuid
 
-from backend.app.data import payment_data
+from app.data import payment_data
 
 def _alloc_payment_id() -> str:
     """Allocate and return a new unique payment id"""

@@ -1,10 +1,10 @@
 """Tests for restaurant search service"""
 
-from backend.app.services.restaurants_service import(
+from app.services.restaurants_service import(
     search_restaurant,
     search_menu_items,
 )
-from backend.app.repositories.restaurant_repo import reset_restaurants
+from app.repositories.restaurant_repo import reset_restaurants
 
 def setup_function():
     """Reset DB before each test"""

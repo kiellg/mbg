@@ -4,7 +4,7 @@
 from typing import Any, Dict, List, Optional
 import shortuuid
 
-from backend.app.data import order_data
+from app.data import order_data
 
 
 def get_order_record(order_id: str) -> Optional[Dict[str, Any]]:

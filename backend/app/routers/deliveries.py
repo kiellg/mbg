@@ -2,15 +2,15 @@
 from typing import Optional
 from fastapi import APIRouter, Header, HTTPException
 
-from backend.app.schemas.delivery import (
+from app.schemas.delivery import (
     DeliveryStatusResponse,
     DeliveryDetailsResponse,
     AssignedDeliveryResponse
 )
-from backend.app.schemas.order import OrderResponse
-from backend.app.services import delivery_service
-from backend.app.services.role_service import require_driver, require_manager
-from backend.app.schemas.order import OrderStatus
+from app.schemas.order import OrderResponse
+from app.services import delivery_service
+from app.services.role_service import require_driver, require_manager
+from app.schemas.order import OrderStatus
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 

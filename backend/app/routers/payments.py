@@ -3,15 +3,15 @@
 
 from fastapi import APIRouter, Depends, status
 
-from backend.app.dependencies import get_current_user
-from backend.app.schemas.payment import (
+from app.dependencies import get_current_user
+from app.schemas.payment import (
     PaymentRequest,
     PaymentResponse,
     PaymentReceipt,
     SavedPaymentMethod,
     SavedPaymentMethodRequest,
 )
-from backend.app.services import payment_service
+from app.services import payment_service
 
 router = APIRouter(prefix="/payments", tags=["payments"])
 

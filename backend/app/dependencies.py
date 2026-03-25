@@ -1,7 +1,7 @@
 """Shared FastAPI dependencies."""
 
 from fastapi import HTTPException, Request
-from backend.app.repositories.session_repo import get_session
+from app.repositories.session_repo import get_session
 
 
 def get_current_user(request: Request) -> dict:

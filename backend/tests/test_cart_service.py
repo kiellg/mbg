@@ -4,9 +4,9 @@ from datetime import datetime, timezone
 from unittest.mock import patch
 import pytest
 from fastapi import HTTPException
-from backend.app.services import cart_service
-from backend.app.repositories import cart_repo
-from backend.app.schemas.cart import CartItemCreate, CartItemUpdate
+from app.services import cart_service
+from app.repositories import cart_repo
+from app.schemas.cart import CartItemCreate, CartItemUpdate
 
 FAKE_MENU_ITEM = {"id": 1, "name": "Taco", "price_cents": 500, "is_available": True}
 FAKE_UNAVAILABLE_ITEM = {"id": 2, "name": "Sushi", "price_cents": 1200, "is_available": False}
@@ -33,7 +33,7 @@ def test_add_item_creates_cart_and_returns_cart_response(monkeypatch):
     monkeypatch.setattr(cart_repo, "add_item_to_cart", fake_add_item_to_cart)
     monkeypatch.setattr(cart_repo, "get_cart_by_id", lambda cart_id: created_cart)
 
-    with patch("backend.app.services.cart_service.restaurant_repo") as mock_restaurant_repo:
+    with patch("app.services.cart_service.restaurant_repo") as mock_restaurant_repo:
         mock_restaurant_repo.get_restaurant_record.return_value = {"id": 1}
         mock_restaurant_repo.get_menu_item.return_value = FAKE_MENU_ITEM
 
@@ -49,7 +49,7 @@ def test_add_item_creates_cart_and_returns_cart_response(monkeypatch):
 
 def test_add_item_unavailable_raises(monkeypatch):
     """Adding an unavailable menu item should raise 400."""
-    with patch("backend.app.services.cart_service.restaurant_repo") as mock_restaurant_repo:
+    with patch("app.services.cart_service.restaurant_repo") as mock_restaurant_repo:
         mock_restaurant_repo.get_restaurant_record.return_value = {"id": 1}
         mock_restaurant_repo.get_menu_item.return_value = FAKE_UNAVAILABLE_ITEM
 
@@ -87,7 +87,7 @@ def test_update_item_returns_updated_cart(monkeypatch):
     )
     monkeypatch.setattr(cart_repo, "get_cart_by_id", lambda cart_id: cart)
 
-    with patch("backend.app.services.cart_service.restaurant_repo") as mock_restaurant_repo:
+    with patch("app.services.cart_service.restaurant_repo") as mock_restaurant_repo:
         mock_restaurant_repo.get_restaurant_record.return_value = {"id": 1}
         mock_restaurant_repo.get_menu_item.return_value = FAKE_MENU_ITEM
 
@@ -150,7 +150,7 @@ def test_get_cart_returns_cart_response(monkeypatch):
         cart_repo, "get_cart_by_customer_and_restaurant", lambda cid, rid: cart
     )
 
-    with patch("backend.app.services.cart_service.restaurant_repo") as mock_restaurant_repo:
+    with patch("app.services.cart_service.restaurant_repo") as mock_restaurant_repo:
         mock_restaurant_repo.get_restaurant_record.return_value = {"id": 1}
         mock_restaurant_repo.get_menu_item.return_value = FAKE_MENU_ITEM
 

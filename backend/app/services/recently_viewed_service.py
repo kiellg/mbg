@@ -1,7 +1,7 @@
 """Service layer for recently viewed items"""
 
 from datetime import datetime
-from backend.app.repositories.recently_viewed_repo import(
+from app.repositories.recently_viewed_repo import(
     get_recently_viewed,
     add_recently_viewed,
 )

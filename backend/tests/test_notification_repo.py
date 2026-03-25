@@ -1,7 +1,7 @@
 """Unit tests for notification_repo.py."""
 
-from backend.app.data.notification_data import NOTIFICATIONS
-from backend.app.repositories.notification_repo import list_notification_records
+from app.data.notification_data import NOTIFICATIONS
+from app.repositories.notification_repo import list_notification_records
 
 
 def setup_function():

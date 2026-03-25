@@ -3,10 +3,10 @@
 import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
-from backend.main import app
-from backend.app.services.restaurants_service import delete_restaurant_by_id
-from backend.app.repositories.session_repo import create_session, reset_session
-from backend.app.repositories.user_repo import(
+from main import app
+from app.services.restaurants_service import delete_restaurant_by_id
+from app.repositories.session_repo import create_session, reset_session
+from app.repositories.user_repo import(
     create_manager,
     create_user,
     reset_users,

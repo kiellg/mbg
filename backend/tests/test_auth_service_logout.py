@@ -3,8 +3,8 @@
 import pytest
 from fastapi import HTTPException
 
-from backend.app.repositories.session_repo import create_session, reset_session
-from backend.app.services.auth_service import(
+from app.repositories.session_repo import create_session, reset_session
+from app.services.auth_service import(
     logout_user,
     get_current_user_session,
 )

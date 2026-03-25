@@ -1,10 +1,10 @@
 """Tests for filtering services"""
 
-from backend.app.services.restaurants_service import(
+from app.services.restaurants_service import(
     filter_restaurants,
     filter_menu_items_service,
 )
-from backend.app.repositories.restaurant_repo import reset_restaurants
+from app.repositories.restaurant_repo import reset_restaurants
 
 def setup_function():
     """Reset restaurant data before each test"""

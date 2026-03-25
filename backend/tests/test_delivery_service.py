@@ -2,9 +2,9 @@
 from unittest.mock import patch
 import pytest
 from fastapi import HTTPException
-from backend.app.data.notification_data import NOTIFICATIONS
-from backend.app.services import delivery_service
-from backend.app.schemas.order import OrderStatus, DeliveryMethod
+from app.data.notification_data import NOTIFICATIONS
+from app.services import delivery_service
+from app.schemas.order import OrderStatus, DeliveryMethod
 
 FAKE_ORDER = {
     "order_id": "abc1234",
@@ -22,7 +22,7 @@ ORDER_ID = "abc1234"
 DRIVER_ID = "driver-123"
 MANAGER_ID = "manager-123"
 
-SERVICE = "backend.app.services.delivery_service"
+SERVICE = "app.services.delivery_service"
 ORDER_REPO = f"{SERVICE}.order_repo"
 RESTAURANT_REPO = f"{SERVICE}.restaurant_repo"
 USER_REPO = f"{SERVICE}.user_repo"

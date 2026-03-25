@@ -8,9 +8,9 @@ import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
-from backend.main import app
-from backend.app.schemas.order import DeliveryMethod, OrderStatus, OrderResponse
-from backend.app.dependencies import get_current_user
+from main import app
+from app.schemas.order import DeliveryMethod, OrderStatus, OrderResponse
+from app.dependencies import get_current_user
 
 CUSTOMER_ID = "9c6dbfcb-72c5-4cc4-9f76-29200f0efda7"
 
@@ -34,8 +34,8 @@ def override_get_current_user():
     Only for testing purposes. Because dependency does not work with patch."""
     return {"user_id": CUSTOMER_ID}
 
-@patch("backend.app.routers.checkouts.checkout_service.checkout")
-@patch("backend.app.dependencies.get_current_user", return_value={"user_id": CUSTOMER_ID})
+@patch("app.routers.checkouts.checkout_service.checkout")
+@patch("app.dependencies.get_current_user", return_value={"user_id": CUSTOMER_ID})
 def test_checkout_returns_201_and_order(mock_user, mock_checkout):
     """Test that POST /checkout/{cart_id} returns 201 and the created order."""
     app.dependency_overrides[get_current_user] = override_get_current_user
@@ -52,8 +52,8 @@ def test_checkout_returns_201_and_order(mock_user, mock_checkout):
     assert response.json()["status"] == "Pending"
 
 
-@patch("backend.app.routers.checkouts.checkout_service.checkout")
-@patch("backend.app.dependencies.get_current_user", return_value={"user_id": CUSTOMER_ID})
+@patch("app.routers.checkouts.checkout_service.checkout")
+@patch("app.dependencies.get_current_user", return_value={"user_id": CUSTOMER_ID})
 def test_checkout_passes_correct_args_to_service(mock_user, mock_checkout):
     """Test that the router passes cart_id, customer_id, and delivery_method to the service."""
     app.dependency_overrides[get_current_user] = override_get_current_user
@@ -69,8 +69,8 @@ def test_checkout_passes_correct_args_to_service(mock_user, mock_checkout):
     )
 
 
-@patch("backend.app.routers.checkouts.checkout_service.checkout")
-@patch("backend.app.dependencies.get_current_user", return_value={"user_id": CUSTOMER_ID})
+@patch("app.routers.checkouts.checkout_service.checkout")
+@patch("app.dependencies.get_current_user", return_value={"user_id": CUSTOMER_ID})
 def test_checkout_ignores_extra_pricing_fields_in_request(mock_user, mock_checkout):
     """Test that extra pricing fields do not affect the checkout request."""
     app.dependency_overrides[get_current_user] = override_get_current_user
@@ -95,8 +95,8 @@ def test_checkout_ignores_extra_pricing_fields_in_request(mock_user, mock_checko
     )
 
 
-@patch("backend.app.routers.checkouts.checkout_service.checkout")
-@patch("backend.app.dependencies.get_current_user", return_value={"user_id": CUSTOMER_ID})
+@patch("app.routers.checkouts.checkout_service.checkout")
+@patch("app.dependencies.get_current_user", return_value={"user_id": CUSTOMER_ID})
 def test_checkout_raises_404_if_cart_not_found(mock_user, mock_checkout):
     """Test that 404 from the service propagates through the router."""
     app.dependency_overrides[get_current_user] = override_get_current_user
@@ -108,8 +108,8 @@ def test_checkout_raises_404_if_cart_not_found(mock_user, mock_checkout):
     assert response.status_code == 404
 
 
-@patch("backend.app.routers.checkouts.checkout_service.checkout")
-@patch("backend.app.dependencies.get_current_user", return_value={"user_id": CUSTOMER_ID})
+@patch("app.routers.checkouts.checkout_service.checkout")
+@patch("app.dependencies.get_current_user", return_value={"user_id": CUSTOMER_ID})
 def test_checkout_raises_403_if_wrong_customer(mock_user, mock_checkout):
     """Test that 403 from the service propagates through the router."""
     app.dependency_overrides[get_current_user] = override_get_current_user
@@ -123,8 +123,8 @@ def test_checkout_raises_403_if_wrong_customer(mock_user, mock_checkout):
     assert response.status_code == 403
 
 
-@patch("backend.app.routers.checkouts.checkout_service.checkout")
-@patch("backend.app.dependencies.get_current_user", return_value={"user_id": CUSTOMER_ID})
+@patch("app.routers.checkouts.checkout_service.checkout")
+@patch("app.dependencies.get_current_user", return_value={"user_id": CUSTOMER_ID})
 def test_checkout_raises_400_if_already_checked_out(mock_user, mock_checkout):
     """Test that 400 from the service propagates through the router."""
     app.dependency_overrides[get_current_user] = override_get_current_user

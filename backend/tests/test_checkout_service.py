@@ -8,10 +8,10 @@ from unittest.mock import patch
 import pytest
 from fastapi import HTTPException
 
-from backend.app.data import cart_data
-from backend.app.repositories import cart_repo, restaurant_repo, user_repo
-from backend.app.schemas.order import DeliveryMethod, OrderStatus
-from backend.app.services import checkout_service
+from app.data import cart_data
+from app.repositories import cart_repo, restaurant_repo, user_repo
+from app.schemas.order import DeliveryMethod, OrderStatus
+from app.services import checkout_service
 
 CUSTOMER_ID = "9c6dbfcb-72c5-4cc4-9f76-29200f0efda7"
 
@@ -50,10 +50,10 @@ def setup_function():
 
 
 # for successful checkout
-@patch("backend.app.services.checkout_service.restaurant_repo")
-@patch("backend.app.services.checkout_service.user_repo")
-@patch("backend.app.services.checkout_service.cart_repo")
-@patch("backend.app.services.checkout_service.order_service")
+@patch("app.services.checkout_service.restaurant_repo")
+@patch("app.services.checkout_service.user_repo")
+@patch("app.services.checkout_service.cart_repo")
+@patch("app.services.checkout_service.order_service")
 def test_checkout_creates_order_and_marks_cart(mock_order_service,
                                                mock_cart_repo,
                                                mock_user_repo,
@@ -78,10 +78,10 @@ def test_checkout_creates_order_and_marks_cart(mock_order_service,
     mock_order_service.create_order.assert_called_once()
     mock_cart_repo.mark_cart_checked_out.assert_called_once_with(FAKE_CART["id"])
 
-@patch("backend.app.services.checkout_service.restaurant_repo")
-@patch("backend.app.services.checkout_service.user_repo")
-@patch("backend.app.services.checkout_service.cart_repo")
-@patch("backend.app.services.checkout_service.order_service")
+@patch("app.services.checkout_service.restaurant_repo")
+@patch("app.services.checkout_service.user_repo")
+@patch("app.services.checkout_service.cart_repo")
+@patch("app.services.checkout_service.order_service")
 def test_checkout_uses_official_menu_price_for_order_items(mock_order_service,
                                                            mock_cart_repo,
                                                            mock_user_repo,
@@ -108,7 +108,7 @@ def test_checkout_uses_official_menu_price_for_order_items(mock_order_service,
     assert call_args.items[0].quantity == 2
 
 
-@patch("backend.app.services.checkout_service.order_service")
+@patch("app.services.checkout_service.order_service")
 def test_checkout_does_not_require_unit_price_cents_on_cart_items(mock_order_service):
     """Test that checkout works with the raw cart repo item shape."""
     user = user_repo.create_user("cust", "cust@test.com", "pw123")
@@ -134,7 +134,7 @@ def test_checkout_does_not_require_unit_price_cents_on_cart_items(mock_order_ser
 
 
 # for cart not found
-@patch("backend.app.services.checkout_service.cart_repo")
+@patch("app.services.checkout_service.cart_repo")
 def test_checkout_raises_404_if_cart_not_found(mock_cart_repo):
     """Test that checkout raises 404 when the cart does not exist."""
     mock_cart_repo.get_cart_by_customer_and_restaurant.return_value = None
@@ -150,7 +150,7 @@ def test_checkout_raises_404_if_cart_not_found(mock_cart_repo):
 
 
 # for wrong customer
-@patch("backend.app.services.checkout_service.cart_repo")
+@patch("app.services.checkout_service.cart_repo")
 def test_checkout_raises_403_if_wrong_customer(mock_cart_repo):
     """Test that checkout raises 403 when the cart belongs to a different customer."""
     mock_cart_repo.get_cart_by_customer_and_restaurant.return_value = FAKE_CART
@@ -166,7 +166,7 @@ def test_checkout_raises_403_if_wrong_customer(mock_cart_repo):
 
 
 # for already checked out
-@patch("backend.app.services.checkout_service.cart_repo")
+@patch("app.services.checkout_service.cart_repo")
 def test_checkout_raises_400_if_already_checked_out(mock_cart_repo):
     """Test that checkout raises 400 when the cart is already checked out."""
     mock_cart_repo.get_cart_by_customer_and_restaurant.return_value = {
@@ -185,7 +185,7 @@ def test_checkout_raises_400_if_already_checked_out(mock_cart_repo):
 
 
 # for empty cart
-@patch("backend.app.services.checkout_service.cart_repo")
+@patch("app.services.checkout_service.cart_repo")
 def test_checkout_raises_400_if_cart_is_empty(mock_cart_repo):
     """Test that checkout raises 400 when the cart has no items."""
     mock_cart_repo.get_cart_by_customer_and_restaurant.return_value = {**FAKE_CART, "items": []}

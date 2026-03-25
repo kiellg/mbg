@@ -2,7 +2,7 @@
 
 from unittest.mock import patch
 from fastapi.testclient import TestClient
-from backend.main import app
+from main import app
 
 client = TestClient(app)
 
@@ -43,8 +43,8 @@ def auth_headers(token=MANAGER_TOKEN):
     """Helper function to generate auth headers for testing"""
     return {"session_token": token}
 
-SERVICE = "backend.app.services.restaurants_service"
-ROUTER = "backend.app.routers.restaurants"
+SERVICE = "app.services.restaurants_service"
+ROUTER = "app.routers.restaurants"
 
 def test_list_restaurants_success():
     """Test that the restaurant list endpoint returns all restaurants"""

@@ -1,6 +1,6 @@
 """Tests for search suggestions service"""
 
-from backend.app.services.restaurants_service import get_search_suggestions
+from app.services.restaurants_service import get_search_suggestions
 
 def test_empty_query_returns_empty():
     """Empty query should return no suggestions"""

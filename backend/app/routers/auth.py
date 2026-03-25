@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Response, Request, HTTPException, Depends
 
-from backend.app.schemas.auth import (
+from app.schemas.auth import (
     RegisterRequest,
     RegisterResponse,
     LoginRequest,
@@ -10,7 +10,7 @@ from backend.app.schemas.auth import (
     PasswordResetRequest,
     PasswordResetConfirm,
 )
-from backend.app.services.auth_service import (
+from app.services.auth_service import (
     register_user,
     authenticate_user,
     logout_user,
@@ -18,12 +18,12 @@ from backend.app.services.auth_service import (
     reset_password,
 )
 
-from backend.app.repositories.session_repo import create_session
+from app.repositories.session_repo import create_session
 
-from backend.app.dependencies import get_current_user
+from app.dependencies import get_current_user
 
-from backend.app.data import users_data
-from backend.app.data import session_store
+from app.data import users_data
+from app.data import session_store
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

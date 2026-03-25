@@ -1,7 +1,7 @@
 """Tests for restaurant sorting in service layer"""
 
-from backend.app.services.restaurants_service import get_all_restaurants_list
-from backend.app.data.restaurants_data import _DB
+from app.services.restaurants_service import get_all_restaurants_list
+from app.data.restaurants_data import _DB
 
 def test_restaurants_sorted_by_rating_desc():
     """Restaurants should be sorted by rating descending"""

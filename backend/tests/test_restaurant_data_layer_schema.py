@@ -2,7 +2,7 @@
 
 import pytest
 from pydantic import ValidationError
-from backend.app.schemas.restaurant import (
+from app.schemas.restaurant import (
     RestaurantCreate,
     RestaurantUpdate,
     MenuItemCreate,

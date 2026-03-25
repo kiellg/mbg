@@ -5,13 +5,13 @@ from unittest.mock import patch
 import copy
 import pytest
 from fastapi.testclient import TestClient
-from backend.main import app
-from backend.app.data.order_data import _ORDERDB
-from backend.app.schemas.order import OrderStatus
+from main import app
+from app.data.order_data import _ORDERDB
+from app.schemas.order import OrderStatus
 
 client = TestClient(app)
 
-ROLE_SERVICE = "backend.app.services.role_service"
+ROLE_SERVICE = "app.services.role_service"
 
 ORDER_ID = "abc1234"
 DRIVER_ID = "driver-123"

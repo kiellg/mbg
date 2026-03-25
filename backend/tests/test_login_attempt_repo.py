@@ -1,7 +1,7 @@
 """Tests for login attempt repository"""
 
-from backend.app.data.login_attempts_data import LOGIN_ATTEMPTS
-from backend.app.repositories.login_attempt_repo import(
+from app.data.login_attempts_data import LOGIN_ATTEMPTS
+from app.repositories.login_attempt_repo import(
     create_login_attempt,
     get_login_attempts_by_user,
     reset_login_attempts,

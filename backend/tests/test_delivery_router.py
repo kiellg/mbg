@@ -5,13 +5,13 @@ import copy
 import pytest
 from fastapi.testclient import TestClient
 from fastapi import HTTPException
-from backend.main import app
-from backend.app.data.order_data import _ORDERDB as ORDER_DB
-from backend.app.schemas.order import OrderStatus
+from main import app
+from app.data.order_data import _ORDERDB as ORDER_DB
+from app.schemas.order import OrderStatus
 
 client = TestClient(app)
 
-ROUTER = "backend.app.routers.deliveries"
+ROUTER = "app.routers.deliveries"
 
 ORDER_ID = "abc1234"
 DRIVER_ID = "driver-123"
@@ -101,8 +101,8 @@ def test_get_delivery_details_not_found():
     assert response.status_code == 404
 
 
-@patch("backend.app.routers.deliveries.delivery_service.assign_driver_to_order")
-@patch("backend.app.routers.deliveries.require_manager")
+@patch("app.routers.deliveries.delivery_service.assign_driver_to_order")
+@patch("app.routers.deliveries.require_manager")
 def test_manager_assign_driver_returns_200(mock_require_manager, mock_assign_driver):
     """PATCH /{order_id}/driver should assign the driver for a manager."""
     mock_require_manager.return_value = {"user_id": "manager-123"}
@@ -127,7 +127,7 @@ def test_manager_assign_driver_returns_200(mock_require_manager, mock_assign_dri
     )
 
 
-@patch("backend.app.routers.deliveries.require_manager")
+@patch("app.routers.deliveries.require_manager")
 def test_assign_driver_returns_403_if_not_manager(mock_require_manager):
     """PATCH /{order_id}/driver should return 403 for non-managers."""
     mock_require_manager.side_effect = HTTPException(status_code=403, detail="Access denied")
@@ -195,9 +195,9 @@ def test_driver_invalid_status_transition(current_status, attempted_status):
 
     assert response.status_code == 400
 
-@patch("backend.app.services.delivery_service.order_repo")
-@patch("backend.app.services.delivery_service.restaurant_repo")
-@patch("backend.app.routers.deliveries.require_manager")
+@patch("app.services.delivery_service.order_repo")
+@patch("app.services.delivery_service.restaurant_repo")
+@patch("app.routers.deliveries.require_manager")
 def test_get_kitchen_queue_returns_200(mock_require_manager,
                                        mock_restaurant_repo,
                                        mock_order_repo):
@@ -211,7 +211,7 @@ def test_get_kitchen_queue_returns_200(mock_require_manager,
                           )
     assert response.status_code == 200
 
-@patch("backend.app.routers.deliveries.require_manager")
+@patch("app.routers.deliveries.require_manager")
 def test_get_kitchen_queue_raises_403_if_not_manager(mock_require_manager):
     """GET /orders/kitchen/{restaurant_id} should return 403 for non-managers."""
     mock_require_manager.side_effect = HTTPException(status_code=403, detail="Access denied")

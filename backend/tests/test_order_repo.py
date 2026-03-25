@@ -3,8 +3,8 @@
 
 import pytest
 
-from backend.app.data import order_data
-from backend.app.repositories import order_repo
+from app.data import order_data
+from app.repositories import order_repo
 
 
 @pytest.fixture(autouse=True)

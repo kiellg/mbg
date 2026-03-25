@@ -4,12 +4,12 @@ from typing import Any, Optional, Dict
 
 from fastapi import APIRouter, Header, Request, status, Query
 
-from backend.app.schemas.restaurant import (
+from app.schemas.restaurant import (
     RestaurantOut, RestaurantCreate, RestaurantUpdate,
     MenuItemCreate, MenuItemUpdate,
 )
-from backend.app.schemas.menu import MenuItemOut
-from backend.app.services.restaurants_service import (
+from app.schemas.menu import MenuItemOut
+from app.services.restaurants_service import (
     get_restaurant_menu_with_tracking,
     get_all_restaurants_list,
     get_all_restaurants_paginated,
@@ -26,9 +26,9 @@ from backend.app.services.restaurants_service import (
     get_menu_item_detail_with_tracking,
     get_search_suggestions,
 )
-from backend.app.services.role_service import require_manager
-from backend.app.data.categories_data import VALID_CATEGORIES, VALID_DIETARY_TAGS
-from backend.app.schemas.search import SuggestionResponse
+from app.services.role_service import require_manager
+from app.data.categories_data import VALID_CATEGORIES, VALID_DIETARY_TAGS
+from app.schemas.search import SuggestionResponse
 
 router = APIRouter(prefix="/restaurants", tags=["restaurants"])
 

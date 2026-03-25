@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from typing import Dict, Any, Optional
 import shortuuid
-from backend.app.data import users_data
+from app.data import users_data
 
 def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
     """Return a user by email"""

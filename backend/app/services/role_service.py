@@ -3,8 +3,8 @@
 from typing import Any, Dict, Optional
 from fastapi import HTTPException
 
-from backend.app.services.auth_service import get_current_user_session
-from backend.app.repositories.user_repo import get_user_role
+from app.services.auth_service import get_current_user_session
+from app.repositories.user_repo import get_user_role
 
 def require_role(session_token: Optional[str], allowed_roles: list[str]) -> Dict[str, Any]:
     """Ensure the authenticated user has an allowed role"""

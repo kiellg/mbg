@@ -3,10 +3,10 @@
 from datetime import datetime, timedelta
 from fastapi.testclient import TestClient
 
-from backend.main import app
-from backend.app.data import users_data
-from backend.app.repositories.user_repo import create_user, reset_users
-from backend.app.services.auth_service import hash_password
+from main import app
+from app.data import users_data
+from app.repositories.user_repo import create_user, reset_users
+from app.services.auth_service import hash_password
 
 client = TestClient(app)
 

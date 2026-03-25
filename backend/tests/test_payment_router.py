@@ -9,9 +9,9 @@ import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
-from backend.app.dependencies import get_current_user
-from backend.main import app
-from backend.app.schemas.payment import (
+from app.dependencies import get_current_user
+from main import app
+from app.schemas.payment import (
     PaymentReceipt,
     PaymentResponse,
     PaymentStatus,
@@ -81,7 +81,7 @@ def override_auth():
     app.dependency_overrides.clear()
 
 
-_SVC = "backend.app.routers.payments.payment_service"
+_SVC = "app.routers.payments.payment_service"
 
 # for POST /payments/{order_id}
 

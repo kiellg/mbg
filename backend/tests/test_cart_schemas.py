@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
 
-from backend.app.schemas.cart import CartItemCreate, CartItemUpdate, CartItemResponse, CartResponse
+from app.schemas.cart import CartItemCreate, CartItemUpdate, CartItemResponse, CartResponse
 
 def test_cart_item_create_valid():
     """Valid input should create a CartItemCreate without errors."""

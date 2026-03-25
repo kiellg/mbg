@@ -2,9 +2,9 @@
 
 from fastapi import HTTPException
 
-from backend.app.schemas.cart import CartItemCreate, CartItemUpdate, CartResponse, CartItemResponse
-from backend.app.repositories import cart_repo, restaurant_repo
-from backend.app.utils.formatting import format_cad_from_cents
+from app.schemas.cart import CartItemCreate, CartItemUpdate, CartResponse, CartItemResponse
+from app.repositories import cart_repo, restaurant_repo
+from app.utils.formatting import format_cad_from_cents
 
 def _get_menu_item(restaurant_id: int, menu_item_id: int) -> dict:
     """Fetch a menu from the restaurant database. Raises HTTPException if not found."""

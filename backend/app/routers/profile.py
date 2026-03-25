@@ -2,8 +2,8 @@
 
 from fastapi import APIRouter, Depends
 
-from backend.app.dependencies import get_current_user
-from backend.app.schemas.profile import(
+from app.dependencies import get_current_user
+from app.schemas.profile import(
     CustomerProfileUpdateRequest,
     CustomerProfileUpdateResponse,
     RestaurantProfileUpdateRequest,
@@ -11,7 +11,7 @@ from backend.app.schemas.profile import(
     DriverProfileUpdateRequest,
     DriverProfileUpdateResponse,
 )
-from backend.app.services import profile_service
+from app.services import profile_service
 
 router = APIRouter(prefix="/profile", tags=["profile"])
 

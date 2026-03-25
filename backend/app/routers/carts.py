@@ -2,9 +2,9 @@
 
 from fastapi import APIRouter, Depends, status
 
-from backend.app.schemas.cart import CartItemCreate, CartItemUpdate, CartResponse
-from backend.app.services import cart_service
-from backend.app.dependencies import get_current_user
+from app.schemas.cart import CartItemCreate, CartItemUpdate, CartResponse
+from app.services import cart_service
+from app.dependencies import get_current_user
 
 router = APIRouter(prefix="/cart", tags=["cart"])
 

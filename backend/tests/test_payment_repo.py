@@ -1,8 +1,8 @@
 #pylint: disable=unused-argument, protected-access
-"""Unit test for backend.app.repositories.payment_repo"""
+"""Unit test for app.repositories.payment_repo"""
 
-from backend.app.data import payment_data
-from backend.app.repositories.payment_repo import (
+from app.data import payment_data
+from app.repositories.payment_repo import (
     create_payment_record,
     get_payment_record,
     get_payment_by_order_id,

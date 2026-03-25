@@ -2,8 +2,8 @@
 
 import pytest
 from fastapi.testclient import TestClient
-from backend.app.repositories import restaurant_repo
-from backend.main import app
+from app.repositories import restaurant_repo
+from main import app
 
 client = TestClient(app)
 

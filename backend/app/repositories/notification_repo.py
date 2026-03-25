@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 import shortuuid
 
-from backend.app.data.notification_data import NOTIFICATIONS
+from app.data.notification_data import NOTIFICATIONS
 
 
 def _alloc_notification_id() -> str:

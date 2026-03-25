@@ -2,7 +2,7 @@
 
 #pylint: disable=protected-access
 from datetime import datetime
-from backend.app.data import cart_data
+from app.data import cart_data
 
 def setup_function():
     """Clear _CARTDB before each test to ensure a clean state."""

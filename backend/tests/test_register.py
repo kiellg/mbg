@@ -1,8 +1,8 @@
 """Tests for the user registration endpoint"""
 
 from fastapi.testclient import TestClient
-from backend.main import app
-from backend.app.repositories.user_repo import reset_users
+from main import app
+from app.repositories.user_repo import reset_users
 
 client = TestClient(app)
 

@@ -7,13 +7,13 @@ from unittest.mock import patch
 import pytest
 from fastapi import HTTPException
 
-from backend.app.schemas.payment import (
+from app.schemas.payment import (
     PaymentRequest,
     PaymentStatus,
     SavedPaymentMethodRequest,
 )
-from backend.app.data.notification_data import NOTIFICATIONS
-from backend.app.services import payment_service
+from app.data.notification_data import NOTIFICATIONS
+from app.services import payment_service
 
 CUSTOMER_ID = "9c6dbfcb-72c5-4cc4-9f76-29200f0efda7"
 
@@ -148,9 +148,9 @@ def test_simulate_payments_declines_card_ending_in_0000():
     assert result == PaymentStatus.DECLINED
 
 # for process_payment
-@patch("backend.app.services.payment_service.notification_service")
-@patch("backend.app.services.payment_service.payment_repo")
-@patch("backend.app.services.payment_service.order_repo")
+@patch("app.services.payment_service.notification_service")
+@patch("app.services.payment_service.payment_repo")
+@patch("app.services.payment_service.order_repo")
 def test_process_payment_accepted(
     mock_order_repo,
     mock_payment_repo,
@@ -176,9 +176,9 @@ def test_process_payment_accepted(
         "Cooking",
     )
 
-@patch("backend.app.services.notification_service.create_notification")
-@patch("backend.app.services.payment_service.payment_repo")
-@patch("backend.app.services.payment_service.order_repo")
+@patch("app.services.notification_service.create_notification")
+@patch("app.services.payment_service.payment_repo")
+@patch("app.services.payment_service.order_repo")
 def test_process_payment_still_succeeds_when_notification_creation_fails(
     mock_order_repo,
     mock_payment_repo,
@@ -199,9 +199,9 @@ def test_process_payment_still_succeeds_when_notification_creation_fails(
     assert result.status == PaymentStatus.ACCEPTED
     mock_order_repo.set_order_status.assert_called_once_with("abc1234", "Cooking")
 
-@patch("backend.app.services.payment_service.notification_service")
-@patch("backend.app.services.payment_service.payment_repo")
-@patch("backend.app.services.payment_service.order_repo")
+@patch("app.services.payment_service.notification_service")
+@patch("app.services.payment_service.payment_repo")
+@patch("app.services.payment_service.order_repo")
 def test_process_payment_declined(
     mock_order_repo,
     mock_payment_repo,
@@ -225,7 +225,7 @@ def test_process_payment_declined(
     mock_order_repo.set_order_status.assert_not_called()
     mock_notification_service.create_order_status_changed_notification.assert_not_called()
 
-@patch("backend.app.services.payment_service.order_repo")
+@patch("app.services.payment_service.order_repo")
 def test_process_payment_raises_404_if_order_not_found(mock_order_repo):
     """Should raise 404 when the order does not exist."""
     mock_order_repo.get_order_record.return_value = None
@@ -238,7 +238,7 @@ def test_process_payment_raises_404_if_order_not_found(mock_order_repo):
         )
     assert exc.value.status_code == 404
 
-@patch("backend.app.services.payment_service.order_repo")
+@patch("app.services.payment_service.order_repo")
 def test_process_payment_raises_403_if_customer_is_wrong(mock_order_repo):
     """Should raise 403 when the customer is wrong."""
     mock_order_repo.get_order_record.return_value = FAKE_ORDER
@@ -251,7 +251,7 @@ def test_process_payment_raises_403_if_customer_is_wrong(mock_order_repo):
         )
     assert exc.value.status_code == 403
 
-@patch("backend.app.services.payment_service.order_repo")
+@patch("app.services.payment_service.order_repo")
 def test_process_payment_raises_400_if_order_not_pending(mock_order_repo):
     """SHould raise 400 when the order is not in Pending state."""
     mock_order_repo.get_order_record.return_value = {
@@ -268,8 +268,8 @@ def test_process_payment_raises_400_if_order_not_pending(mock_order_repo):
     assert exc.value.status_code == 400
 
 # for get_receipt
-@patch("backend.app.services.payment_service.payment_repo")
-@patch("backend.app.services.payment_service.order_repo")
+@patch("app.services.payment_service.payment_repo")
+@patch("app.services.payment_service.order_repo")
 def test_get_receipt_returns_receipt_for_accepted_payment(mock_order_repo, mock_payment_repo):
     """Should return a payment receipt for payment with Accepted status."""
     mock_order_repo.get_order_record.return_value = FAKE_ORDER
@@ -286,8 +286,8 @@ def test_get_receipt_returns_receipt_for_accepted_payment(mock_order_repo, mock_
     assert result.cardholder_name == "John Doe"
     assert result.message == "Payment accepted. Your order is being prepared."
 
-@patch("backend.app.services.payment_service.payment_repo")
-@patch("backend.app.services.payment_service.order_repo")
+@patch("app.services.payment_service.payment_repo")
+@patch("app.services.payment_service.order_repo")
 def test_get_receipt_raises_404_if_payment_declined(mock_order_repo, mock_payment_repo):
     """Should raise 404 when the payment was declined."""
     mock_order_repo.get_order_record.return_value = FAKE_ORDER
@@ -303,7 +303,7 @@ def test_get_receipt_raises_404_if_payment_declined(mock_order_repo, mock_paymen
             )
     assert exc.value.status_code == 404
 
-@patch("backend.app.services.payment_service.order_repo")
+@patch("app.services.payment_service.order_repo")
 def test_get_receipt_raises_404_if_order_not_found(mock_order_repo):
     """Should raise 404 when the order is not found."""
     mock_order_repo.get_order_record.return_value = None
@@ -311,7 +311,7 @@ def test_get_receipt_raises_404_if_order_not_found(mock_order_repo):
         payment_service.get_receipt(order_id="fake", customer_id=CUSTOMER_ID)
     assert exc.value.status_code == 404
 
-@patch("backend.app.services.payment_service.order_repo")
+@patch("app.services.payment_service.order_repo")
 def test_get_receipt_raises_403_if_wrong_customer(mock_order_repo):
     """Should raise 403 when the order belongs to a different customer."""
     mock_order_repo.get_order_record.return_value = FAKE_ORDER
@@ -324,8 +324,8 @@ def test_get_receipt_raises_403_if_wrong_customer(mock_order_repo):
     assert exc.value.status_code == 403
 
 # for save_payment_method
-@patch("backend.app.services.payment_service.user_repo")
-@patch("backend.app.services.payment_service.payment_repo")
+@patch("app.services.payment_service.user_repo")
+@patch("app.services.payment_service.payment_repo")
 def test_save_payment_method_returns_saved_method(mock_payment_repo, mock_user_repo):
     """Should validate, tokenize, and return a SavedPaymentMethod."""
     mock_payment_repo.create_card_token.return_value = "tok1234567890"
@@ -342,8 +342,8 @@ def test_save_payment_method_returns_saved_method(mock_payment_repo, mock_user_r
     mock_payment_repo.create_card_token.assert_called_once_with("1234567891011121")
 
 
-@patch("backend.app.services.payment_service.user_repo")
-@patch("backend.app.services.payment_service.payment_repo")
+@patch("app.services.payment_service.user_repo")
+@patch("app.services.payment_service.payment_repo")
 def test_save_payment_method_raises_404_if_customer_not_found(mock_payment_repo, mock_user_repo):
     """Should raise 404 when customer profile does not exist."""
     mock_payment_repo.create_card_token.return_value = "tok1234567890"
@@ -357,7 +357,7 @@ def test_save_payment_method_raises_404_if_customer_not_found(mock_payment_repo,
     assert exc.value.status_code == 404
 
 
-@patch("backend.app.services.payment_service.user_repo")
+@patch("app.services.payment_service.user_repo")
 def test_save_payment_method_raises_400_for_invalid_card(mock_user_repo):
     """Should raise 400 when card details are invalid."""
     invalid_payload = SavedPaymentMethodRequest(
@@ -376,7 +376,7 @@ def test_save_payment_method_raises_400_for_invalid_card(mock_user_repo):
 
 
 # for get_saved_payment_methods
-@patch("backend.app.services.payment_service.user_repo")
+@patch("app.services.payment_service.user_repo")
 def test_get_saved_payment_methods_returns_list(mock_user_repo):
     """Should return a list of SavedPaymentMethod for a customer."""
     mock_user_repo.get_saved_payment_methods.return_value = [FAKE_SAVED_METHOD]
@@ -387,7 +387,7 @@ def test_get_saved_payment_methods_returns_list(mock_user_repo):
     assert result[0].last4 == "1121"
 
 
-@patch("backend.app.services.payment_service.user_repo")
+@patch("app.services.payment_service.user_repo")
 def test_get_saved_payment_methods_returns_empty_list(mock_user_repo):
     """Should return empty list when customer has no saved methods."""
     mock_user_repo.get_saved_payment_methods.return_value = []
@@ -398,9 +398,9 @@ def test_get_saved_payment_methods_returns_empty_list(mock_user_repo):
 
 
 # for process_payment_with_saved_method
-@patch("backend.app.services.payment_service.payment_repo")
-@patch("backend.app.services.payment_service.order_repo")
-@patch("backend.app.services.payment_service.user_repo")
+@patch("app.services.payment_service.payment_repo")
+@patch("app.services.payment_service.order_repo")
+@patch("app.services.payment_service.user_repo")
 def test_process_payment_with_saved_method_accepted(
     mock_user_repo, mock_order_repo, mock_payment_repo
 ):
@@ -419,7 +419,7 @@ def test_process_payment_with_saved_method_accepted(
     assert result.status == PaymentStatus.ACCEPTED
 
 
-@patch("backend.app.services.payment_service.user_repo")
+@patch("app.services.payment_service.user_repo")
 def test_process_payment_with_saved_method_raises_404_if_method_not_found(mock_user_repo):
     """Should raise 404 when saved method does not exist."""
     mock_user_repo.get_saved_payment_methods.return_value = []
@@ -433,8 +433,8 @@ def test_process_payment_with_saved_method_raises_404_if_method_not_found(mock_u
     assert exc.value.status_code == 404
 
 
-@patch("backend.app.services.payment_service.payment_repo")
-@patch("backend.app.services.payment_service.user_repo")
+@patch("app.services.payment_service.payment_repo")
+@patch("app.services.payment_service.user_repo")
 def test_process_payment_with_saved_method_raises_500_if_token_invalid(
     mock_user_repo, mock_payment_repo
 ):

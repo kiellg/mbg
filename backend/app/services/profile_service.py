@@ -3,7 +3,7 @@
 from typing import Dict, Any
 from fastapi import HTTPException
 
-from backend.app.repositories import user_repo, restaurant_repo
+from app.repositories import user_repo, restaurant_repo
 
 def update_customer_profile(user_id, name, delivery_address) -> Dict[str, Any]:
     """Update customer profile fields"""

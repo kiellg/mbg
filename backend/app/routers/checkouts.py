@@ -2,10 +2,10 @@
 
 from fastapi import APIRouter, Depends, status
 
-from backend.app.dependencies import get_current_user
-from backend.app.schemas.checkout import CheckoutRequest
-from backend.app.schemas.order import OrderResponse
-from backend.app.services import checkout_service
+from app.dependencies import get_current_user
+from app.schemas.checkout import CheckoutRequest
+from app.schemas.order import OrderResponse
+from app.services import checkout_service
 
 router = APIRouter(prefix="/checkout", tags=["checkout"])
 

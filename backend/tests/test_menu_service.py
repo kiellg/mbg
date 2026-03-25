@@ -3,7 +3,7 @@
 from unittest.mock import patch
 import pytest
 from fastapi import HTTPException
-from backend.app.services.restaurants_service import (
+from app.services.restaurants_service import (
     get_restaurant_menu,
     format_cad_from_cents)
 
@@ -49,7 +49,7 @@ FAKE_RESTAURANT = {
     ],
 }
 
-_REPO = "backend.app.services.restaurants_service.get_restaurant_record"
+_REPO = "app.services.restaurants_service.get_restaurant_record"
 
 def _make_restaurant_with(menu_index: int) -> dict:
     """Return a fake restaurant containing only the menu item at the given index"""

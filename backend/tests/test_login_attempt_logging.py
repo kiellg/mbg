@@ -2,10 +2,10 @@
 
 from fastapi.testclient import TestClient
 
-from backend.main import app
-from backend.app.data.login_attempts_data import LOGIN_ATTEMPTS
-from backend.app.repositories.user_repo import create_user, reset_users
-from backend.app.services.auth_service import hash_password
+from main import app
+from app.data.login_attempts_data import LOGIN_ATTEMPTS
+from app.repositories.user_repo import create_user, reset_users
+from app.services.auth_service import hash_password
 
 client = TestClient(app)
 

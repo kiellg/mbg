@@ -3,7 +3,7 @@
 #pylint: disable=protected-access
 from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone
-from backend.app.data import cart_data
+from app.data import cart_data
 
 def get_cart_by_customer_and_restaurant(customer_id: str,
                                         restaurant_id: int) -> Optional[Dict[str, Any]]:

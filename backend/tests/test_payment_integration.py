@@ -2,12 +2,12 @@
 # pylint: disable=protected-access, duplicate-code
 from fastapi.testclient import TestClient
 
-from backend.app.data import cart_data, order_data, payment_data
-from backend.app.dependencies import get_current_user
-from backend.app.repositories import user_repo, restaurant_repo
-from backend.app.schemas.order import OrderStatus
-from backend.app.schemas.payment import PaymentStatus
-from backend.main import app
+from app.data import cart_data, order_data, payment_data
+from app.dependencies import get_current_user
+from app.repositories import user_repo, restaurant_repo
+from app.schemas.order import OrderStatus
+from app.schemas.payment import PaymentStatus
+from main import app
 
 client = TestClient(app)
 

@@ -2,8 +2,8 @@
 """Unit tests for get_orders_assigned_to_driver in order_repo"""
 from unittest.mock import patch
 import pytest
-from backend.app.data import order_data
-from backend.app.repositories import order_repo
+from app.data import order_data
+from app.repositories import order_repo
 
 
 @pytest.fixture(autouse=True)

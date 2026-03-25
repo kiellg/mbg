@@ -1,6 +1,6 @@
 """Tests for restaurant data layer repo validation"""
 
-from backend.app.repositories.restaurant_repo import (
+from app.repositories.restaurant_repo import (
     get_restaurant_record,
     get_all_restaurants,
     create_restaurant,

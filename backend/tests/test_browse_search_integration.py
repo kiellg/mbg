@@ -1,8 +1,8 @@
 """Integration tests for browsing, searching, and recently viewed"""
 
 from fastapi.testclient import TestClient
-from backend.main import app
-from backend.app.data.recently_viewed_data import _RECENTLY_VIEWED
+from main import app
+from app.data.recently_viewed_data import _RECENTLY_VIEWED
 
 client = TestClient(app)
 

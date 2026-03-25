@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Dict, List
 
-from backend.app.data.login_attempts_data import LOGIN_ATTEMPTS
+from app.data.login_attempts_data import LOGIN_ATTEMPTS
 
 def create_login_attempt(
         user_id: str,

@@ -5,8 +5,8 @@ from unittest.mock import patch
 import copy
 from pydantic import ValidationError
 import pytest
-from backend.app.schemas.restaurant import MenuItemCreate
-from backend.app.services.restaurants_service import get_restaurant_menu
+from app.schemas.restaurant import MenuItemCreate
+from app.services.restaurants_service import get_restaurant_menu
 
 BASE_RECORD = {
     "id": 1,
@@ -18,7 +18,7 @@ BASE_RECORD = {
     "menu": [],
 }
 
-SERVICE = "backend.app.services.restaurants_service"
+SERVICE = "app.services.restaurants_service"
 
 def make_item(**overrides):
     """Helper to create a menu item dict with default values and overrides"""

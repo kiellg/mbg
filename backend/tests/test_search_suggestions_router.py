@@ -1,7 +1,7 @@
 """Tests for search suggestions router"""
 
 from fastapi.testclient import TestClient
-from backend.main import app
+from main import app
 
 client = TestClient(app)
 
@@ -27,7 +27,7 @@ def test_search_suggestions_success(monkeypatch):
         }
 
     monkeypatch.setattr(
-        "backend.app.routers.restaurants.get_search_suggestions",
+        "app.routers.restaurants.get_search_suggestions",
         mock_get_search_suggestions,
     )
 
@@ -50,7 +50,7 @@ def test_search_suggestions_empty_result(monkeypatch):
         return {"suggestions": []}
 
     monkeypatch.setattr(
-        "backend.app.routers.restaurants.get_search_suggestions",
+        "app.routers.restaurants.get_search_suggestions",
         mock_get_search_suggestions,
     )
 
@@ -74,7 +74,7 @@ def test_search_suggestions_passes_query(monkeypatch):
         return {"suggestions": []}
 
     monkeypatch.setattr(
-        "backend.app.routers.restaurants.get_search_suggestions",
+        "app.routers.restaurants.get_search_suggestions",
         mock_get_search_suggestions,
     )
 

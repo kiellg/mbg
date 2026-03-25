@@ -5,9 +5,9 @@ from decimal import Decimal
 from unittest.mock import patch
 import pytest
 from fastapi import HTTPException
-from backend.app.data.notification_data import NOTIFICATIONS
-from backend.app.services import order_service
-from backend.app.schemas.order import (
+from app.data.notification_data import NOTIFICATIONS
+from app.services import order_service
+from app.schemas.order import (
     DeliveryMethod,
     OrderCreate,
     OrderItemCreate,
@@ -83,8 +83,8 @@ def _update_order_record_with_items_side_effect(_order_id: str, order_patch: dic
     return updated_order
 
 # for create order
-@patch("backend.app.services.order_service.PricingService.calculate_totals")
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.PricingService.calculate_totals")
+@patch("app.services.order_service.order_repo")
 def test_create_order_calls_repo_and_returns_response(mock_repo, mock_pricing):
     """Test that create_order calls the repository and returns an OrderResponse."""
     mock_repo.create_order_record.return_value = FAKE_RAW_ORDER
@@ -97,8 +97,8 @@ def test_create_order_calls_repo_and_returns_response(mock_repo, mock_pricing):
     assert result.order_id == "1"
     assert result.status == OrderStatus.PENDING
 
-@patch("backend.app.services.order_service.PricingService.calculate_totals")
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.PricingService.calculate_totals")
+@patch("app.services.order_service.order_repo")
 def test_create_order_calls_pricing_service(mock_repo, mock_pricing):
     """Test that create_order calls the PricingService to calculate totals."""
     mock_repo.create_order_record.return_value = FAKE_RAW_ORDER
@@ -108,7 +108,7 @@ def test_create_order_calls_pricing_service(mock_repo, mock_pricing):
 
     mock_pricing.assert_called_once()
 
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.order_repo")
 def test_create_order_persists_recalculated_totals(mock_repo):
     """Test that create_order stores recalculated totals before returning."""
     mock_repo.create_order_record.return_value = FAKE_RAW_ORDER
@@ -124,8 +124,8 @@ def test_create_order_persists_recalculated_totals(mock_repo):
     assert result.total == Decimal("27.00")
 
 
-@patch("backend.app.services.order_service.notification_service")
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.notification_service")
+@patch("app.services.order_service.order_repo")
 def test_create_order_creates_notification_after_order_is_stored(
     mock_repo,
     mock_notification_service,
@@ -138,8 +138,8 @@ def test_create_order_creates_notification_after_order_is_stored(
 
     mock_notification_service.create_order_placed_notification.assert_called_once_with("1")
 
-@patch("backend.app.services.notification_service.create_notification")
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.notification_service.create_notification")
+@patch("app.services.order_service.order_repo")
 def test_create_order_still_succeeds_when_notification_creation_fails(
     mock_repo,
     mock_create_notification,
@@ -155,7 +155,7 @@ def test_create_order_still_succeeds_when_notification_creation_fails(
     assert result.status == OrderStatus.PENDING
 
 # for get order
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.order_repo")
 def test_get_order_returns_order(mock_repo):
     """Test that get_order returns an OrderResponse when the order exists."""
     mock_repo.get_order_record.return_value = FAKE_RAW_ORDER
@@ -165,8 +165,8 @@ def test_get_order_returns_order(mock_repo):
     mock_repo.get_order_record.assert_called_once_with(1)
     assert result.order_id == "1"
 
-@patch("backend.app.services.order_service.PricingService.calculate_totals")
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.PricingService.calculate_totals")
+@patch("app.services.order_service.order_repo")
 def test_get_order_uses_stored_totals(mock_repo, mock_pricing):
     """Test that get_order returns stored totals without recalculating."""
     mock_repo.get_order_record.return_value = {
@@ -185,7 +185,7 @@ def test_get_order_uses_stored_totals(mock_repo, mock_pricing):
     assert result.delivery_fee == Decimal("4.56")
     assert result.total == Decimal("105.78")
 
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.order_repo")
 def test_get_order_raises_404_if_not_found(mock_repo):
     """Test that get_order raises a 404 HTTPException when the order is not found."""
     mock_repo.get_order_record.return_value = None
@@ -196,7 +196,7 @@ def test_get_order_raises_404_if_not_found(mock_repo):
     assert exc.value.status_code == 404
 
 # for list orders
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.order_repo")
 def test_list_orders_returns_all(mock_repo):
     """Test that list_orders returns a list of OrderResponse objects for all orders."""
     mock_repo.list_order_records.return_value = [FAKE_RAW_ORDER, FAKE_RAW_ORDER]
@@ -205,7 +205,7 @@ def test_list_orders_returns_all(mock_repo):
 
     assert len(result) == 2
 
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.order_repo")
 def test_list_orders_returns_empty_list(mock_repo):
     """Test that list_orders returns an empty list when there are no orders."""
     mock_repo.list_order_records.return_value = []
@@ -215,8 +215,8 @@ def test_list_orders_returns_empty_list(mock_repo):
     assert not result
 
 # for update order
-@patch("backend.app.services.order_service.PricingService.calculate_totals")
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.PricingService.calculate_totals")
+@patch("app.services.order_service.order_repo")
 def test_update_order_returns_updated_order(mock_repo, mock_pricing):
     """Test that update_order returns an OrderResponse with the updated status."""
     mock_repo.get_order_record.return_value = FAKE_RAW_ORDER
@@ -227,7 +227,7 @@ def test_update_order_returns_updated_order(mock_repo, mock_pricing):
     mock_repo.update_order_record.assert_called_once()
     assert result.status == OrderStatus.COOKING
 
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.order_repo")
 def test_update_order_recalculates_totals_while_pending(mock_repo):
     """Test that update_order stores recalculated totals when the order is pending."""
     mock_repo.get_order_record.return_value = FAKE_RAW_ORDER
@@ -244,8 +244,8 @@ def test_update_order_recalculates_totals_while_pending(mock_repo):
     assert result.total == Decimal("32.00")
 
 
-@patch("backend.app.services.order_service.notification_service")
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.notification_service")
+@patch("app.services.order_service.order_repo")
 def test_update_order_creates_notification_when_status_changes(
     mock_repo,
     mock_notification_service,
@@ -262,8 +262,8 @@ def test_update_order_creates_notification_when_status_changes(
     )
 
 
-@patch("backend.app.services.order_service.notification_service")
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.notification_service")
+@patch("app.services.order_service.order_repo")
 def test_update_order_does_not_create_notification_when_status_is_unchanged(
     mock_repo,
     mock_notification_service,
@@ -276,8 +276,8 @@ def test_update_order_does_not_create_notification_when_status_is_unchanged(
 
     mock_notification_service.create_order_status_changed_notification.assert_not_called()
 
-@patch("backend.app.services.order_service.restaurant_repo")
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.restaurant_repo")
+@patch("app.services.order_service.order_repo")
 def test_update_pending_order_recalculates_and_persists_totals(
         mock_repo,
         mock_restaurant_repo,
@@ -307,7 +307,7 @@ def test_update_pending_order_recalculates_and_persists_totals(
     assert result.subtotal == Decimal("22.50")
     assert result.total == Decimal("29.75")
 
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.order_repo")
 def test_update_order_raises_400_if_not_pending(mock_repo):
     """Test that update_order rejects changes when the order is not pending."""
     statuses = [
@@ -327,7 +327,7 @@ def test_update_order_raises_400_if_not_pending(mock_repo):
         assert exc.value.status_code == 400
         mock_repo.update_order_record.assert_not_called()
 
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.order_repo")
 def test_update_pending_order_raises_400_if_not_pending(mock_repo):
     """Test that pending order edits are rejected once the order is not pending."""
     mock_repo.get_order_record.return_value = {**FAKE_RAW_ORDER, "status": "Cooking"}
@@ -342,7 +342,7 @@ def test_update_pending_order_raises_400_if_not_pending(mock_repo):
     assert exc.value.status_code == 400
     mock_repo.update_order_record.assert_not_called()
 
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.order_repo")
 def test_update_order_raises_404_if_not_found(mock_repo):
     """Test that update_order raises a 404 HTTPException when the order is not found."""
     mock_repo.get_order_record.return_value = None
@@ -353,7 +353,7 @@ def test_update_order_raises_404_if_not_found(mock_repo):
     assert exc.value.status_code == 404
 
 # for cancel order
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.order_repo")
 def test_cancel_order_returns_cancelled_order(mock_repo):
     """Test that cancel_order returns an OrderResponse with status set to Cancelled."""
     mock_repo.get_order_record.return_value = FAKE_RAW_ORDER
@@ -365,8 +365,8 @@ def test_cancel_order_returns_cancelled_order(mock_repo):
     assert result.status == OrderStatus.CANCELLED
 
 
-@patch("backend.app.services.order_service.notification_service")
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.notification_service")
+@patch("app.services.order_service.order_repo")
 def test_cancel_order_creates_notification(mock_repo, mock_notification_service):
     """Test that cancel_order creates a cancelled notification after success."""
     mock_repo.get_order_record.return_value = FAKE_RAW_ORDER
@@ -379,7 +379,7 @@ def test_cancel_order_creates_notification(mock_repo, mock_notification_service)
         "Cancelled",
     )
 
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.order_repo")
 def test_cancel_order_raises_404_if_not_found(mock_repo):
     """Test that cancel_order raises a 404 HTTPException when the order is not found."""
     mock_repo.get_order_record.return_value = None
@@ -389,7 +389,7 @@ def test_cancel_order_raises_404_if_not_found(mock_repo):
 
     assert exc.value.status_code == 404
 
-@patch("backend.app.services.order_service.order_repo")
+@patch("app.services.order_service.order_repo")
 def test_cancel_order_raises_400_if_not_pending(mock_repo):
     """Test that cancel_order rejects non-pending orders."""
     statuses = [

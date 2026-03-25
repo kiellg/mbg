@@ -4,8 +4,8 @@
 
 import copy
 from typing import Dict, Any, List, Optional
-from backend.app.data.restaurants_data import _DB, _SEED
-from backend.app.pagination import paginate
+from app.data.restaurants_data import _DB, _SEED
+from app.pagination import paginate
 
 def get_restaurant_record(restaurant_id: int) -> Optional[Dict[str, Any]]:
     """Simulate fetching a restaurant record from the database"""

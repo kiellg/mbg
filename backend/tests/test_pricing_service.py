@@ -8,7 +8,7 @@ from decimal import Decimal
 import pytest
 from fastapi import HTTPException
 
-from backend.app.services.pricing_service import PricingService
+from app.services.pricing_service import PricingService
 
 
 @dataclass

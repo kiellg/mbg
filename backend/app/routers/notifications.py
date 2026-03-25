@@ -2,9 +2,9 @@
 
 from fastapi import APIRouter, Depends
 
-from backend.app.dependencies import get_current_user
-from backend.app.schemas.notification import NotificationResponse
-from backend.app.services import notification_service
+from app.dependencies import get_current_user
+from app.schemas.notification import NotificationResponse
+from app.services import notification_service
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 

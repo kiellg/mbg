@@ -5,8 +5,8 @@ from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
 
-from backend.app.dependencies import get_current_user
-from backend.main import app
+from app.dependencies import get_current_user
+from main import app
 
 client = TestClient(app)
 
@@ -19,7 +19,7 @@ def override_auth():
     app.dependency_overrides.clear()
 
 
-@patch("backend.app.routers.notifications.notification_service.list_notifications_for_user")
+@patch("app.routers.notifications.notification_service.list_notifications_for_user")
 def test_read_notifications_returns_200_and_calls_service(mock_list_notifications):
     """GET /notifications should return the service payload for the current user."""
     mock_list_notifications.return_value = [
@@ -39,7 +39,7 @@ def test_read_notifications_returns_200_and_calls_service(mock_list_notification
     mock_list_notifications.assert_called_once_with("user-123")
 
 
-@patch("backend.app.routers.notifications.notification_service.mark_notification_as_read_for_user")
+@patch("app.routers.notifications.notification_service.mark_notification_as_read_for_user")
 def test_mark_notification_as_read_returns_200_and_calls_service(mock_mark_notification):
     """PATCH /notifications/{notification_id}/read should mark the notification as read."""
     mock_mark_notification.return_value = {

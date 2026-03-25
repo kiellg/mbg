@@ -1,6 +1,6 @@
 """Schemas for delivery status and details responses"""
 from pydantic import BaseModel
-from backend.app.schemas.order import OrderStatus, DeliveryMethod
+from app.schemas.order import OrderStatus, DeliveryMethod
 
 class DeliveryStatusResponse(BaseModel):
     """Response schema for delivery status and ETA"""

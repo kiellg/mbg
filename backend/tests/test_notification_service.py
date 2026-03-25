@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 from fastapi import HTTPException
 
-from backend.app.services import notification_service
+from app.services import notification_service
 
 ORDER_ID = "order-123"
 USER_ID = "user-123"
@@ -23,7 +23,7 @@ def test_create_order_placed_notification_calls_create_notification_with_expecte
     }
 
     with patch(
-        "backend.app.services.notification_service.create_notification",
+        "app.services.notification_service.create_notification",
         return_value=record,
     ) as mock_create_notification:
         result = notification_service.create_order_placed_notification(ORDER_ID)
@@ -43,7 +43,7 @@ def test_create_order_status_changed_notification_formats_status_message():
     }
 
     with patch(
-        "backend.app.services.notification_service.create_notification",
+        "app.services.notification_service.create_notification",
         return_value=record,
     ) as mock_create_notification:
         result = notification_service.create_order_status_changed_notification(
@@ -69,7 +69,7 @@ def test_create_driver_assigned_notification_calls_create_notification_with_expe
     }
 
     with patch(
-        "backend.app.services.notification_service.create_notification",
+        "app.services.notification_service.create_notification",
         return_value=record,
     ) as mock_create_notification:
         result = notification_service.create_driver_assigned_notification(ORDER_ID)
@@ -81,8 +81,8 @@ def test_create_driver_assigned_notification_calls_create_notification_with_expe
     )
 
 
-@patch("backend.app.services.notification_service.logger")
-@patch("backend.app.services.notification_service.create_notification")
+@patch("app.services.notification_service.logger")
+@patch("app.services.notification_service.create_notification")
 def test_create_notification_safely_logs_failure_and_returns_empty_dict(
     mock_create_notification,
     mock_logger,
@@ -117,7 +117,7 @@ def test_notification_is_visible_to_user_returns_true_for_customer_order():
     assert result is True
 
 
-@patch("backend.app.services.notification_service.get_restaurant_record")
+@patch("app.services.notification_service.get_restaurant_record")
 def test_notification_is_visible_to_user_returns_true_for_restaurant_owner(
     mock_get_restaurant_record,
 ):
@@ -167,7 +167,7 @@ def test_build_notification_response_marks_notification_read_for_current_user():
     assert result.is_read is True
 
 
-@patch("backend.app.services.notification_service.get_user_role")
+@patch("app.services.notification_service.get_user_role")
 def test_list_notifications_for_user_returns_empty_for_unsupported_role(mock_get_user_role):
     """Unsupported roles should not receive any notifications."""
     mock_get_user_role.return_value = "guest"
@@ -177,9 +177,9 @@ def test_list_notifications_for_user_returns_empty_for_unsupported_role(mock_get
     assert not result
 
 
-@patch("backend.app.services.notification_service.get_order_record")
-@patch("backend.app.services.notification_service.list_notification_records")
-@patch("backend.app.services.notification_service.get_user_role")
+@patch("app.services.notification_service.get_order_record")
+@patch("app.services.notification_service.list_notification_records")
+@patch("app.services.notification_service.get_user_role")
 def test_list_notifications_for_user_returns_only_visible_customer_notifications(
     mock_get_user_role,
     mock_list_notification_records,
@@ -230,9 +230,9 @@ def test_list_notifications_for_user_returns_only_visible_customer_notifications
     assert [item.is_read for item in result] == [True]
 
 
-@patch("backend.app.services.notification_service.mark_notification_as_read")
-@patch("backend.app.services.notification_service.get_notification_record")
-@patch("backend.app.services.notification_service.get_user_role")
+@patch("app.services.notification_service.mark_notification_as_read")
+@patch("app.services.notification_service.get_notification_record")
+@patch("app.services.notification_service.get_user_role")
 def test_mark_notification_as_read_for_user_raises_403_for_unsupported_role(
     mock_get_user_role,
     mock_get_notification_record,
@@ -250,8 +250,8 @@ def test_mark_notification_as_read_for_user_raises_403_for_unsupported_role(
     mock_mark_notification_as_read.assert_not_called()
 
 
-@patch("backend.app.services.notification_service.get_notification_record")
-@patch("backend.app.services.notification_service.get_user_role")
+@patch("app.services.notification_service.get_notification_record")
+@patch("app.services.notification_service.get_user_role")
 def test_mark_notification_as_read_for_user_raises_404_if_notification_not_found(
     mock_get_user_role,
     mock_get_notification_record,
@@ -267,9 +267,9 @@ def test_mark_notification_as_read_for_user_raises_404_if_notification_not_found
     assert exc.value.detail == "Notification not found"
 
 
-@patch("backend.app.services.notification_service.get_order_record")
-@patch("backend.app.services.notification_service.get_notification_record")
-@patch("backend.app.services.notification_service.get_user_role")
+@patch("app.services.notification_service.get_order_record")
+@patch("app.services.notification_service.get_notification_record")
+@patch("app.services.notification_service.get_user_role")
 def test_mark_notification_as_read_for_user_raises_404_if_order_not_found(
     mock_get_user_role,
     mock_get_notification_record,
@@ -290,9 +290,9 @@ def test_mark_notification_as_read_for_user_raises_404_if_order_not_found(
     assert exc.value.detail == "Notification not found"
 
 
-@patch("backend.app.services.notification_service.get_order_record")
-@patch("backend.app.services.notification_service.get_notification_record")
-@patch("backend.app.services.notification_service.get_user_role")
+@patch("app.services.notification_service.get_order_record")
+@patch("app.services.notification_service.get_notification_record")
+@patch("app.services.notification_service.get_user_role")
 def test_mark_notification_as_read_for_user_raises_403_for_hidden_notification(
     mock_get_user_role,
     mock_get_notification_record,
@@ -317,10 +317,10 @@ def test_mark_notification_as_read_for_user_raises_403_for_hidden_notification(
     assert exc.value.detail == "Not authorized to view this notification."
 
 
-@patch("backend.app.services.notification_service.mark_notification_as_read")
-@patch("backend.app.services.notification_service.get_order_record")
-@patch("backend.app.services.notification_service.get_notification_record")
-@patch("backend.app.services.notification_service.get_user_role")
+@patch("app.services.notification_service.mark_notification_as_read")
+@patch("app.services.notification_service.get_order_record")
+@patch("app.services.notification_service.get_notification_record")
+@patch("app.services.notification_service.get_user_role")
 def test_mark_notification_as_read_for_user_raises_500_if_update_fails(
     mock_get_user_role,
     mock_get_notification_record,
@@ -347,10 +347,10 @@ def test_mark_notification_as_read_for_user_raises_500_if_update_fails(
     assert exc.value.detail == "Failed to update notification"
 
 
-@patch("backend.app.services.notification_service.mark_notification_as_read")
-@patch("backend.app.services.notification_service.get_order_record")
-@patch("backend.app.services.notification_service.get_notification_record")
-@patch("backend.app.services.notification_service.get_user_role")
+@patch("app.services.notification_service.mark_notification_as_read")
+@patch("app.services.notification_service.get_order_record")
+@patch("app.services.notification_service.get_notification_record")
+@patch("app.services.notification_service.get_user_role")
 def test_mark_notification_as_read_for_user_returns_updated_response(
     mock_get_user_role,
     mock_get_notification_record,

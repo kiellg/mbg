@@ -3,10 +3,10 @@
 
 from fastapi.testclient import TestClient
 
-from backend.app.data import cart_data, notification_data, order_data
-from backend.app.dependencies import get_current_user
-from backend.app.repositories import restaurant_repo, user_repo
-from backend.main import app
+from app.data import cart_data, notification_data, order_data
+from app.dependencies import get_current_user
+from app.repositories import restaurant_repo, user_repo
+from main import app
 
 client = TestClient(app)
 

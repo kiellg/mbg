@@ -1,7 +1,7 @@
 """Tests for restaurant sorting endpoints"""
 
 from fastapi.testclient import TestClient
-from backend.main import app
+from main import app
 
 client = TestClient(app)
 

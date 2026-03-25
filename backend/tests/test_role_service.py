@@ -3,9 +3,9 @@
 import pytest
 from fastapi import HTTPException
 
-from backend.app.repositories.session_repo import create_session, reset_session
+from app.repositories.session_repo import create_session, reset_session
 
-from backend.app.repositories.user_repo import(
+from app.repositories.user_repo import(
     create_user,
     create_customer,
     create_manager,
@@ -13,7 +13,7 @@ from backend.app.repositories.user_repo import(
     reset_users,
 )
 
-from backend.app.services.role_service import(
+from app.services.role_service import(
     require_role,
     require_customer,
     require_manager,

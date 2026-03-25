@@ -2,8 +2,8 @@
 
 from typing import List, Optional
 from pydantic import BaseModel, Field, field_validator
-from backend.app.schemas.menu import MenuItemOut
-from backend.app.data.categories_data import VALID_CATEGORIES, VALID_DIETARY_TAGS
+from app.schemas.menu import MenuItemOut
+from app.data.categories_data import VALID_CATEGORIES, VALID_DIETARY_TAGS
 
 class RestaurantOut(BaseModel):
     """Schema for restaurant output with menu items and price statuses"""

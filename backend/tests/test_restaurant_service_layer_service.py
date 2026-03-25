@@ -3,14 +3,14 @@
 
 from unittest.mock import patch
 
-from backend.app.services.restaurants_service import (
+from app.services.restaurants_service import (
     get_all_restaurants_list,
     create_new_restaurant,
     update_restaurant_by_id,
     add_menu_item,
     update_menu_item_by_id,
 )
-from backend.app.schemas.restaurant import (
+from app.schemas.restaurant import (
     RestaurantCreate, RestaurantUpdate,
     MenuItemCreate, MenuItemUpdate,
 )
@@ -45,7 +45,7 @@ ITEM_CREATE = MenuItemCreate(
     category_id=1,
 )
 
-SERVICE = "backend.app.services.restaurants_service"
+SERVICE = "app.services.restaurants_service"
 
 def test_get_all_restaurants_returns_all():
     """Test that all restaurants are returned from the service"""

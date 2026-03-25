@@ -1,8 +1,8 @@
 """Tests for restaurants search router"""
 
 from fastapi.testclient import TestClient
-from backend.main import app
-from backend.app.repositories.restaurant_repo import reset_restaurants
+from main import app
+from app.repositories.restaurant_repo import reset_restaurants
 
 client = TestClient(app)
 

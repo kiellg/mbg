@@ -8,9 +8,9 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from fastapi import HTTPException
 
-from backend.app.routers.carts import router
-from backend.app.schemas.cart import CartItemCreate, CartItemUpdate, CartResponse, CartItemResponse
-from backend.app.dependencies import get_current_user
+from app.routers.carts import router
+from app.schemas.cart import CartItemCreate, CartItemUpdate, CartResponse, CartItemResponse
+from app.dependencies import get_current_user
 
 app = FastAPI()
 app.include_router(router)
@@ -20,7 +20,7 @@ app.dependency_overrides[get_current_user] = lambda: {"user_id": "7"}
 
 client = TestClient(app)
 
-_SVC = "backend.app.routers.carts.cart_service"
+_SVC = "app.routers.carts.cart_service"
 
 MOCK_CART_ITEM_RESPONSE = CartItemResponse(
     id=1,

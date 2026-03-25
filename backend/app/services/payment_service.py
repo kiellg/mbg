@@ -5,8 +5,8 @@ from decimal import Decimal
 
 from fastapi import HTTPException
 
-from backend.app.repositories import order_repo, payment_repo, user_repo
-from backend.app.schemas.payment import (
+from app.repositories import order_repo, payment_repo, user_repo
+from app.schemas.payment import (
     PaymentRequest,
     PaymentResponse,
     PaymentStatus,
@@ -14,7 +14,7 @@ from backend.app.schemas.payment import (
     SavedPaymentMethod,
     SavedPaymentMethodRequest,
 )
-from backend.app.services import notification_service
+from app.services import notification_service
 
 def _validate_card_number(card_number: str) -> None:
     """Card number must be exactly 16 digits."""

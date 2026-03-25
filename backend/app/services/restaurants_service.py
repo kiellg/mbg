@@ -6,14 +6,14 @@ import copy
 from typing import Optional
 from fastapi import HTTPException
 
-from backend.app.data.categories_data import VALID_CATEGORIES
-from backend.app.schemas.restaurant import (
+from app.data.categories_data import VALID_CATEGORIES
+from app.schemas.restaurant import (
     RestaurantOut, RestaurantCreate, RestaurantUpdate,
     MenuItemCreate, MenuItemUpdate, RestaurantSearchResult,
     MenuItemSearchResult,
 )
-from backend.app.schemas.menu import PriceStatus
-from backend.app.repositories.restaurant_repo import (
+from app.schemas.menu import PriceStatus
+from app.repositories.restaurant_repo import (
     get_restaurant_record,
     get_all_restaurants,
     get_active_menu_items,
@@ -30,11 +30,11 @@ from backend.app.repositories.restaurant_repo import (
     sort_restaurants,
     sort_menu_items,
 )
-from backend.app.utils.formatting import format_cad_from_cents
-from backend.app.pagination import paginate
-from backend.app.schemas.search import SuggestionItem, SuggestionResponse
-from backend.app.repositories.session_repo import get_session
-from backend.app.services.recently_viewed_service import track_recently_viewed
+from app.utils.formatting import format_cad_from_cents
+from app.pagination import paginate
+from app.schemas.search import SuggestionItem, SuggestionResponse
+from app.repositories.session_repo import get_session
+from app.services.recently_viewed_service import track_recently_viewed
 
 def get_all_restaurants_list(
         sort_by: str = "rating",
