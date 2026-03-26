@@ -48,7 +48,8 @@ def get_delivery_details(order_id: str) -> DeliveryDetailsResponse:
     )
 
 
-def assign_driver_to_order(order_id: str, driver_id: str, manager_id: str) -> dict:
+def assign_driver_to_order(order_id: str, driver_id: str, 
+                           manager_id: str, delivery_method: str) -> dict:
     """Assign a driver to an order and create a driver notification."""
     order = order_repo.get_order_record(order_id)
     if not order:
@@ -77,11 +78,20 @@ def assign_driver_to_order(order_id: str, driver_id: str, manager_id: str) -> di
 
     if user_repo.get_user_role(driver_id) != "driver":
         raise HTTPException(status_code=400, detail="Assigned user is not a driver")
+    
+    driver_method = driver.get("delivery_method")
+    if driver_method != delivery_method:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Driver's delivery method '{driver_method}' does not match "
+                   f"the requested method '{delivery_method}'.",
+        )
 
     updated_order = order_repo.assign_driver_to_order(
         order_id,
         driver_id,
         driver["name"],
+        delivery_method
     )
     if not updated_order:
         raise HTTPException(status_code=500, detail="Failed to assign driver")
@@ -91,6 +101,7 @@ def assign_driver_to_order(order_id: str, driver_id: str, manager_id: str) -> di
         "order_id": updated_order["order_id"],
         "driver_id": updated_order["driver_id"],
         "driver_name": updated_order["driver_name"],
+        "delivery_method": updated_order.get("delivery_method"),
     }
 
 

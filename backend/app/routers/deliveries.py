@@ -40,14 +40,22 @@ def assign_driver_to_order(
     """Manager assigns a driver to an order"""
     manager = require_manager(session_token)
 
+    if body is None:
+        raise HTTPException(status_code=400, detail="Missing request body")
+    
     driver_id = None if body is None else body.get("driver_id")
     if driver_id is None:
         raise HTTPException(status_code=400, detail="Missing driver_id")
+    
+    delivery_method = body.get("delivery_method")
+    if delivery_method is None:
+        raise HTTPException(status_code=400, detail="Missing delivery_method")
 
     return delivery_service.assign_driver_to_order(
         order_id=order_id,
         driver_id=driver_id,
         manager_id=manager["user_id"],
+        delivery_method=delivery_method
     )
 
 
