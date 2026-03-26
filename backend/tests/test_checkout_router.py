@@ -63,7 +63,7 @@ def test_checkout_passes_correct_args_to_service(mock_user, mock_checkout):
 
     app.dependency_overrides.clear()
     mock_checkout.assert_called_once_with(
-        cart_id=1,
+        restaurant_id=1,
         customer_id=CUSTOMER_ID,
         delivery_method=DeliveryMethod.WALK,
     )
@@ -89,7 +89,7 @@ def test_checkout_ignores_extra_pricing_fields_in_request(mock_user, mock_checko
     app.dependency_overrides.clear()
     assert response.status_code == 201
     mock_checkout.assert_called_once_with(
-        cart_id=1,
+        restaurant_id=1,
         customer_id=CUSTOMER_ID,
         delivery_method=DeliveryMethod.WALK,
     )
