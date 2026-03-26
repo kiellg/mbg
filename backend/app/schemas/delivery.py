@@ -1,6 +1,20 @@
-"""Schemas for delivery status and details responses"""
-from pydantic import BaseModel
+"""Schemas for delivery status/details requests and responses"""
+from pydantic import BaseModel, ConfigDict
 from app.schemas.order import OrderStatus, DeliveryMethod
+
+class AssignDriverRequest(BaseModel):
+    """Request schema for assigning a driver to an order"""
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "driver_id": "driver-123",
+                "delivery_method": "bike",
+            }
+        }
+    )
+
+    driver_id: str
+    delivery_method: DeliveryMethod
 
 class DeliveryStatusResponse(BaseModel):
     """Response schema for delivery status and ETA"""

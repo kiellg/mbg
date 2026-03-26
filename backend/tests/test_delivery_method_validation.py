@@ -53,15 +53,27 @@ def test_assign_driver_matching_method_returns_200():
     )
 
 def test_assign_driver_missing_delivery_method_returns_400():
-    """PATCH /driver should return 400 when delivery_method is missing"""
+    """PATCH /driver should return 422 when delivery_method is missing"""
     with _as_manager()[0], _as_manager()[1]:
         response = client.patch(
             f"/orders/{ORDER_ID}/driver",
             json={"driver_id": DRIVER_ID},
             headers=MANAGER_HEADERS,
         )
-    assert response.status_code == 400
-    assert response.json()["detail"] == "Missing delivery_method"
+    assert response.status_code == 422
+
+def test_assign_driver_openapi_schema_has_structured_example():
+    """OpenAPI should expose a typed request body for Swagger."""
+    schema = app.openapi()
+    request_body = schema["paths"]["/orders/{order_id}/driver"]["patch"]["requestBody"]
+    request_schema = request_body["content"]["application/json"]["schema"]
+
+    assert request_schema["$ref"] == "#/components/schemas/AssignDriverRequest"
+    component = schema["components"]["schemas"]["AssignDriverRequest"]
+    assert component["example"] == {
+        "driver_id": "driver-123",
+        "delivery_method": "bike",
+    }
 
 def test_assign_driver_method_mismatch_returns_400():
     """PATCH /driver should return 400 when driver method does not match order method"""

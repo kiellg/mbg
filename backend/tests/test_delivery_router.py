@@ -137,7 +137,7 @@ def test_assign_driver_returns_403_if_not_manager(mock_require_manager):
 
     response = client.patch(
         "/orders/abc1234/driver",
-        json={"driver_id": "driver-123"},
+        json={"driver_id": "driver-123", "delivery_method": "bike"},
     )
 
     assert response.status_code == 403

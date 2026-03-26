@@ -3,6 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, Header, HTTPException
 
 from app.schemas.delivery import (
+    AssignDriverRequest,
     DeliveryStatusResponse,
     DeliveryDetailsResponse,
     AssignedDeliveryResponse
@@ -34,28 +35,17 @@ def get_delivery_details(order_id: str):
 @router.patch("/{order_id}/driver")
 def assign_driver_to_order(
     order_id: str,
-    body: Optional[dict] = None,
+    payload: AssignDriverRequest,
     session_token: Optional[str] = Header(default=None),
 ):
     """Manager assigns a driver to an order"""
     manager = require_manager(session_token)
 
-    if body is None:
-        raise HTTPException(status_code=400, detail="Missing request body")
-    
-    driver_id = None if body is None else body.get("driver_id")
-    if driver_id is None:
-        raise HTTPException(status_code=400, detail="Missing driver_id")
-    
-    delivery_method = body.get("delivery_method")
-    if delivery_method is None:
-        raise HTTPException(status_code=400, detail="Missing delivery_method")
-
     return delivery_service.assign_driver_to_order(
         order_id=order_id,
-        driver_id=driver_id,
+        driver_id=payload.driver_id,
         manager_id=manager["user_id"],
-        delivery_method=delivery_method
+        delivery_method=payload.delivery_method.value
     )
 
 
