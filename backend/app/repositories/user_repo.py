@@ -47,11 +47,18 @@ def create_manager(user_id: str):
         "manager_id": user_id,
     }
 
-def create_driver(user_id: str, vehicle_type: str = "", is_available: bool = True):
+def create_driver(
+        user_id: str,
+        delivery_method: str = "walk",
+        is_available: bool = True,
+        vehicle_type: Optional[str] = None,
+):
     """Create a driver profile"""
+    method = vehicle_type if vehicle_type is not None else delivery_method
     users_data.DRIVERS[user_id] = {
         "user_id": user_id,
-        "vehicle_type": vehicle_type,
+        "delivery_method": method,
+        "vehicle_type": method,
         "is_available": is_available,
     }
 

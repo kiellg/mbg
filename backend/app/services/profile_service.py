@@ -87,6 +87,27 @@ def update_manager_restaurant_profile(
         "message": "Restaurant profile updated successfully",
     }
 
+def get_driver_profile(user_id: int) -> Dict[str, Any]:
+    """Return driver profile information for the logged in driver."""
+    user = user_repo.get_user_by_id(user_id)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not user_repo.is_driver(user_id):
+        raise HTTPException(status_code=403, detail="User is not a driver")
+
+    driver = user_repo.get_driver_by_user_id(user_id)
+    if not driver:
+        raise HTTPException(status_code=404, detail="Driver profile not found")
+
+    return {
+        "user_id": user_id,
+        "name": user["name"],
+        "delivery_method": driver["delivery_method"],
+        "is_available": driver["is_available"],
+    }
+
 def update_driver_profile(user_id: int, request):
     """Update driver profile information"""
 
@@ -100,18 +121,21 @@ def update_driver_profile(user_id: int, request):
 
     if(
         request.name is None
-        and request.vehicle_type is None
+        and request.delivery_method is None
         and request.is_available is None
     ):
         raise HTTPException(status_code=400, detail="No fields provided")
 
     driver = user_repo.get_driver_by_user_id(user_id)
+    if not driver:
+        raise HTTPException(status_code=404, detail="Driver profile not found")
 
     if request.name is not None:
         user["name"] = request.name
 
-    if request.vehicle_type is not None:
-        driver["vehicle_type"] = request.vehicle_type
+    if request.delivery_method is not None:
+        driver["delivery_method"] = request.delivery_method.value
+        driver["vehicle_type"] = request.delivery_method.value
 
     if request.is_available is not None:
         driver["is_available"] = request.is_available
@@ -119,7 +143,7 @@ def update_driver_profile(user_id: int, request):
     return{
         "user_id": user_id,
         "name": user["name"],
-        "vehicle_type": driver["vehicle_type"],
+        "delivery_method": driver["delivery_method"],
         "is_available": driver["is_available"],
         "message": "Driver profile updated successfully",
     }
