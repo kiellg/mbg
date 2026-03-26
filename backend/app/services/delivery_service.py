@@ -91,7 +91,6 @@ def assign_driver_to_order(order_id: str, driver_id: str,
         order_id,
         driver_id,
         driver["name"],
-        delivery_method
     )
     if not updated_order:
         raise HTTPException(status_code=500, detail="Failed to assign driver")

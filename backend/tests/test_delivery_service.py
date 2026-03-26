@@ -153,6 +153,7 @@ def test_assign_driver_to_order_creates_notification(
     mock_user_repo.get_user_by_id.return_value = {
         "user_id": DRIVER_ID,
         "name": "John Doe",
+        "delivery_method": "bike",
     }
     mock_user_repo.get_user_role.return_value = "driver"
     mock_order_repo.assign_driver_to_order.return_value = {
@@ -162,12 +163,19 @@ def test_assign_driver_to_order_creates_notification(
         "restaurant_id": 1,
         "driver_id": DRIVER_ID,
         "driver_name": "John Doe",
+        "delivery_method": "bike",
     }
 
-    result = delivery_service.assign_driver_to_order(ORDER_ID, DRIVER_ID, MANAGER_ID)
+    result = delivery_service.assign_driver_to_order(
+        ORDER_ID,
+        DRIVER_ID,
+        MANAGER_ID,
+        "bike",
+    )
 
     assert result["driver_id"] == DRIVER_ID
     assert result["driver_name"] == "John Doe"
+    assert result["delivery_method"] == "bike"
     mock_order_repo.assign_driver_to_order.assert_called_once_with(
         ORDER_ID,
         DRIVER_ID,
@@ -201,7 +209,7 @@ def test_assign_driver_to_order_rejects_non_cooking_order(
     }
 
     with pytest.raises(HTTPException) as exc:
-        delivery_service.assign_driver_to_order(ORDER_ID, DRIVER_ID, MANAGER_ID)
+        delivery_service.assign_driver_to_order(ORDER_ID, DRIVER_ID, MANAGER_ID, "bike")
 
     assert exc.value.status_code == 400
     assert exc.value.detail == (
@@ -238,11 +246,12 @@ def test_assign_driver_to_order_rejects_non_driver_target(
     mock_user_repo.get_user_by_id.return_value = {
         "user_id": "user-123",
         "name": "Not A Driver",
+        "delivery_method": "bike",
     }
     mock_user_repo.get_user_role.return_value = "customer"
 
     with pytest.raises(HTTPException) as exc:
-        delivery_service.assign_driver_to_order(ORDER_ID, "user-123", MANAGER_ID)
+        delivery_service.assign_driver_to_order(ORDER_ID, "user-123", MANAGER_ID, "bike")
 
     assert exc.value.status_code == 400
     mock_order_repo.assign_driver_to_order.assert_not_called()
@@ -271,7 +280,7 @@ def test_assign_driver_to_order_rejects_non_owner_manager(
     }
 
     with pytest.raises(HTTPException) as exc:
-        delivery_service.assign_driver_to_order(ORDER_ID, DRIVER_ID, MANAGER_ID)
+        delivery_service.assign_driver_to_order(ORDER_ID, DRIVER_ID, MANAGER_ID, "bike")
 
     assert exc.value.status_code == 403
     mock_user_repo.get_user_by_id.assert_not_called()

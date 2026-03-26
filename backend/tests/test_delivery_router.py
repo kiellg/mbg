@@ -110,20 +110,23 @@ def test_manager_assign_driver_returns_200(mock_require_manager, mock_assign_dri
         "order_id": "abc1234",
         "driver_id": "driver-123",
         "driver_name": "John Doe",
+        "delivery_method": "bike",
     }
 
     response = client.patch(
         "/orders/abc1234/driver",
-        json={"driver_id": "driver-123"},
+        json={"driver_id": "driver-123", "delivery_method": "bike"},
         headers={"session-token": "valid-manager-token"},
     )
 
     assert response.status_code == 200
     assert response.json()["driver_id"] == "driver-123"
+    assert response.json()["delivery_method"] == "bike"
     mock_assign_driver.assert_called_once_with(
         order_id="abc1234",
         driver_id="driver-123",
         manager_id="manager-123",
+        delivery_method="bike",
     )
 
 
