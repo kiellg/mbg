@@ -8,6 +8,7 @@ from app.schemas.profile import(
     CustomerProfileUpdateResponse,
     RestaurantProfileUpdateRequest,
     RestaurantProfileUpdateResponse,
+    DriverProfileResponse,
     DriverProfileUpdateRequest,
     DriverProfileUpdateResponse,
 )
@@ -43,6 +44,13 @@ def update_restaurant_profile(
         user_id=current_user["user_id"],
         restaurant_id=restaurant_id,
         request=request,
+    )
+
+@router.get("/driver", response_model=DriverProfileResponse)
+def get_driver_profile(current_user=Depends(get_current_user)):
+    """Return the logged in driver's profile"""
+    return profile_service.get_driver_profile(
+        user_id=current_user["user_id"],
     )
 
 @router.patch("/driver", response_model=DriverProfileUpdateResponse)

@@ -3,6 +3,7 @@
 from typing import Optional
 
 from pydantic import BaseModel
+from app.schemas.order import DeliveryMethod
 
 class CustomerProfileUpdateRequest(BaseModel):
     """Request schema for updating a customer profile"""
@@ -19,15 +20,18 @@ class CustomerProfileUpdateResponse(BaseModel):
 class DriverProfileUpdateRequest(BaseModel):
     """Request schema for updating driver profile"""
     name: Optional[str] = None
-    vehicle_type: Optional[str] = None
+    delivery_method: Optional[DeliveryMethod] = None
     is_available: Optional[bool] = None
 
-class DriverProfileUpdateResponse(BaseModel):
-    """Response schema returned after updating driver profile"""
+class DriverProfileResponse(BaseModel):
+    """Response schema returned for the logged in driver profile"""
     user_id: str
     name: str
-    vehicle_type: str
+    delivery_method: DeliveryMethod
     is_available: bool
+
+class DriverProfileUpdateResponse(DriverProfileResponse):
+    """Response schema returned after updating driver profile"""
     message: str
 
 class RestaurantProfileUpdateRequest(BaseModel):

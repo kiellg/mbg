@@ -153,7 +153,11 @@ def test_assign_driver_to_order_creates_notification(
     mock_user_repo.get_user_by_id.return_value = {
         "user_id": DRIVER_ID,
         "name": "John Doe",
+    }
+    mock_user_repo.get_driver_by_user_id.return_value = {
+        "user_id": DRIVER_ID,
         "delivery_method": "bike",
+        "is_available": True,
     }
     mock_user_repo.get_user_role.return_value = "driver"
     mock_order_repo.assign_driver_to_order.return_value = {
@@ -217,6 +221,7 @@ def test_assign_driver_to_order_rejects_non_cooking_order(
         "Current status is 'Cancelled'."
     )
     mock_user_repo.get_user_by_id.assert_not_called()
+    mock_user_repo.get_driver_by_user_id.assert_not_called()
     mock_user_repo.get_user_role.assert_not_called()
     mock_order_repo.assign_driver_to_order.assert_not_called()
     mock_notification_service.create_driver_assigned_notification.assert_not_called()
@@ -246,7 +251,6 @@ def test_assign_driver_to_order_rejects_non_driver_target(
     mock_user_repo.get_user_by_id.return_value = {
         "user_id": "user-123",
         "name": "Not A Driver",
-        "delivery_method": "bike",
     }
     mock_user_repo.get_user_role.return_value = "customer"
 
@@ -284,6 +288,7 @@ def test_assign_driver_to_order_rejects_non_owner_manager(
 
     assert exc.value.status_code == 403
     mock_user_repo.get_user_by_id.assert_not_called()
+    mock_user_repo.get_driver_by_user_id.assert_not_called()
     mock_order_repo.assign_driver_to_order.assert_not_called()
     mock_notification_service.create_driver_assigned_notification.assert_not_called()
 
