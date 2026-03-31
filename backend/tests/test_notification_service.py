@@ -19,6 +19,8 @@ def test_create_order_placed_notification_calls_create_notification_with_expecte
         "message": "Order placed.",
         "timestamp": "2026-03-16T10:00:00+00:00",
         "order_id": ORDER_ID,
+        "event_type": "order_placed",
+        "audience_roles": ["customer"],
         "read_by_user_ids": [],
     }
 
@@ -29,7 +31,12 @@ def test_create_order_placed_notification_calls_create_notification_with_expecte
         result = notification_service.create_order_placed_notification(ORDER_ID)
 
     assert result == record
-    mock_create_notification.assert_called_once_with("Order placed.", ORDER_ID)
+    mock_create_notification.assert_called_once_with(
+        "Order placed.",
+        ORDER_ID,
+        "order_placed",
+        ["customer"],
+    )
 
 
 def test_create_order_status_changed_notification_formats_status_message():
@@ -39,6 +46,8 @@ def test_create_order_status_changed_notification_formats_status_message():
         "message": "Order status changed to Cooking.",
         "timestamp": "2026-03-16T10:00:00+00:00",
         "order_id": ORDER_ID,
+        "event_type": "order_status_changed",
+        "audience_roles": ["customer", "manager"],
         "read_by_user_ids": [],
     }
 
@@ -55,6 +64,8 @@ def test_create_order_status_changed_notification_formats_status_message():
     mock_create_notification.assert_called_once_with(
         "Order status changed to Cooking.",
         ORDER_ID,
+        "order_status_changed",
+        ["customer", "manager"],
     )
 
 
@@ -65,6 +76,8 @@ def test_create_driver_assigned_notification_calls_create_notification_with_expe
         "message": "You have been assigned a delivery.",
         "timestamp": "2026-03-16T10:00:00+00:00",
         "order_id": ORDER_ID,
+        "event_type": "driver_assigned",
+        "audience_roles": ["driver"],
         "read_by_user_ids": [],
     }
 
@@ -78,6 +91,8 @@ def test_create_driver_assigned_notification_calls_create_notification_with_expe
     mock_create_notification.assert_called_once_with(
         "You have been assigned a delivery.",
         ORDER_ID,
+        "driver_assigned",
+        ["driver"],
     )
 
 
@@ -94,6 +109,7 @@ def test_create_notification_safely_logs_failure_and_returns_empty_dict(
         "Order placed.",
         ORDER_ID,
         notification_service.NotificationEventType.ORDER_PLACED,
+        ["customer"],
     )
 
     assert not result
@@ -149,6 +165,36 @@ def test_notification_is_visible_to_user_returns_false_for_unknown_role():
     assert result is False
 
 
+def test_notification_matches_audience_returns_true_only_for_allowed_roles():
+    """Audience checks should enforce role-based notification visibility."""
+    record = {
+        "notification_id": "notif-123",
+        "audience_roles": ["customer", "manager"],
+    }
+
+    assert notification_service._notification_matches_audience(record, "customer") is True
+    assert notification_service._notification_matches_audience(record, "manager") is True
+    assert notification_service._notification_matches_audience(record, "driver") is False
+
+
+def test_get_order_status_changed_audience_roles_returns_expected_roles():
+    """Status changes should use least-privilege audiences by status."""
+    assert notification_service._get_order_status_changed_audience_roles("Cooking") == [
+        "customer",
+        "manager",
+    ]
+    assert notification_service._get_order_status_changed_audience_roles("Cancelled") == [
+        "customer",
+        "manager",
+    ]
+    assert notification_service._get_order_status_changed_audience_roles(
+        "Out for Delivery"
+    ) == ["customer"]
+    assert notification_service._get_order_status_changed_audience_roles("Delivered") == [
+        "customer"
+    ]
+
+
 def test_build_notification_response_marks_notification_read_for_current_user():
     """Response building should derive the read flag from read_by_user_ids."""
     record = {
@@ -156,6 +202,8 @@ def test_build_notification_response_marks_notification_read_for_current_user():
         "message": "Order placed.",
         "timestamp": "2026-03-16T10:00:00+00:00",
         "order_id": ORDER_ID,
+        "event_type": "order_placed",
+        "audience_roles": ["customer"],
         "read_by_user_ids": [USER_ID],
     }
 
@@ -193,6 +241,8 @@ def test_list_notifications_for_user_returns_only_visible_customer_notifications
             "message": "Newest",
             "timestamp": "2026-03-16T10:10:00+00:00",
             "order_id": "order-visible",
+            "event_type": "order_placed",
+            "audience_roles": ["customer"],
             "read_by_user_ids": [USER_ID],
         },
         {
@@ -200,6 +250,8 @@ def test_list_notifications_for_user_returns_only_visible_customer_notifications
             "message": "Missing",
             "timestamp": "2026-03-16T10:05:00+00:00",
             "order_id": "order-missing",
+            "event_type": "order_placed",
+            "audience_roles": ["customer"],
             "read_by_user_ids": [],
         },
         {
@@ -207,6 +259,8 @@ def test_list_notifications_for_user_returns_only_visible_customer_notifications
             "message": "Hidden",
             "timestamp": "2026-03-16T10:00:00+00:00",
             "order_id": "order-hidden",
+            "event_type": "driver_assigned",
+            "audience_roles": ["driver"],
             "read_by_user_ids": [],
         },
     ]
@@ -228,6 +282,39 @@ def test_list_notifications_for_user_returns_only_visible_customer_notifications
 
     assert [item.order_id for item in result] == ["order-visible"]
     assert [item.is_read for item in result] == [True]
+
+
+@patch("app.services.notification_service.get_order_record")
+@patch("app.services.notification_service.list_notification_records")
+@patch("app.services.notification_service.get_user_role")
+def test_list_notifications_for_user_skips_notifications_outside_role_audience(
+    mock_get_user_role,
+    mock_list_notification_records,
+    mock_get_order_record,
+):
+    """Audience checks should block records even when the order belongs to the user."""
+    mock_get_user_role.return_value = "customer"
+    mock_list_notification_records.return_value = [
+        {
+            "notification_id": "notif-driver",
+            "message": "You have been assigned a delivery.",
+            "timestamp": "2026-03-16T10:10:00+00:00",
+            "order_id": "order-visible",
+            "event_type": "driver_assigned",
+            "audience_roles": ["driver"],
+            "read_by_user_ids": [],
+        }
+    ]
+    mock_get_order_record.return_value = {
+        "order_id": "order-visible",
+        "customer_id": USER_ID,
+        "restaurant_id": 1,
+        "driver_id": USER_ID,
+    }
+
+    result = notification_service.list_notifications_for_user(USER_ID)
+
+    assert result == []
 
 
 @patch("app.services.notification_service.mark_notification_as_read")
@@ -280,6 +367,8 @@ def test_mark_notification_as_read_for_user_raises_404_if_order_not_found(
     mock_get_notification_record.return_value = {
         "notification_id": "notif-123",
         "order_id": ORDER_ID,
+        "event_type": "order_placed",
+        "audience_roles": ["customer"],
     }
     mock_get_order_record.return_value = None
 
@@ -303,11 +392,35 @@ def test_mark_notification_as_read_for_user_raises_403_for_hidden_notification(
     mock_get_notification_record.return_value = {
         "notification_id": "notif-123",
         "order_id": ORDER_ID,
+        "event_type": "order_placed",
+        "audience_roles": ["customer"],
     }
     mock_get_order_record.return_value = {
         "order_id": ORDER_ID,
         "customer_id": "other-user",
         "restaurant_id": 1,
+    }
+
+    with pytest.raises(HTTPException) as exc:
+        notification_service.mark_notification_as_read_for_user("notif-123", USER_ID)
+
+    assert exc.value.status_code == 403
+    assert exc.value.detail == "Not authorized to view this notification."
+
+
+@patch("app.services.notification_service.get_notification_record")
+@patch("app.services.notification_service.get_user_role")
+def test_mark_notification_as_read_for_user_raises_403_for_notification_outside_audience(
+    mock_get_user_role,
+    mock_get_notification_record,
+):
+    """Audience checks should reject notifications even before order lookup."""
+    mock_get_user_role.return_value = "customer"
+    mock_get_notification_record.return_value = {
+        "notification_id": "notif-123",
+        "order_id": ORDER_ID,
+        "event_type": "driver_assigned",
+        "audience_roles": ["driver"],
     }
 
     with pytest.raises(HTTPException) as exc:
@@ -332,6 +445,8 @@ def test_mark_notification_as_read_for_user_raises_500_if_update_fails(
     mock_get_notification_record.return_value = {
         "notification_id": "notif-123",
         "order_id": ORDER_ID,
+        "event_type": "order_placed",
+        "audience_roles": ["customer"],
     }
     mock_get_order_record.return_value = {
         "order_id": ORDER_ID,
@@ -364,6 +479,8 @@ def test_mark_notification_as_read_for_user_returns_updated_response(
         "message": "Order placed.",
         "timestamp": "2026-03-16T10:00:00+00:00",
         "order_id": ORDER_ID,
+        "event_type": "order_placed",
+        "audience_roles": ["customer"],
         "read_by_user_ids": [],
     }
     mock_get_order_record.return_value = {
@@ -376,6 +493,8 @@ def test_mark_notification_as_read_for_user_returns_updated_response(
         "message": "Order placed.",
         "timestamp": "2026-03-16T10:00:00+00:00",
         "order_id": ORDER_ID,
+        "event_type": "order_placed",
+        "audience_roles": ["customer"],
         "read_by_user_ids": [USER_ID],
     }
 
