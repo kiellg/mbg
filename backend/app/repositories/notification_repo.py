@@ -12,13 +12,20 @@ def _alloc_notification_id() -> str:
     return shortuuid.ShortUUID().random(length=7)
 
 
-def create_notification(message: str, order_id: str) -> Dict[str, Any]:
+def create_notification(
+    message: str,
+    order_id: str,
+    event_type: str,
+    audience_roles: List[str],
+) -> Dict[str, Any]:
     """Create and store a notification record."""
     record = {
         "notification_id": _alloc_notification_id(),
         "message": message,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "order_id": order_id,
+        "event_type": event_type,
+        "audience_roles": list(audience_roles),
         "read_by_user_ids": [],
     }
     NOTIFICATIONS.append(record)
