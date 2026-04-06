@@ -1,6 +1,7 @@
-"""Service layer for order management, handling business logic 
+"""Service layer for order management, handling business logic
 and interactions with the order repository."""
 from decimal import Decimal
+from datetime import datetime
 from types import SimpleNamespace
 from fastapi import HTTPException
 from app.repositories import order_repo, restaurant_repo, user_repo
@@ -132,6 +133,13 @@ def _build_order_response(order: dict) -> OrderResponse:
 
 def create_order(payload: OrderCreate) -> OrderResponse:
     """Create a new order and return the created order details."""
+    if payload.scheduled_time:
+        if payload.scheduled_time <= datetime.utcnow():
+            raise HTTPException(
+                status_code=400,
+                detail="Scheduled time must be in the future",
+            )
+
     items= [
         {
             "quantity": item.quantity,
@@ -147,6 +155,7 @@ def create_order(payload: OrderCreate) -> OrderResponse:
         items=items,
         delivery_method=payload.delivery_method.value,
         status=payload.status.value,
+        scheduled_time=payload.scheduled_time.isoformat() if payload.scheduled_time else None,
     )
 
     stored_order = order_repo.update_order_record(order["order_id"], _calculate_totals_patch(order))

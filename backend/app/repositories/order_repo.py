@@ -37,6 +37,7 @@ def create_order_record(# pylint: disable=too-many-arguments, too-many-positiona
     delivery_method: str = "walk",
     status: str = "Pending",
     customer_phone: str = "",
+    scheduled_time: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Create and store a new order record.
 
@@ -82,6 +83,8 @@ def create_order_record(# pylint: disable=too-many-arguments, too-many-positiona
         "driver_id": "",
         "driver_name": "",
         "route_taken": "",
+        "scheduled_time": scheduled_time,
+        "is_scheduled": scheduled_time is not None,
     }
 
     order_data._ORDERDB[order_id] = order_record
