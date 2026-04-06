@@ -1,6 +1,7 @@
+#pylint: disable=unused-argument
 """Unit tests for favourite_service.py"""
-import pytest
 from unittest.mock import patch
+import pytest
 from fastapi import HTTPException
 from app.services import favourite_service
 

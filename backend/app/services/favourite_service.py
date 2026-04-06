@@ -1,3 +1,4 @@
+"""Service layer for managing user favourites (restaurants and menu items)"""
 from fastapi import HTTPException
 from app.repositories.favourite_repo import (
     add_favourite,

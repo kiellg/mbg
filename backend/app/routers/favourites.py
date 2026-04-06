@@ -1,3 +1,4 @@
+"""API router for managing user favourites (restaurants and menu items)"""
 from fastapi import APIRouter, Depends
 from app.schemas.favourite import AddFavouriteRequest, FavouriteResponse
 from app.services import favourite_service

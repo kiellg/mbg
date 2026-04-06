@@ -1,3 +1,4 @@
+"""Repository functions for managing user favourites (restaurants and menu items)"""
 from typing import Any
 import shortuuid
 from app.data.favourite_data import FAVOURITES
