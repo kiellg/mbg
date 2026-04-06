@@ -105,4 +105,3 @@ def test_assign_driver_valid_delivery_methods(method):
         )
     assert response.status_code == 200
     assert response.json()["delivery_method"] == method
-
