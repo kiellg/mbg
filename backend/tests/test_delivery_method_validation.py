@@ -80,8 +80,12 @@ def test_assign_driver_method_mismatch_returns_400():
     with _as_manager()[0], _as_manager()[1], \
          patch(f"{DELIVERY_SERVICE}.delivery_service.assign_driver_to_order",
                side_effect=HTTPException(
-                    status_code=400, 
-                    detail="Driver's delivery method 'walk' does not match the requested method 'bike'.")):
+                   status_code=400,
+                   detail=(
+                       "Driver's delivery method 'walk' does not match the "
+                       "requested method 'bike'."
+                   ),
+               )):
         response = client.patch(
             f"/orders/{ORDER_ID}/driver",
             json={"driver_id": DRIVER_ID, "delivery_method": "bike"},
@@ -104,4 +108,3 @@ def test_assign_driver_valid_delivery_methods(method):
         )
     assert response.status_code == 200
     assert response.json()["delivery_method"] == method
-    

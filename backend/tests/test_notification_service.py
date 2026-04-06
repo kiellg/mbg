@@ -314,7 +314,7 @@ def test_list_notifications_for_user_skips_notifications_outside_role_audience(
 
     result = notification_service.list_notifications_for_user(USER_ID)
 
-    assert result == []
+    assert not result
 
 
 @patch("app.services.notification_service.mark_notification_as_read")
