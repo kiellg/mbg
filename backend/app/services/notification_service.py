@@ -15,6 +15,7 @@ from app.repositories.order_repo import get_order_record
 from app.repositories.restaurant_repo import get_restaurant_record
 from app.repositories.user_repo import get_user_role
 from app.schemas.notification import NotificationResponse
+from app.schemas.order import OrderStatus
 
 ORDER_PLACED_MESSAGE = "Order placed."
 ORDER_STATUS_CHANGED_MESSAGE_TEMPLATE = "Order status changed to {status}."
@@ -87,13 +88,13 @@ def _notification_is_visible_to_user(order: dict, user_id: str, role: str) -> bo
 
 def _get_order_status_changed_audience_roles(new_status: str) -> list[str]:
     """Return the least-privilege audience for an order status change."""
-    if new_status == "Cooking":
+    if new_status == OrderStatus.COOKING:
         return ["customer", "manager"]
 
-    if new_status == "Cancelled":
+    if new_status == OrderStatus.CANCELLED:
         return ["customer", "manager"]
 
-    if new_status in {"Out for Delivery", "Delivered"}:
+    if new_status in {OrderStatus.OUT_FOR_DELIVERY, OrderStatus.DELIVERED}:
         return ["customer"]
 
     return ["customer"]
