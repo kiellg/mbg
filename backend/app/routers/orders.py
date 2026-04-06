@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends
 
 from app.dependencies import get_current_user
-from app.schemas.order import OrderResponse, PendingOrderUpdate
+from app.schemas.order import OrderResponse, PendingOrderUpdate, OrderCreate
 from app.services import order_service
 
 router = APIRouter(prefix="/orders", tags=["orders"])
@@ -21,3 +21,13 @@ def update_pending_order(
         user_id=current_user["user_id"],
         payload=payload,
     )
+
+@router.post("", response_model=OrderResponse)
+def create_order(payload: OrderCreate):
+    """Create a new order"""
+    return order_service.create_order(payload)
+
+@router.get("", response_model=list[OrderResponse])
+def list_order():
+    """List all orders"""
+    return order_service.list_orders()
