@@ -201,4 +201,3 @@ def mark_notification_as_read_for_user(
         raise HTTPException(status_code=500, detail="Failed to update notification")
 
     return _build_notification_response(updated_record, user_id)
-
