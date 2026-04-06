@@ -9,7 +9,6 @@ import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
-from main import app
 from app.dependencies import get_current_user
 from app.schemas.payment import (
     PaymentReceipt,
@@ -17,6 +16,7 @@ from app.schemas.payment import (
     PaymentStatus,
     SavedPaymentMethod,
 )
+from main import app as fastapi_app
 
 CUSTOMER_ID = "9c6dbfcb-72c5-4cc4-9f76-29200f0efda7"
 
@@ -70,15 +70,15 @@ VALID_SAVE_PAYLOAD = {
     "nickname": "RBC Visa",
 }
 
-client = TestClient(app)
+client = TestClient(fastapi_app)
 
 
 @pytest.fixture(autouse=True)
 def override_auth():
     """Override auth dependency for all tests in this file."""
-    app.dependency_overrides[get_current_user] = lambda: {"user_id": CUSTOMER_ID}
+    fastapi_app.dependency_overrides[get_current_user] = lambda: {"user_id": CUSTOMER_ID}
     yield
-    app.dependency_overrides.clear()
+    fastapi_app.dependency_overrides.clear()
 
 
 _SVC = "app.routers.payments.payment_service"
