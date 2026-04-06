@@ -5,7 +5,7 @@ from app.repositories import review_repo
 @pytest.fixture(autouse=True)
 def reset_db():
     """Reset the in-memory review database before each test"""
-    review_data._REVIEW_DB.clear()
+    review_data.REVIEW_DB.clear()
     yield
 
 def test_create_review_record_stores_and_returns_review():
@@ -34,7 +34,7 @@ def test_create_review_record_stores_in_db():
         rating=5,
         comment=None,
     )
-    assert review["review_id"] in review_data._REVIEW_DB
+    assert review["review_id"] in review_data.REVIEW_DB
 
 def test_create_review_record_with_no_comment():
     """Test that creating a review record with no comment works correctly"""

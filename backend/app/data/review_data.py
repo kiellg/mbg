@@ -2,4 +2,4 @@
 
 from typing import Any, Dict
 
-_REVIEW_DB: Dict[str, Dict[str, Any]] = {}
+REVIEW_DB: Dict[str, Dict[str, Any]] = {}

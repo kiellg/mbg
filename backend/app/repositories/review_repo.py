@@ -7,11 +7,11 @@ from app.data import review_data
 
 def get_review_by_id(review_id: str) -> Optional[Dict[str, Any]]:
     """Retrieve a review by its ID"""
-    return review_data._REVIEW_DB.get(review_id)
+    return review_data.REVIEW_DB.get(review_id)
 
 def get_review_by_order(order_id:str) -> Optional[Dict[str, Any]]:
     """Retrieve a review by its associated order ID"""
-    for review in review_data._REVIEW_DB.values():
+    for review in review_data.REVIEW_DB.values():
         if review["order_id"] == order_id:
             return review
     return None
@@ -19,7 +19,7 @@ def get_review_by_order(order_id:str) -> Optional[Dict[str, Any]]:
 def get_reviews_by_restaurant(restaurant_id: int) -> List[Dict[str, Any]]:
     """Retrieve all reviews for a given restaurant"""
     return [
-        review for review in review_data._REVIEW_DB.values()
+        review for review in review_data.REVIEW_DB.values()
         if review["restaurant_id"] == restaurant_id
     ]
 
@@ -41,5 +41,5 @@ def create_review_record(
         "comment": comment,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
-    review_data._REVIEW_DB[review_id] = review_record
+    review_data.REVIEW_DB[review_id] = review_record
     return review_record
