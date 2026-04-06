@@ -3,6 +3,7 @@
 from decimal import Decimal
 from enum import Enum
 from typing import Optional
+from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer
 
@@ -23,7 +24,7 @@ class OrderSchemaModel(BaseModel):
 
 
 class OrderStatus(str, Enum):
-    """Valid statuses for an order.""" 
+    """Valid statuses for an order."""
     # SR26: System define order states as Pending, Cooking, Out for Delivery, Delivered, Cancelled
 
     PENDING = "Pending"
@@ -74,6 +75,7 @@ class OrderCreate(OrderBase):
     """Schema for creating an order."""
 
     items: list[OrderItemCreate] = Field(default_factory=list)
+    scheduled_time: Optional[datetime] = None
 
 
 class OrderUpdate(OrderSchemaModel):
@@ -109,3 +111,5 @@ class OrderResponse(OrderBase):
     tax: Decimal = Field(..., ge=0)
     delivery_fee: Decimal = Field(..., ge=0)
     total: Decimal = Field(..., ge=0)
+    scheduled_time: Optional[datetime] = None
+    is_scheduled: bool = False
