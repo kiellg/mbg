@@ -4,6 +4,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Optional
 from datetime import datetime
+from pydantic import model_validator
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer
 
@@ -69,6 +70,15 @@ class OrderBase(OrderSchemaModel):
     delivery_address: str
     delivery_method: DeliveryMethod
     status: OrderStatus = OrderStatus.PENDING # Current order status is clearly displayed (US48)
+    scheduled_time: Optional[datetime] = None
+    is_scheduled: bool = False
+
+    @model_validator(mode="after")
+    def validate_schedule(self):
+        if self.is_scheduled and self.scheduled_time is None:
+            raise ValueError("" \
+            "scheduled_time must be provided when is_scheduled is True")
+        return self
 
 
 class OrderCreate(OrderBase):
@@ -111,5 +121,3 @@ class OrderResponse(OrderBase):
     tax: Decimal = Field(..., ge=0)
     delivery_fee: Decimal = Field(..., ge=0)
     total: Decimal = Field(..., ge=0)
-    scheduled_time: Optional[datetime] = None
-    is_scheduled: bool = False
