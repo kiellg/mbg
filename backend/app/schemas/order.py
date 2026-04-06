@@ -3,6 +3,8 @@
 from decimal import Decimal
 from enum import Enum
 from typing import Optional
+from datetime import datetime
+from pydantic import model_validator
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer
 
@@ -23,7 +25,7 @@ class OrderSchemaModel(BaseModel):
 
 
 class OrderStatus(str, Enum):
-    """Valid statuses for an order.""" 
+    """Valid statuses for an order."""
     # SR26: System define order states as Pending, Cooking, Out for Delivery, Delivered, Cancelled
 
     PENDING = "Pending"
@@ -68,12 +70,23 @@ class OrderBase(OrderSchemaModel):
     delivery_address: str
     delivery_method: DeliveryMethod
     status: OrderStatus = OrderStatus.PENDING # Current order status is clearly displayed (US48)
+    scheduled_time: Optional[datetime] = None
+    is_scheduled: bool = False
+
+    @model_validator(mode="after")
+    def validate_schedule(self):
+        """Ensure scheduled_time is set when is_scheduled is True"""
+        if self.is_scheduled and self.scheduled_time is None:
+            raise ValueError("" \
+            "scheduled_time must be provided when is_scheduled is True")
+        return self
 
 
 class OrderCreate(OrderBase):
     """Schema for creating an order."""
 
     items: list[OrderItemCreate] = Field(default_factory=list)
+    scheduled_time: Optional[datetime] = None
 
 
 class OrderUpdate(OrderSchemaModel):

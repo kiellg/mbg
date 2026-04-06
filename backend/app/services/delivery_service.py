@@ -48,7 +48,7 @@ def get_delivery_details(order_id: str) -> DeliveryDetailsResponse:
     )
 
 
-def assign_driver_to_order(order_id: str, driver_id: str, 
+def assign_driver_to_order(order_id: str, driver_id: str,
                            manager_id: str, delivery_method: str) -> dict:
     """Assign a driver to an order and create a driver notification."""
     order = order_repo.get_order_record(order_id)
