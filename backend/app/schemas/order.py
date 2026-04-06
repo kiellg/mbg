@@ -75,6 +75,7 @@ class OrderBase(OrderSchemaModel):
 
     @model_validator(mode="after")
     def validate_schedule(self):
+        """Ensure scheduled_time is set when is_scheduled is True"""
         if self.is_scheduled and self.scheduled_time is None:
             raise ValueError("" \
             "scheduled_time must be provided when is_scheduled is True")
