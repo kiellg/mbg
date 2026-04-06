@@ -9,6 +9,7 @@ import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
+from main import app
 from app.dependencies import get_current_user
 from app.schemas.payment import (
     PaymentReceipt,
