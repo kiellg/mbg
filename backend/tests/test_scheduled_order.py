@@ -1,6 +1,10 @@
 """Tests for scheduled order feature"""
 
+# pylint: disable=protected-access
+
 from datetime import datetime, timedelta
+import time
+
 from fastapi.testclient import TestClient
 
 from main import app
@@ -67,7 +71,7 @@ def test_create_regular_order_not_scheduled():
     assert data["is_scheduled"] is False
     assert data["scheduled_time"] is None
 
-def test_scheduled_order_becomes_Active_after_time():
+def test_scheduled_order_becomes_active_after_time():
     """Scheduled order should become active after scheduled_time passes"""
     future_time = datetime.utcnow() + timedelta(seconds=1)
 
@@ -83,7 +87,6 @@ def test_scheduled_order_becomes_Active_after_time():
     assert data["is_scheduled"] is True
 
     # wait until scheduled time passes
-    import time
     time.sleep(2)
 
     # trigger processing
