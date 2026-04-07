@@ -1,4 +1,4 @@
-"""This module implements the business logic for handling reviews, including validation and aggregation."""
+"""This module implements the business logic for handling reviews."""
 
 from typing import List
 from fastapi import HTTPException
@@ -30,13 +30,14 @@ def submit_review(customer_id: str, payload: ReviewCreate) -> ReviewResponse:
     order = order_repo.get_order_record(payload.order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    
+
     if order["customer_id"] != customer_id:
         raise HTTPException(status_code=403, detail="Not authorized to review this order")
-    
+
     if order["status"] != OrderStatus.DELIVERED.value:
-        raise HTTPException(status_code=400, detail="Order must be Delivered before leaving a review")
-    
+        raise HTTPException(status_code=400,
+                            detail="Order must be Delivered before leaving a review")
+
     if review_repo.get_review_by_order(payload.order_id):
         raise HTTPException(status_code=400, detail="A review for this order already exists")
 

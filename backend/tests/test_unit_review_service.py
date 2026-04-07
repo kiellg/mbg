@@ -1,3 +1,5 @@
+"""This module contains unit tests for the review service layer."""
+
 import pytest
 from fastapi import HTTPException
 from app.services import review_service
@@ -64,14 +66,19 @@ def test_get_average_rating_rounds_to_two_decimal_places(mocker):
 
 def test_submit_review_success(mocker):
     """Test that submit_review successfully creates a review and updates restaurant rating"""
-    mocker.patch.object(review_service.order_repo, "get_order_record", return_value=FAKE_ORDER_DELIVERED)
-    mocker.patch.object(review_service.review_repo, "get_review_by_order", return_value=None)
-    mocker.patch.object(review_service.review_repo, "create_review_record", return_value=FAKE_REVIEW_RECORD)
-    mocker.patch.object(review_service.review_repo, "get_reviews_by_restaurant", return_value=[FAKE_REVIEW_RECORD])
-    mock_update = mocker.patch.object(review_service.restaurant_repo, "update_restaurant_rating")
+    mocker.patch.object(review_service.order_repo, "get_order_record",
+                        return_value=FAKE_ORDER_DELIVERED)
+    mocker.patch.object(review_service.review_repo, "get_review_by_order",
+                        return_value=None)
+    mocker.patch.object(review_service.review_repo, "create_review_record",
+                        return_value=FAKE_REVIEW_RECORD)
+    mocker.patch.object(review_service.review_repo, "get_reviews_by_restaurant",
+                        return_value=[FAKE_REVIEW_RECORD])
+    mock_update = mocker.patch.object(review_service.restaurant_repo,
+                                      "update_restaurant_rating")
 
     response = review_service.submit_review(CUSTOMER_ID, FAKE_PAYLOAD)
-    
+
     assert response.review_id == "review123"
     assert response.rating == 5
     mock_update.assert_called_once_with(1, 5.0)
@@ -85,22 +92,26 @@ def test_submit_review_raises_404_if_order_not_found(mocker):
 
 def test_submit_review_raises_403_if_not_authorized(mocker):
     """Test that submit_review raises 403 if the customer is not the owner of the order"""
-    mocker.patch.object(review_service.order_repo, "get_order_record", return_value=FAKE_ORDER_DELIVERED)
+    mocker.patch.object(review_service.order_repo, "get_order_record",
+                        return_value=FAKE_ORDER_DELIVERED)
     with pytest.raises(HTTPException) as exc_info:
         review_service.submit_review(OTHER_CUSTOMER_ID, FAKE_PAYLOAD)
     assert exc_info.value.status_code == 403
 
 def test_submit_review_raises_400_if_order_not_delivered(mocker):
     """Test that submit_review raises 400 if the order is not in Delivered status"""
-    mocker.patch.object(review_service.order_repo, "get_order_record", return_value=FAKE_ORDER_PENDING)
+    mocker.patch.object(review_service.order_repo, "get_order_record",
+                        return_value=FAKE_ORDER_PENDING)
     with pytest.raises(HTTPException) as exc_info:
         review_service.submit_review(CUSTOMER_ID, FAKE_PAYLOAD)
     assert exc_info.value.status_code == 400
 
 def test_submit_review_raises_400_if_review_already_exists(mocker):
     """Test that submit_review raises 400 if a review for the order already exists"""
-    mocker.patch.object(review_service.order_repo, "get_order_record", return_value=FAKE_ORDER_DELIVERED)
-    mocker.patch.object(review_service.review_repo, "get_review_by_order", return_value=FAKE_REVIEW_RECORD)
+    mocker.patch.object(review_service.order_repo, "get_order_record",
+                        return_value=FAKE_ORDER_DELIVERED)
+    mocker.patch.object(review_service.review_repo, "get_review_by_order",
+                        return_value=FAKE_REVIEW_RECORD)
     with pytest.raises(HTTPException) as exc_info:
         review_service.submit_review(CUSTOMER_ID, FAKE_PAYLOAD)
     assert exc_info.value.status_code == 400
@@ -109,8 +120,10 @@ def test_get_restaurant_reviews_returns_sorted_reviews(mocker):
     """Test that get_restaurant_reviews returns reviews sorted by creation date"""
     mocker.patch.object(review_service.review_repo, "get_reviews_by_restaurant",
                         return_value=[
-                            {**FAKE_REVIEW_RECORD, "review_id": "r1", "created_at": "2026-04-01T00:00:00+00:00"},
-                            {**FAKE_REVIEW_RECORD, "review_id": "r2", "created_at": "2026-04-06T00:00:00+00:00"},
+                            {**FAKE_REVIEW_RECORD,
+                             "review_id": "r1", "created_at": "2026-04-01T00:00:00+00:00"},
+                            {**FAKE_REVIEW_RECORD,
+                             "review_id": "r2", "created_at": "2026-04-06T00:00:00+00:00"},
                         ])
     result = review_service.get_restaurant_reviews(1)
     assert result[0].review_id == "r2"
