@@ -2,7 +2,9 @@
 
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from fastapi import HTTPException
+from pydantic import ValidationError
 
+from app.schemas.coupon import CouponSnapshot, DiscountType
 from app.schemas.order import DeliveryMethod
 
 TWOPLACES = Decimal("0.01")
@@ -27,6 +29,15 @@ class PricingService:  # pylint: disable=too-few-public-methods
     def calculate_tax(subtotal: Decimal, tax_rate: Decimal) -> Decimal:
         """Calculate tax for a subtotal at a given tax rate."""
         return (subtotal * tax_rate).quantize(TWOPLACES, rounding=ROUND_HALF_UP)
+
+    @staticmethod
+    def calculate_subtotal(items) -> Decimal:
+        """Calculate the raw item subtotal before any discount is applied."""
+        subtotal = Decimal("0.00")
+        for item in items:
+            quantity, price_decimal = PricingService._validate_item(item)
+            subtotal += _to_money(price_decimal) * Decimal(quantity)
+        return _to_money(subtotal)
 
     @staticmethod
     def _validate_order(order) -> None:
@@ -107,24 +118,73 @@ class PricingService:  # pylint: disable=too-few-public-methods
         return tax_rate
 
     @staticmethod
+    def _validate_coupon_snapshot(order) -> CouponSnapshot | None:
+        """Validate and normalize an optional stored coupon snapshot."""
+        coupon_snapshot = getattr(order, "coupon_snapshot", None)
+        if coupon_snapshot in (None, {}):
+            return None
+
+        if isinstance(coupon_snapshot, CouponSnapshot):
+            return coupon_snapshot
+
+        try:
+            return CouponSnapshot.model_validate(coupon_snapshot)
+        except ValidationError as exc:
+            raise HTTPException(
+                status_code=500,
+                detail="Invalid coupon snapshot data.",
+            ) from exc
+
+    @staticmethod
+    def calculate_discount(subtotal: Decimal, coupon_snapshot) -> Decimal:
+        """Calculate the discount amount for the provided subtotal."""
+        if coupon_snapshot is None:
+            return Decimal("0.00")
+
+        try:
+            snapshot = CouponSnapshot.model_validate(coupon_snapshot)
+        except ValidationError as exc:
+            raise HTTPException(
+                status_code=500,
+                detail="Invalid coupon snapshot data.",
+            ) from exc
+
+        minimum_subtotal = _to_money(
+            Decimal(snapshot.minimum_subtotal_cents) / Decimal("100")
+        )
+        if subtotal < minimum_subtotal:
+            return Decimal("0.00")
+
+        if snapshot.discount_type == DiscountType.PERCENTAGE:
+            discount = subtotal * Decimal(snapshot.percent_off) / Decimal("100")
+        else:
+            discount = Decimal(snapshot.amount_off_cents) / Decimal("100")
+
+        discount = _to_money(discount)
+        if discount > subtotal:
+            return subtotal
+
+        return discount
+
+    @staticmethod
     def calculate_totals(order) -> None:
         """Mutate order fields with recalculated subtotal, tax, delivery fee, and total."""
         PricingService._validate_order(order)
 
-        subtotal = Decimal("0.00")
-        for item in order.items:
-            quantity, price_decimal = PricingService._validate_item(item)
-            subtotal += _to_money(price_decimal) * Decimal(quantity)
-
-        subtotal = _to_money(subtotal)
+        subtotal = PricingService.calculate_subtotal(order.items)
+        coupon_snapshot = PricingService._validate_coupon_snapshot(order)
+        discount = PricingService.calculate_discount(subtotal, coupon_snapshot)
+        discounted_subtotal = _to_money(subtotal - discount)
         delivery_method = getattr(order, "delivery_method", None)
         delivery_fee = PricingService.calculate_delivery_fee(delivery_method)
         tax_rate = PricingService._validate_tax_rate(order)
 
-        tax = PricingService.calculate_tax(subtotal, tax_rate)
-        total = _to_money(subtotal + delivery_fee + tax)
+        tax = PricingService.calculate_tax(discounted_subtotal, tax_rate)
+        total = _to_money(discounted_subtotal + delivery_fee + tax)
 
         order.subtotal = subtotal
+        order.discount = discount
+        order.discounted_subtotal = discounted_subtotal
         order.delivery_fee = delivery_fee
         order.tax = tax
         order.total = total

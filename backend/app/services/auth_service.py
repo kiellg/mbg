@@ -36,6 +36,7 @@ from app.repositories.login_attempt_repo import(
 MAX_FAILED_LOGIN_ATTEMPTS = 5
 LOCK_DURATION = timedelta(hours=1)
 RESET_TOKEN_DURATION = timedelta(hours=1)
+PUBLIC_REGISTERABLE_ROLES = {"customer", "manager", "driver"}
 
 def hash_password(password: str) -> str:
     """Hash the password for storage"""
@@ -43,6 +44,9 @@ def hash_password(password: str) -> str:
 
 def register_user(name: str, email: str, password: str, role: str):
     """Register a user if the email doesn't already exist"""
+    if role not in PUBLIC_REGISTERABLE_ROLES:
+        raise HTTPException(status_code=400, detail="Invalid registration role.")
+
     if get_user_by_email(email):
         raise HTTPException(status_code=400, detail="Email already exists")
 

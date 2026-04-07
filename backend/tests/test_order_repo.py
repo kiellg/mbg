@@ -1,4 +1,4 @@
-# pylint: disable=protected-access
+# pylint: disable=protected-access, duplicate-code
 """Unit tests for order_repo.py"""
 
 import pytest
@@ -78,7 +78,11 @@ def test_create_order_record_creates_and_stores_order_with_defaults():
     assert result["delivery_address"] == "123 Test St"
     assert result["delivery_method"] == "walk"
     assert result["status"] == "Pending"
+    assert result["coupon_code"] is None
+    assert result["coupon_snapshot"] is None
     assert result["subtotal"] == "0.00"
+    assert result["discount"] == "0.00"
+    assert result["discounted_subtotal"] == "0.00"
     assert result["tax"] == "0.00"
     assert result["delivery_fee"] == "0.00"
     assert result["total"] == "0.00"
@@ -165,6 +169,27 @@ def test_update_order_record_updates_only_provided_scalar_fields():
     assert result["restaurant_id"] == 5
     assert result["delivery_method"] == "walk"
     assert result["items"][0]["order_item_id"] == 1
+
+
+def test_create_order_record_stores_coupon_snapshot_fields():
+    """Should persist coupon snapshot data for historically correct repricing."""
+    result = order_repo.create_order_record(
+        customer_id="customer-1",
+        restaurant_id=5,
+        delivery_address="123 Test St",
+        items=[{"quantity": 1, "item_price": 9.99}],
+        coupon_code="SAVE10",
+        coupon_snapshot={
+            "code": "SAVE10",
+            "discount_type": "percentage",
+            "percent_off": 10,
+            "amount_off_cents": None,
+            "minimum_subtotal_cents": 0,
+        },
+    )
+
+    assert result["coupon_code"] == "SAVE10"
+    assert result["coupon_snapshot"]["code"] == "SAVE10"
 
 
 def test_update_order_record_replaces_items_and_preserves_provided_order_item_id():
