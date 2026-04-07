@@ -47,10 +47,16 @@ def update_restaurant(
     restaurant = _DB.get(restaurant_id)
     if not restaurant:
         return None
-    for field in ("name", "address", "rating", "opening_hours"):
+    for field in ("name", "address", "opening_hours"):
         if field in patch and patch[field] is not None:
             restaurant[field] = patch[field]
     return restaurant
+
+def update_restaurant_rating(restaurant_id: int, new_rating: float) -> Optional[Dict[str, Any]]:
+    """Update the rating field on a restaurant record"""
+    restaurant = get_restaurant_record(restaurant_id)
+    if restaurant:
+        restaurant["rating"] = new_rating
 
 def delete_restaurant(restaurant_id: int) -> bool:
     """Remove a restaurant from the simulated DB"""
