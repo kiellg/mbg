@@ -57,3 +57,22 @@ class CouponRecord(CouponBase):
 
 class CouponSnapshot(CouponBase):
     """Immutable coupon rule snapshot stored on an order."""
+
+
+class CouponCreateRequest(CouponRecord):
+    """Schema for creating a coupon through the admin API."""
+
+
+class CouponUpdateRequest(BaseModel):
+    """Schema for updating coupon fields except code."""
+
+    discount_type: Optional[DiscountType] = None
+    percent_off: Optional[int] = Field(default=None)
+    amount_off_cents: Optional[int] = Field(default=None, gt=0)
+    minimum_subtotal_cents: Optional[int] = Field(default=None, ge=0)
+    expires_at: Optional[datetime] = None
+    is_active: Optional[bool] = None
+
+
+class CouponResponse(CouponRecord):
+    """Schema returned by admin coupon CRUD endpoints."""
