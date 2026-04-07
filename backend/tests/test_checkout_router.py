@@ -119,9 +119,11 @@ def test_checkout_passes_coupon_code_to_service(mock_user, mock_checkout):
     )
 
 
-@patch("app.routers.checkouts.coupon_service.list_coupons_for_debug")
-def test_debug_coupons_returns_seeded_coupons(mock_list_coupons):
-    """Test that the debug coupon endpoint returns the seeded coupon list."""
+@patch("app.routers.checkouts.authenticate_admin")
+@patch("app.routers.checkouts.coupon_service.list_coupons")
+def test_debug_coupons_returns_seeded_coupons(mock_list_coupons, mock_authenticate_admin):
+    """Test that the debug coupon endpoint returns the coupon list for admins."""
+    mock_authenticate_admin.return_value = {"user_id": "admin-1"}
     mock_list_coupons.return_value = [
         {
             "code": "SAVE10",
@@ -137,6 +139,7 @@ def test_debug_coupons_returns_seeded_coupons(mock_list_coupons):
     response = client.get("/checkout/debug/coupons")
 
     assert response.status_code == 200
+    mock_authenticate_admin.assert_called_once()
     assert response.json() == [
         {
             "code": "SAVE10",
