@@ -12,12 +12,14 @@ OTHER_CUSTOMER_ID = "cust456"
 FAKE_ORDER_DELIVERED = {
     "order_id": "order_delivered",
     "customer_id": CUSTOMER_ID,
+    "restaurant_id": 1,
     "status": OrderStatus.DELIVERED.value,
 }
 
 FAKE_ORDER_PENDING = {
     "order_id": "order_pending",
     "customer_id": CUSTOMER_ID,
+    "restaurant_id": 1,
     "status": OrderStatus.PENDING.value,
 }
 
@@ -33,7 +35,6 @@ FAKE_REVIEW_RECORD = {
 
 FAKE_PAYLOAD = ReviewCreate(
     order_id=FAKE_ORDER_DELIVERED["order_id"],
-    restaurant_id=1,
     rating=5,
     comment="Great food!"
 )

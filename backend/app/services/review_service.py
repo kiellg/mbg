@@ -41,16 +41,18 @@ def submit_review(customer_id: str, payload: ReviewCreate) -> ReviewResponse:
     if review_repo.get_review_by_order(payload.order_id):
         raise HTTPException(status_code=400, detail="A review for this order already exists")
 
+    restaurant_id = order.get("restaurant_id")
+
     review_record = review_repo.create_review_record(
         customer_id=customer_id,
         order_id=payload.order_id,
-        restaurant_id=payload.restaurant_id,
+        restaurant_id=restaurant_id,
         rating=payload.rating,
         comment=payload.comment,
     )
 
-    new_rating = get_average_rating(payload.restaurant_id)
-    restaurant_repo.update_restaurant_rating(payload.restaurant_id, new_rating)
+    new_rating = get_average_rating(restaurant_id)
+    restaurant_repo.update_restaurant_rating(restaurant_id, new_rating)
     return _build_review_response(review_record)
 
 def get_restaurant_reviews(restaurant_id: int) -> List[ReviewResponse]:
