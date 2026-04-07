@@ -1,4 +1,4 @@
-#pylint: disable=unused-argument
+#pylint: disable=unused-argument, duplicate-code
 """Unit tests for order_service.py with mocked repository calls."""
 
 from decimal import Decimal
@@ -306,6 +306,76 @@ def test_update_pending_order_recalculates_and_persists_totals(
     assert order_patch["total"] == Decimal("29.75")
     assert result.subtotal == Decimal("22.50")
     assert result.total == Decimal("29.75")
+
+
+@patch("app.services.order_service.restaurant_repo")
+@patch("app.services.order_service.order_repo")
+def test_update_pending_order_reprices_using_stored_coupon_snapshot(
+        mock_repo,
+        mock_restaurant_repo,
+):
+    """Test that pending-order repricing uses the order snapshot rather than live coupon data."""
+    coupon_order = {
+        **FAKE_RAW_ORDER,
+        "coupon_code": "SAVE10",
+        "coupon_snapshot": {
+            "code": "SAVE10",
+            "discount_type": "percentage",
+            "percent_off": 10,
+            "amount_off_cents": None,
+            "minimum_subtotal_cents": 0,
+        },
+    }
+    mock_repo.get_order_record.return_value = coupon_order
+
+    def _update_with_coupon_side_effect(_order_id: str, order_patch: dict) -> dict:
+        updated_order = dict(coupon_order)
+
+        if "items" in order_patch:
+            updated_order["items"] = [
+                {
+                    "order_item_id": index,
+                    "order_id": coupon_order["order_id"],
+                    "quantity": item["quantity"],
+                    "item_price": str(item["item_price"]),
+                }
+                for index, item in enumerate(order_patch["items"], start=1)
+            ]
+
+        for key, value in order_patch.items():
+            if key == "items":
+                continue
+            if key in {"subtotal", "discount", "discounted_subtotal", "tax",
+                       "delivery_fee", "total"}:
+                updated_order[key] = str(value)
+                continue
+            updated_order[key] = value
+
+        return updated_order
+
+    mock_repo.update_order_record.side_effect = _update_with_coupon_side_effect
+    mock_restaurant_repo.get_menu_item.return_value = {
+        "id": 7,
+        "name": "Taco",
+        "is_available": True,
+        "price_cents": 750,
+    }
+
+    result = order_service.update_pending_order(
+        "1",
+        FAKE_RAW_ORDER["customer_id"],
+        PendingOrderUpdate(items=[PendingOrderItemUpdate(menu_item_id=7, quantity=3)]),
+    )
+
+    order_patch = mock_repo.update_order_record.call_args[0][1]
+    assert order_patch["discount"] == Decimal("2.25")
+    assert order_patch["discounted_subtotal"] == Decimal("20.25")
+    assert order_patch["tax"] == Decimal("2.03")
+    assert order_patch["total"] == Decimal("27.28")
+    assert result.coupon_code == "SAVE10"
+    assert result.discount == Decimal("2.25")
+    assert result.discounted_subtotal == Decimal("20.25")
+    assert result.total == Decimal("27.28")
 
 @patch("app.services.order_service.order_repo")
 def test_update_order_raises_400_if_not_pending(mock_repo):

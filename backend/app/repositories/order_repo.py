@@ -38,6 +38,8 @@ def create_order_record(# pylint: disable=too-many-arguments, too-many-positiona
     status: str = "Pending",
     customer_phone: str = "",
     scheduled_time: Optional[str] = None,
+    coupon_code: Optional[str] = None,
+    coupon_snapshot: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Create and store a new order record.
 
@@ -71,7 +73,11 @@ def create_order_record(# pylint: disable=too-many-arguments, too-many-positiona
         "delivery_address": delivery_address,
         "customer_phone": customer_phone,
         "delivery_method": delivery_method,
+        "coupon_code": coupon_code,
+        "coupon_snapshot": coupon_snapshot,
         "subtotal": "0.00",
+        "discount": "0.00",
+        "discounted_subtotal": "0.00",
         "tax": "0.00",
         "delivery_fee": "0.00",
         "total": "0.00",
@@ -107,8 +113,16 @@ def update_order_record(order_id: str, patch: Dict[str, Any]) -> Optional[Dict[s
         order["delivery_address"] = patch["delivery_address"]
     if "delivery_method" in patch:
         order["delivery_method"] = patch["delivery_method"]
+    if "coupon_code" in patch:
+        order["coupon_code"] = patch["coupon_code"]
+    if "coupon_snapshot" in patch:
+        order["coupon_snapshot"] = patch["coupon_snapshot"]
     if "subtotal" in patch:
         order["subtotal"] = f"{patch['subtotal']:.2f}"
+    if "discount" in patch:
+        order["discount"] = f"{patch['discount']:.2f}"
+    if "discounted_subtotal" in patch:
+        order["discounted_subtotal"] = f"{patch['discounted_subtotal']:.2f}"
     if "tax" in patch:
         order["tax"] = f"{patch['tax']:.2f}"
     if "delivery_fee" in patch:

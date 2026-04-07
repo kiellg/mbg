@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 
 from app.data import cart_data, notification_data, order_data
 from app.dependencies import get_current_user
-from app.repositories import restaurant_repo, user_repo
+from app.repositories import coupon_repo, restaurant_repo, user_repo
 from main import app
 
 client = TestClient(app)
@@ -19,6 +19,7 @@ def setup_function():
     notification_data.NOTIFICATIONS.clear()
     order_data._ORDERDB.clear()
     order_data.NEXT_ORDER_ITEM_ID = 1
+    coupon_repo.reset_coupons()
     user_repo.reset_users()
     restaurant_repo.reset_restaurants()
     app.dependency_overrides.clear()
@@ -65,10 +66,14 @@ def _checkout_order(
     menu_item_id: int = 1,
     quantity: int = 1,
     delivery_method: str = "walk",
+    coupon_code: str | None = None,
 ) -> dict:
     """Create an order through the real checkout route and return the JSON payload."""
     cart_id = _add_item_and_get_cart_id(menu_item_id=menu_item_id, quantity=quantity)
-    response = client.post(f"/checkout/{cart_id}", json={"delivery_method": delivery_method})
+    payload = {"delivery_method": delivery_method}
+    if coupon_code is not None:
+        payload["coupon_code"] = coupon_code
+    response = client.post(f"/checkout/{cart_id}", json=payload)
     assert response.status_code == 201
     return response.json()
 
@@ -149,3 +154,34 @@ def test_pending_order_update_returns_500_for_invalid_menu_pricing_data():
 
     assert response.status_code == 500
     assert response.json()["detail"] == "Invalid menu pricing data."
+
+
+def test_pending_order_repricing_uses_stored_coupon_snapshot_not_live_seed():
+    """Pending-order repricing should keep using the stored snapshot after seed changes."""
+    _register_customer()
+    order = _checkout_order(coupon_code="SAVE10")
+    stored_order = order_data._ORDERDB[order["order_id"]]
+
+    assert order["discount"] == "5.00"
+    assert stored_order["coupon_snapshot"]["percent_off"] == 10
+
+    coupon_record = coupon_repo.get_coupon_by_code("SAVE10")
+    coupon_record["percent_off"] = 50
+    coupon_repo.put_coupon_record("SAVE10", coupon_record)
+
+    response = client.patch(
+        f"/orders/{order['order_id']}",
+        json={"items": [{"menu_item_id": 2, "quantity": 3}]},
+    )
+    stored_order = order_data._ORDERDB[order["order_id"]]
+
+    assert response.status_code == 200
+    assert response.json()["coupon_code"] == "SAVE10"
+    assert response.json()["subtotal"] == "29.97"
+    assert response.json()["discount"] == "3.00"
+    assert response.json()["discounted_subtotal"] == "26.97"
+    assert response.json()["tax"] == "2.70"
+    assert response.json()["delivery_fee"] == "5.00"
+    assert response.json()["total"] == "34.67"
+    assert stored_order["coupon_snapshot"]["percent_off"] == 10
+    assert stored_order["total"] == "34.67"

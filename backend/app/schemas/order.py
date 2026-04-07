@@ -8,6 +8,8 @@ from pydantic import model_validator
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer
 
+from app.schemas.coupon import CouponSnapshot
+
 
 class OrderSchemaModel(BaseModel):
     """Shared schema settings for order models."""
@@ -87,6 +89,8 @@ class OrderCreate(OrderBase):
 
     items: list[OrderItemCreate] = Field(default_factory=list)
     scheduled_time: Optional[datetime] = None
+    coupon_code: Optional[str] = None
+    coupon_snapshot: Optional[CouponSnapshot] = None
 
 
 class OrderUpdate(OrderSchemaModel):
@@ -118,7 +122,10 @@ class OrderResponse(OrderBase):
 
     order_id: str
     items: list[OrderItemResponse] = Field(default_factory=list)
+    coupon_code: Optional[str] = None
     subtotal: Decimal = Field(..., ge=0)
+    discount: Decimal = Field(default=Decimal("0.00"), ge=0)
+    discounted_subtotal: Decimal = Field(default=Decimal("0.00"), ge=0)
     tax: Decimal = Field(..., ge=0)
     delivery_fee: Decimal = Field(..., ge=0)
     total: Decimal = Field(..., ge=0)

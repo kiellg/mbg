@@ -1,4 +1,4 @@
-# pylint: disable=protected-access
+# pylint: disable=protected-access, duplicate-code
 """Unit tests for PricingService."""
 
 
@@ -30,7 +30,10 @@ class Order:  # pylint: disable=too-many-instance-attributes
     items: list[OrderItem]
     delivery_address: str
     delivery_method: object = "walk"
+    coupon_snapshot: object = None
     subtotal: Decimal = Decimal("0.00")
+    discount: Decimal = Decimal("0.00")
+    discounted_subtotal: Decimal = Decimal("0.00")
     tax: Decimal = Decimal("0.00")
     tax_rate: object = Decimal("0.10")
     delivery_fee: Decimal = Decimal("0.00")
@@ -53,6 +56,8 @@ def test_calculate_totals_basic_walk_delivery():
     PricingService.calculate_totals(order)
 
     assert order.subtotal == Decimal("23.50")
+    assert order.discount == Decimal("0.00")
+    assert order.discounted_subtotal == Decimal("23.50")
     assert order.delivery_fee == Decimal("5.00")
     assert order.tax == Decimal("2.35")
     assert order.total == Decimal("30.85")
@@ -96,6 +101,8 @@ def test_calculate_totals_empty_order_bike_delivery():
     PricingService.calculate_totals(order)
 
     assert order.subtotal == Decimal("0.00")
+    assert order.discount == Decimal("0.00")
+    assert order.discounted_subtotal == Decimal("0.00")
     assert order.delivery_fee == Decimal("8.00")
     assert order.tax == Decimal("0.00")
     assert order.total == Decimal("8.00")
@@ -116,9 +123,91 @@ def test_calculate_totals_applies_default_tax_rule_with_car_delivery():
     PricingService.calculate_totals(order)
 
     assert order.subtotal == Decimal("30.00")
+    assert order.discount == Decimal("0.00")
+    assert order.discounted_subtotal == Decimal("30.00")
     assert order.delivery_fee == Decimal("10.00")
     assert order.tax == Decimal("3.00")
     assert order.total == Decimal("43.00")
+
+
+def test_calculate_totals_applies_percentage_discount_before_tax():
+    """Test percentage discounts reduce subtotal before tax and total are computed."""
+    order = Order(
+        order_id=14,
+        status="Pending",
+        items=[OrderItem(order_item_id=1, order_id=14, quantity=1, item_price="49.99")],
+        delivery_address="123 Main St",
+        delivery_method="walk",
+        coupon_snapshot={
+            "code": "SAVE10",
+            "discount_type": "percentage",
+            "percent_off": 10,
+            "amount_off_cents": None,
+            "minimum_subtotal_cents": 0,
+        },
+    )
+
+    PricingService.calculate_totals(order)
+
+    assert order.subtotal == Decimal("49.99")
+    assert order.discount == Decimal("5.00")
+    assert order.discounted_subtotal == Decimal("44.99")
+    assert order.tax == Decimal("4.50")
+    assert order.delivery_fee == Decimal("5.00")
+    assert order.total == Decimal("54.49")
+
+
+def test_calculate_totals_caps_fixed_discount_at_subtotal():
+    """Test fixed discounts are capped so the discounted subtotal never drops below zero."""
+    order = Order(
+        order_id=15,
+        status="Pending",
+        items=[OrderItem(order_item_id=1, order_id=15, quantity=1, item_price="4.00")],
+        delivery_address="123 Main St",
+        delivery_method="walk",
+        coupon_snapshot={
+            "code": "FREE100",
+            "discount_type": "fixed_amount",
+            "percent_off": None,
+            "amount_off_cents": 1000,
+            "minimum_subtotal_cents": 0,
+        },
+    )
+
+    PricingService.calculate_totals(order)
+
+    assert order.subtotal == Decimal("4.00")
+    assert order.discount == Decimal("4.00")
+    assert order.discounted_subtotal == Decimal("0.00")
+    assert order.tax == Decimal("0.00")
+    assert order.delivery_fee == Decimal("5.00")
+    assert order.total == Decimal("5.00")
+
+
+def test_calculate_totals_drops_discount_when_repriced_below_snapshot_minimum():
+    """Test repricing keeps the order valid but drops the stored discount below minimum subtotal."""
+    order = Order(
+        order_id=16,
+        status="Pending",
+        items=[OrderItem(order_item_id=1, order_id=16, quantity=1, item_price="10.00")],
+        delivery_address="123 Main St",
+        delivery_method="walk",
+        coupon_snapshot={
+            "code": "MIN60",
+            "discount_type": "percentage",
+            "percent_off": 15,
+            "amount_off_cents": None,
+            "minimum_subtotal_cents": 6000,
+        },
+    )
+
+    PricingService.calculate_totals(order)
+
+    assert order.subtotal == Decimal("10.00")
+    assert order.discount == Decimal("0.00")
+    assert order.discounted_subtotal == Decimal("10.00")
+    assert order.tax == Decimal("1.00")
+    assert order.total == Decimal("16.00")
 
 
 def test_calculate_delivery_fee_walk():

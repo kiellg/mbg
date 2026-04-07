@@ -82,7 +82,9 @@ def test_checkout_creates_order_and_marks_cart(mock_order_service,
 @patch("app.services.checkout_service.user_repo")
 @patch("app.services.checkout_service.cart_repo")
 @patch("app.services.checkout_service.order_service")
-def test_checkout_uses_official_menu_price_for_order_items(mock_order_service,
+@patch("app.services.checkout_service.coupon_service")
+def test_checkout_uses_official_menu_price_for_order_items(mock_coupon_service,
+                                                           mock_order_service,
                                                            mock_cart_repo,
                                                            mock_user_repo,
                                                            mock_restaurant_repo):
@@ -96,6 +98,7 @@ def test_checkout_uses_official_menu_price_for_order_items(mock_order_service,
         "is_available": True,
         "price_cents": 2599,
     }
+    mock_coupon_service.get_coupon_snapshot_for_checkout.return_value = None
 
     checkout_service.checkout(
         restaurant_id=1,
@@ -106,6 +109,52 @@ def test_checkout_uses_official_menu_price_for_order_items(mock_order_service,
     call_args = mock_order_service.create_order.call_args[0][0]
     assert call_args.items[0].item_price == Decimal("25.99")
     assert call_args.items[0].quantity == 2
+
+
+@patch("app.services.checkout_service.restaurant_repo")
+@patch("app.services.checkout_service.user_repo")
+@patch("app.services.checkout_service.cart_repo")
+@patch("app.services.checkout_service.order_service")
+@patch("app.services.checkout_service.coupon_service")
+def test_checkout_attaches_coupon_snapshot_to_order_payload(mock_coupon_service,
+                                                            mock_order_service,
+                                                            mock_cart_repo,
+                                                            mock_user_repo,
+                                                            mock_restaurant_repo):
+    """Test that a valid coupon snapshot is attached to the order payload."""
+    mock_cart_repo.get_cart_by_customer_and_restaurant.return_value = FAKE_CART
+    mock_order_service.create_order.return_value = FAKE_ORDER_RESPONSE_DICT
+    mock_user_repo.get_customer_by_user_id.return_value = {
+        "user_id": CUSTOMER_ID,
+        "delivery_address": "123 Test St",
+    }
+    mock_restaurant_repo.get_menu_item.return_value = {
+        "id": 1,
+        "is_available": True,
+        "price_cents": 2599,
+    }
+    mock_coupon_service.get_coupon_snapshot_for_checkout.return_value = {
+        "code": "SAVE10",
+        "discount_type": "percentage",
+        "percent_off": 10,
+        "amount_off_cents": None,
+        "minimum_subtotal_cents": 0,
+    }
+
+    checkout_service.checkout(
+        restaurant_id=1,
+        customer_id=CUSTOMER_ID,
+        delivery_method=DeliveryMethod.WALK,
+        coupon_code="save10",
+    )
+
+    call_args = mock_order_service.create_order.call_args[0][0]
+    assert call_args.coupon_code == "SAVE10"
+    assert call_args.coupon_snapshot.code == "SAVE10"
+    mock_coupon_service.get_coupon_snapshot_for_checkout.assert_called_once_with(
+        "save10",
+        Decimal("51.98"),
+    )
 
 
 @patch("app.services.checkout_service.order_service")
