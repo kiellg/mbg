@@ -129,12 +129,7 @@ def create_coupon(payload: CouponCreateRequest) -> dict[str, Any]:
     raw_coupon = payload.model_dump(mode="json")
     raw_coupon["code"] = normalized_code
 
-    try:
-        coupon = CouponResponse.model_validate(raw_coupon)
-    except ValidationError as exc:
-        _raise_invalid_coupon_data(exc)
-
-    created = coupon_repo.create_coupon_record(coupon.model_dump(mode="json"))
+    created = coupon_repo.create_coupon_record(raw_coupon)
     return CouponResponse.model_validate(created).model_dump(mode="json")
 
 
