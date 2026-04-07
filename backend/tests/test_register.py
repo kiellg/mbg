@@ -70,3 +70,18 @@ def test_register_invalid_email():
     )
 
     assert response.status_code == 422
+
+
+def test_register_rejects_admin_role():
+    """Public registration should not allow creation of admins."""
+    response = client.post(
+        "/auth/register",
+        json={
+            "name": "Admin",
+            "email": "admin2@test.com",
+            "password": "password123",
+            "role": "admin",
+        },
+    )
+
+    assert response.status_code == 422
