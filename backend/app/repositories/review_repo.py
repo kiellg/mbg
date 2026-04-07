@@ -39,7 +39,7 @@ def create_review_record(
         "restaurant_id": restaurant_id,
         "rating": rating,
         "comment": comment,
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(timezone.utc),
     }
     review_data.REVIEW_DB[review_id] = review_record
     return review_record
