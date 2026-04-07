@@ -26,5 +26,5 @@ def delete_user(user_id: str) -> None:
 
     session_repo.delete_sessions_for_user(user_id)
     restaurant_repo.clear_owner_reference(user_id)
-    order_repo.clear_driver_reference(user_id)  
+    order_repo.clear_driver_reference(user_id)
     

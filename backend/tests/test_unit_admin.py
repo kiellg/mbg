@@ -1,3 +1,4 @@
+#pylint: disable=protected-access
 """Unit tests for admin_service profile management"""
 import pytest
 from fastapi import HTTPException
