@@ -1,8 +1,9 @@
+#pylint: disable=protected-access
 """Unit tests for admin_service profile management"""
 import pytest
 from fastapi import HTTPException
 
-from app.data import users_data
+from app.data import users_data, restaurants_data, order_data, session_store
 from app.repositories import user_repo
 from app.services import admin_service
 
@@ -57,3 +58,24 @@ def test_delete_user_raises_404_for_nonexistent():
     with pytest.raises(HTTPException) as exc_info:
         admin_service.delete_user("ghost-id")
     assert exc_info.value.status_code == 404
+
+def test_delete_user_revokes_sessions():
+    """Deleting a user should invalidate their active sessions"""
+    _add_customer()
+    session_store.SESSIONS["tok-123"] = {"user_id": "cust-1"}
+    admin_service.delete_user("cust-1")
+    assert "tok-123" not in session_store.SESSIONS
+
+def test_delete_user_clears_owner_reference():
+    """Deleting a manager should clear owner_id on their restaurants"""
+    restaurants_data._DB[99] = {"id": 99, "owner_id": "cust-1", "menu": []}
+    _add_customer()
+    admin_service.delete_user("cust-1")
+    assert restaurants_data._DB[99]["owner_id"] is None
+
+def test_delete_user_clears_driver_reference():
+    """Deleting a driver should clear driver_id on their assigned orders"""
+    order_data._ORDERDB["o1"] = {"order_id": "o1", "driver_id": "cust-1"}
+    _add_customer()
+    admin_service.delete_user("cust-1")
+    assert order_data._ORDERDB["o1"]["driver_id"] == ""
