@@ -6,6 +6,7 @@ import pytest
 from fastapi import HTTPException
 
 from app.repositories import coupon_repo
+from app.schemas.coupon import CouponCreateRequest, CouponUpdateRequest
 from app.services import coupon_service
 
 
@@ -77,3 +78,72 @@ def test_get_coupon_snapshot_for_checkout_fails_loudly_for_bad_seed_config():
 
     assert exc.value.status_code == 500
     assert exc.value.detail == "Invalid coupon configuration for code 'BROKEN'."
+
+
+def test_create_coupon_normalizes_code_and_stores_record():
+    """New coupon codes should be normalized before being stored."""
+    result = coupon_service.create_coupon(
+        CouponCreateRequest(
+            code=" save25 ",
+            discount_type="percentage",
+            percent_off=25,
+            minimum_subtotal_cents=5000,
+        )
+    )
+
+    assert result["code"] == "SAVE25"
+    assert result["percent_off"] == 25
+    assert coupon_repo.get_coupon_by_code("SAVE25")["minimum_subtotal_cents"] == 5000
+
+
+def test_create_coupon_rejects_duplicate_code():
+    """Creating a coupon with an existing code should fail."""
+    with pytest.raises(HTTPException) as exc:
+        coupon_service.create_coupon(
+            CouponCreateRequest(
+                code="save10",
+                discount_type="percentage",
+                percent_off=10,
+            )
+        )
+
+    assert exc.value.status_code == 400
+    assert exc.value.detail == "Coupon code already exists."
+
+
+def test_get_coupon_returns_normalized_match():
+    """Looking up a coupon by code should ignore case and whitespace."""
+    result = coupon_service.get_coupon(" save10 ")
+
+    assert result["code"] == "SAVE10"
+    assert result["discount_type"] == "percentage"
+
+
+def test_update_coupon_updates_fields_without_changing_code():
+    """Updating a coupon should preserve the stored code and merge mutable fields."""
+    result = coupon_service.update_coupon(
+        "save10",
+        CouponUpdateRequest(
+            percent_off=15,
+            minimum_subtotal_cents=2500,
+        ),
+    )
+
+    assert result["code"] == "SAVE10"
+    assert result["percent_off"] == 15
+    assert result["minimum_subtotal_cents"] == 2500
+
+
+def test_deactivate_coupon_sets_coupon_inactive():
+    """Deactivating a coupon should keep the record but mark it inactive."""
+    result = coupon_service.deactivate_coupon("save10")
+
+    assert result["code"] == "SAVE10"
+    assert result["is_active"] is False
+
+
+def test_delete_coupon_removes_coupon_record():
+    """Deleting a coupon should remove it from the live store."""
+    coupon_service.delete_coupon("save10")
+
+    assert coupon_repo.get_coupon_by_code("SAVE10") is None
