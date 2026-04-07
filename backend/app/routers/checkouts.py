@@ -19,5 +19,6 @@ def checkout(
     return checkout_service.checkout(
         restaurant_id = restaurant_id,
         customer_id=current_user["user_id"],
-        delivery_method=payload.delivery_method
+        delivery_method=payload.delivery_method,
+        coupon_code=payload.coupon_code,
     )

@@ -4,6 +4,7 @@ from decimal import Decimal
 from datetime import datetime
 from types import SimpleNamespace
 from fastapi import HTTPException
+
 from app.repositories import order_repo, restaurant_repo, user_repo
 from app.schemas.order import (
     DeliveryMethod,
@@ -37,7 +38,10 @@ def _calculate_totals_patch(order: dict) -> dict:
             for item in order.get("items", [])
         ],
         delivery_method=order["delivery_method"],
+        coupon_snapshot=order.get("coupon_snapshot"),
         subtotal=Decimal("0.00"),
+        discount=Decimal("0.00"),
+        discounted_subtotal=Decimal("0.00"),
         tax=Decimal("0.00"),
         delivery_fee=Decimal("0.00"),
         total=Decimal("0.00"),
@@ -46,6 +50,8 @@ def _calculate_totals_patch(order: dict) -> dict:
     PricingService.calculate_totals(pricing_order)
     return {
         "subtotal": pricing_order.subtotal,
+        "discount": pricing_order.discount,
+        "discounted_subtotal": pricing_order.discounted_subtotal,
         "tax": pricing_order.tax,
         "delivery_fee": pricing_order.delivery_fee,
         "total": pricing_order.total,
@@ -124,7 +130,10 @@ def _build_order_response(order: dict) -> OrderResponse:
         delivery_address=order["delivery_address"],
         delivery_method=DeliveryMethod(order["delivery_method"]),
         items=item_responses,
+        coupon_code=order.get("coupon_code"),
         subtotal=Decimal(str(order["subtotal"])),
+        discount=Decimal(str(order.get("discount", "0.00"))),
+        discounted_subtotal=Decimal(str(order.get("discounted_subtotal", order["subtotal"]))),
         tax=Decimal(str(order["tax"])),
         delivery_fee=Decimal(str(order["delivery_fee"])),
         total=Decimal(str(order["total"])),
@@ -156,6 +165,12 @@ def create_order(payload: OrderCreate) -> OrderResponse:
         delivery_method=payload.delivery_method.value,
         status=payload.status.value,
         scheduled_time=payload.scheduled_time.isoformat() if payload.scheduled_time else None,
+        coupon_code=payload.coupon_code,
+        coupon_snapshot=(
+            payload.coupon_snapshot.model_dump(mode="json")
+            if payload.coupon_snapshot is not None
+            else None
+        ),
     )
 
     stored_order = order_repo.update_order_record(order["order_id"], _calculate_totals_patch(order))

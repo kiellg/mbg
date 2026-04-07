@@ -16,11 +16,13 @@ from app.schemas.order import (
     OrderItemCreate,
     OrderResponse,
 )
-from app.services import order_service
+from app.services import coupon_service, order_service
+from app.services.pricing_service import PricingService
 
 def checkout(restaurant_id: int,
              customer_id: str,
              delivery_method: DeliveryMethod,
+             coupon_code: str | None = None,
              ) -> OrderResponse:
     """Convert a cart into a new pending order.
     Raises 404 if the cart is not found.
@@ -57,6 +59,8 @@ def checkout(restaurant_id: int,
         )
         for item in validated_items
     ]
+    subtotal = PricingService.calculate_subtotal(items)
+    coupon_snapshot = coupon_service.get_coupon_snapshot_for_checkout(coupon_code, subtotal)
 
     payload = OrderCreate(
         customer_id = customer_id,
@@ -64,6 +68,8 @@ def checkout(restaurant_id: int,
         delivery_address=delivery_address,
         delivery_method=delivery_method,
         items=items,
+        coupon_code=coupon_snapshot["code"] if coupon_snapshot else None,
+        coupon_snapshot=coupon_snapshot,
     )
 
     order = order_service.create_order(payload)
