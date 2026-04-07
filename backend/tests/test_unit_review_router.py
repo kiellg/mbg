@@ -2,7 +2,6 @@
 
 from datetime import datetime, timezone
 
-import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
@@ -27,14 +26,17 @@ FAKE_REVIEW_RESPONSE = ReviewResponse(
 
 
 def setup_function():
+    """Override auth dependency before each test."""
     app.dependency_overrides[get_current_user] = lambda: {"user_id": CUSTOMER_ID}
 
 
 def teardown_function():
+    """Clear any overrides after each test."""
     app.dependency_overrides.clear()
 
 
 def test_submit_review_returns_201(mocker):
+    """Test that submitting a review returns a 201 status code and the expected response."""
     mocker.patch.object(reviews.review_service, "submit_review",
                         return_value=FAKE_REVIEW_RESPONSE)
     response = client.post("/reviews", json={
@@ -47,6 +49,8 @@ def test_submit_review_returns_201(mocker):
 
 
 def test_submit_review_calls_service_with_correct_args(mocker):
+    """Test that the submit_review endpoint calls the review service
+    with the correct arguments."""
     mock_submit = mocker.patch.object(reviews.review_service, "submit_review",
                                       return_value=FAKE_REVIEW_RESPONSE)
     client.post("/reviews", json={
@@ -60,6 +64,7 @@ def test_submit_review_calls_service_with_correct_args(mocker):
 
 
 def test_submit_review_returns_404_when_order_not_found(mocker):
+    """Test that submitting a review for a non-existent order returns a 404 status code."""
     mocker.patch.object(reviews.review_service, "submit_review",
                         side_effect=HTTPException(status_code=404, detail="Order not found"))
     response = client.post("/reviews", json={
@@ -71,6 +76,8 @@ def test_submit_review_returns_404_when_order_not_found(mocker):
 
 
 def test_submit_review_returns_403_when_not_authorized(mocker):
+    """Test that submitting a review for an order that
+    the user does not own returns a 403 status code."""
     mocker.patch.object(reviews.review_service, "submit_review",
                         side_effect=HTTPException(status_code=403, detail="Not authorized"))
     response = client.post("/reviews", json={
@@ -82,8 +89,11 @@ def test_submit_review_returns_403_when_not_authorized(mocker):
 
 
 def test_submit_review_returns_400_when_already_reviewed(mocker):
+    """Test that submitting a review for an order that
+    already has a review returns a 400 status code."""
     mocker.patch.object(reviews.review_service, "submit_review",
-                        side_effect=HTTPException(status_code=400, detail="A review for this order already exists"))
+                        side_effect=HTTPException(status_code=400,
+                        detail="A review for this order already exists"))
     response = client.post("/reviews", json={
         "order_id": "order-abc",
         "rating": 5,
@@ -93,6 +103,8 @@ def test_submit_review_returns_400_when_already_reviewed(mocker):
 
 
 def test_submit_review_returns_422_when_rating_out_of_range():
+    """Test that submitting a review with a rating outside the valid range
+    returns a 422 status code."""
     response = client.post("/reviews", json={
         "order_id": "order-abc",
         "rating": 10,  # exceeds le=5
@@ -102,6 +114,7 @@ def test_submit_review_returns_422_when_rating_out_of_range():
 
 
 def test_submit_review_requires_auth():
+    """Test that submitting a review without authentication returns a 401 status code."""
     app.dependency_overrides.clear()
     response = client.post("/reviews", json={
         "order_id": "order-abc",
@@ -112,6 +125,8 @@ def test_submit_review_requires_auth():
 
 
 def test_get_restaurant_reviews_returns_200(mocker):
+    """Test that fetching reviews for a restaurant returns a 200 status code
+    and the expected response."""
     mocker.patch.object(reviews.review_service, "get_restaurant_reviews",
                         return_value=[FAKE_REVIEW_RESPONSE])
     response = client.get("/reviews/restaurant/1")
@@ -121,6 +136,8 @@ def test_get_restaurant_reviews_returns_200(mocker):
 
 
 def test_get_restaurant_reviews_returns_empty_list(mocker):
+    """Test that fetching reviews for a restaurant with no reviews
+    returns an empty list."""
     mocker.patch.object(reviews.review_service, "get_restaurant_reviews",
                         return_value=[])
     response = client.get("/reviews/restaurant/99")
@@ -129,6 +146,8 @@ def test_get_restaurant_reviews_returns_empty_list(mocker):
 
 
 def test_get_restaurant_reviews_returns_422_for_invalid_id():
+    """Test that fetching reviews with an invalid restaurant ID
+    returns a 422 status code."""
     response = client.get("/reviews/restaurant/abc")
     assert response.status_code == 422
 

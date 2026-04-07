@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 
 from main import app
 from app.dependencies import get_current_user
-from app.data import review_data, order_data, restaurants_data
+from app.data import review_data, order_data
 from app.repositories import restaurant_repo, review_repo
 from app.schemas.order import OrderStatus
 
@@ -30,10 +30,13 @@ def setup_function():
 
 
 def teardown_function():
+    """Clear any overrides after each test."""
     app.dependency_overrides.clear()
 
 
 def test_submit_review_creates_review_and_updates_restaurant_rating():
+    """Test the full flow of submitting a review and
+    how it affects the restaurant rating."""
     response = client.post("/reviews", json={
         "order_id": "order-abc",
         "rating": 4,
@@ -48,6 +51,8 @@ def test_submit_review_creates_review_and_updates_restaurant_rating():
 
 
 def test_submit_review_persists_in_review_db():
+    """Test that after submitting a review,
+    it is stored in the review repository."""
     client.post("/reviews", json={
         "order_id": "order-abc",
         "rating": 5,
@@ -60,6 +65,7 @@ def test_submit_review_persists_in_review_db():
 
 
 def test_submit_review_returns_404_when_order_not_found():
+    """Test that submitting a review for a non-existent order returns a 404 error."""
     response = client.post("/reviews", json={
         "order_id": "order-does-not-exist",
         "rating": 5,
@@ -69,6 +75,7 @@ def test_submit_review_returns_404_when_order_not_found():
 
 
 def test_submit_review_returns_403_when_wrong_customer():
+    """Test that a customer cannot submit a review for an order they did not place."""
     app.dependency_overrides[get_current_user] = lambda: {"user_id": OTHER_CUSTOMER_ID}
     response = client.post("/reviews", json={
         "order_id": "order-abc",
@@ -79,6 +86,8 @@ def test_submit_review_returns_403_when_wrong_customer():
 
 
 def test_submit_review_returns_400_when_order_not_delivered():
+    """Test that a review cannot be submitted for an order
+    that is not in Delivered status."""
     order_data._ORDERDB["order-pending"] = {
         "order_id": "order-pending",
         "customer_id": CUSTOMER_ID,
@@ -94,13 +103,17 @@ def test_submit_review_returns_400_when_order_not_delivered():
 
 
 def test_submit_review_returns_400_when_duplicate_review():
+    """Test that submitting a second review for the same order returns a 400 error."""
     client.post("/reviews", json={"order_id": "order-abc", "rating": 5, "comment": "First!"})
-    response = client.post("/reviews", json={"order_id": "order-abc", "rating": 3, "comment": "Again!"})
+    response = client.post("/reviews",
+                           json={"order_id": "order-abc", "rating": 3, "comment": "Again!"})
     assert response.status_code == 400
     assert "already exists" in response.json()["detail"]
 
 
 def test_restaurant_rating_updates_with_average_across_multiple_reviews():
+    """Test that the restaurant rating is updated to the average
+    when multiple reviews are submitted."""
     order_data._ORDERDB["order-xyz"] = {
         "order_id": "order-xyz",
         "customer_id": CUSTOMER_ID,
@@ -115,23 +128,27 @@ def test_restaurant_rating_updates_with_average_across_multiple_reviews():
 
 
 def test_get_restaurant_reviews_returns_sorted_newest_first():
+    """Test that restaurant reviews are returned in the correct order."""
     order_data._ORDERDB["order-xyz"] = {
         "order_id": "order-xyz",
         "customer_id": CUSTOMER_ID,
         "restaurant_id": 1,
         "status": OrderStatus.DELIVERED.value,
     }
-    client.post("/reviews", json={"order_id": "order-abc", "rating": 3, "comment": "First review."})
-    client.post("/reviews", json={"order_id": "order-xyz", "rating": 5, "comment": "Second review."})
+    client.post("/reviews",
+                json={"order_id": "order-abc", "rating": 3, "comment": "First review."})
+    client.post("/reviews",
+                json={"order_id": "order-xyz", "rating": 5, "comment": "Second review."})
 
     response = client.get("/reviews/restaurant/1")
     assert response.status_code == 200
     reviews = response.json()
     assert len(reviews) == 2
-    assert reviews[0]["comment"] == "Second review." 
+    assert reviews[0]["comment"] == "Second review."
 
 
 def test_get_restaurant_reviews_returns_empty_for_no_reviews():
+    """Test that no reviews are returned for a restaurant with no reviews."""
     response = client.get("/reviews/restaurant/1")
     assert response.status_code == 200
     assert response.json() == []
