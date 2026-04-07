@@ -8,7 +8,6 @@ from pydantic import BaseModel, Field
 class ReviewCreate(BaseModel):
     """Schema for creating a new review"""
     order_id: str
-    restaurant_id: int
     rating: int = Field(..., ge=1, le=5)
     comment: Optional[str] = None
 
