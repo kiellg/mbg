@@ -11,5 +11,5 @@ export const profileApi = {
         api.patch('/profile/driver', { name, delivery_method, is_available }),
 
     updateRestaurant: (restaurant_id, payload) =>
-        api.patch('/profile/restaurant/${restaurant_id}', payload),
+        api.patch(`/profile/restaurant/${restaurant_id}`, payload),
 };
