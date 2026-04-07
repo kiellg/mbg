@@ -3,7 +3,7 @@ from fastapi import HTTPException
 
 from app.repositories import user_repo
 from app.schemas.user import ProfileResponse
-from backend.app.repositories import order_repo, restaurant_repo, session_repo
+from app.repositories import order_repo, restaurant_repo, session_repo
 
 def list_all_profiles() -> list[dict]:
     """Return all user profiles with resolved roles"""
