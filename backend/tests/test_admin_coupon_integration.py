@@ -1,5 +1,5 @@
 """Integration tests for seeded admin login and admin-only coupon CRUD."""
-# pylint: disable=protected-access, duplicate-code
+# pylint: disable=duplicate-code, protected-access
 
 import pytest
 from fastapi.testclient import TestClient
@@ -7,21 +7,40 @@ from fastapi.testclient import TestClient
 from app.data import cart_data, notification_data, order_data
 from app.data.users_data import SEEDED_ADMIN_EMAIL, SEEDED_ADMIN_PASSWORD
 from app.dependencies import get_current_user
-from app.repositories import coupon_repo, restaurant_repo, user_repo
+from app.repositories import (
+    coupon_repo,
+    restaurant_repo,
+    user_repo,
+)
 from app.repositories.session_repo import reset_session
 from main import app
 
 client = TestClient(app)
 
 
-def setup_function():
-    """Reset shared in-memory state before each test."""
+def _reset_cart_state() -> None:
+    """Reset cart state for this test module."""
     cart_data._CARTDB.clear()
     cart_data.NEXT_CART_ID = 1
     cart_data.NEXT_ITEM_ID = 1
+
+
+def _reset_notification_state() -> None:
+    """Reset notification state for this test module."""
     notification_data.NOTIFICATIONS.clear()
+
+
+def _reset_order_state() -> None:
+    """Reset order state for this test module."""
     order_data._ORDERDB.clear()
     order_data.NEXT_ORDER_ITEM_ID = 1
+
+
+def setup_function():
+    """Reset shared in-memory state before each test."""
+    _reset_cart_state()
+    _reset_notification_state()
+    _reset_order_state()
     coupon_repo.reset_coupons()
     user_repo.reset_users()
     restaurant_repo.reset_restaurants()
