@@ -1,3 +1,4 @@
+#pylint: disable=ungrouped-imports
 """Main FastAPI app"""
 
 from fastapi import FastAPI
