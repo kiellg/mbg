@@ -31,7 +31,7 @@ export default function LoginPage() {
   };
 
   return (
-    <AuthLayout title="Welcome back" subtitle="Sign in to your Bitewave account">
+    <AuthLayout title="Welcome back" subtitle="Sign in to your Chow account">
       <Box component="form" onSubmit={handleSubmit} noValidate sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {feedback && <Alert severity={feedback.type}>{feedback.message}</Alert>}
 

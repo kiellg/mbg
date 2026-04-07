@@ -25,7 +25,7 @@ export default function AuthLayout({ title, subtitle, children }) {
             letterSpacing: '-0.5px',
           }}
         >
-          Bite<span style={{ color: '#1C2833' }}>wave</span>
+          Chow
         </Typography>
       </Box>
 
