@@ -34,7 +34,7 @@ function SidebarContent({ user, onLogout }) {
       <Typography
         sx={{ fontFamily: '"Playfair Display", serif', fontSize: '1.3rem', fontWeight: 700, color: '#C0392B', mb: 3 }}
       >
-        B<span style={{ color: '#1C2833' }}>wave</span>
+        Chow
       </Typography>
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, borderRadius: 3, bgcolor: 'rgba(192,57,43,0.05)', border: '1px solid rgba(192,57,43,0.1)', mb: 2.5 }}>
