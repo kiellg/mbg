@@ -22,6 +22,46 @@ def list_coupons() -> List[Dict[str, Any]]:
     ]
 
 
+def create_coupon_record(record: Dict[str, Any]) -> Dict[str, Any]:
+    """Create and store a coupon record."""
+    COUPON_DB[record["code"]] = copy.deepcopy(record)
+    return copy.deepcopy(COUPON_DB[record["code"]])
+
+
+def update_coupon_record(code: str, patch: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Update a coupon record with known fields only."""
+    record = COUPON_DB.get(code)
+    if record is None:
+        return None
+
+    for field in (
+        "discount_type",
+        "percent_off",
+        "amount_off_cents",
+        "minimum_subtotal_cents",
+        "expires_at",
+        "is_active",
+    ):
+        if field in patch:
+            record[field] = copy.deepcopy(patch[field])
+
+    return copy.deepcopy(record)
+
+
+def deactivate_coupon_record(code: str) -> Optional[Dict[str, Any]]:
+    """Deactivate a coupon record."""
+    return update_coupon_record(code, {"is_active": False})
+
+
+def delete_coupon_record(code: str) -> bool:
+    """Delete a coupon record by code."""
+    if code not in COUPON_DB:
+        return False
+
+    del COUPON_DB[code]
+    return True
+
+
 def reset_coupons() -> None:
     """Reset the coupon store back to the seeded records."""
     COUPON_DB.clear()
