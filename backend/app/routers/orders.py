@@ -23,11 +23,16 @@ def update_pending_order(
     )
 
 @router.post("", response_model=OrderResponse)
-def create_order(payload: OrderCreate):
+def create_order(
+    payload: OrderCreate,
+    current_user: dict = Depends(get_current_user),
+):
     """Create a new order"""
+    payload.customer_id = current_user["user_id"]
+
     return order_service.create_order(payload)
 
 @router.get("", response_model=list[OrderResponse])
-def list_order():
+def list_order(_current_user: dict = Depends(get_current_user)):
     """List all orders"""
     return order_service.list_orders()
