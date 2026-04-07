@@ -1,3 +1,4 @@
+#pylint: disable=unused-argument, duplicate-code
 """Router for admin user profile management endpoints"""
 from typing import Any, Dict, Optional
 
