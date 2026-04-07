@@ -63,7 +63,7 @@ def test_get_coupon_snapshot_for_checkout_rejects_below_minimum():
 
 def test_get_coupon_snapshot_for_checkout_fails_loudly_for_bad_seed_config():
     """Malformed seeded coupon data should raise a clear server-side validation error."""
-    coupon_data._COUPONDB["BROKEN"] = {
+    coupon_data.set_coupon_record("BROKEN", {
         "code": "BROKEN",
         "discount_type": "percentage",
         "percent_off": 150,
@@ -71,7 +71,7 @@ def test_get_coupon_snapshot_for_checkout_fails_loudly_for_bad_seed_config():
         "minimum_subtotal_cents": 0,
         "expires_at": "2099-12-31T23:59:59+00:00",
         "is_active": True,
-    }
+    })
 
     with pytest.raises(HTTPException) as exc:
         coupon_service.get_coupon_snapshot_for_checkout("BROKEN", Decimal("49.99"))

@@ -8,7 +8,7 @@ from app.data import coupon_data
 
 def get_coupon_by_code(code: str) -> Optional[Dict[str, Any]]:
     """Return a coupon record by normalized code."""
-    record = coupon_data._COUPONDB.get(code)
+    record = coupon_data.get_coupon_record(code)
     if record is None:
         return None
     return copy.deepcopy(record)
@@ -16,5 +16,4 @@ def get_coupon_by_code(code: str) -> Optional[Dict[str, Any]]:
 
 def reset_coupons() -> None:
     """Reset the coupon store back to the seeded records."""
-    coupon_data._COUPONDB.clear()
-    coupon_data._COUPONDB.update(copy.deepcopy(coupon_data._SEED))
+    coupon_data.reset_coupon_store()
