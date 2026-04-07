@@ -1,5 +1,5 @@
 """Unit tests for the review repository functions."""
-#pylint: disable=unused-variable
+#pylint: disable=unused-variable, duplicate-code
 import pytest
 from app.data import review_data
 from app.repositories import review_repo
