@@ -5,7 +5,6 @@ from decimal import Decimal
 import pytest
 from fastapi import HTTPException
 
-from app.data import coupon_data
 from app.repositories import coupon_repo
 from app.services import coupon_service
 
@@ -63,7 +62,7 @@ def test_get_coupon_snapshot_for_checkout_rejects_below_minimum():
 
 def test_get_coupon_snapshot_for_checkout_fails_loudly_for_bad_seed_config():
     """Malformed seeded coupon data should raise a clear server-side validation error."""
-    coupon_data.set_coupon_record("BROKEN", {
+    coupon_repo.put_coupon_record("BROKEN", {
         "code": "BROKEN",
         "discount_type": "percentage",
         "percent_off": 150,

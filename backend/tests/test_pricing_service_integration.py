@@ -3,7 +3,7 @@
 
 from fastapi.testclient import TestClient
 
-from app.data import cart_data, coupon_data, notification_data, order_data
+from app.data import cart_data, notification_data, order_data
 from app.dependencies import get_current_user
 from app.repositories import coupon_repo, restaurant_repo, user_repo
 from main import app
@@ -165,7 +165,9 @@ def test_pending_order_repricing_uses_stored_coupon_snapshot_not_live_seed():
     assert order["discount"] == "5.00"
     assert stored_order["coupon_snapshot"]["percent_off"] == 10
 
-    coupon_data._COUPONDB["SAVE10"]["percent_off"] = 50
+    coupon_record = coupon_repo.get_coupon_by_code("SAVE10")
+    coupon_record["percent_off"] = 50
+    coupon_repo.put_coupon_record("SAVE10", coupon_record)
 
     response = client.patch(
         f"/orders/{order['order_id']}",

@@ -1,9 +1,9 @@
 """Seeded in-memory discount code data for checkout."""
 
 import copy
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
-_SEED: Dict[str, Dict[str, Any]] = {
+COUPON_SEED: Dict[str, Dict[str, Any]] = {
     "SAVE10": {
         "code": "SAVE10",
         "discount_type": "percentage",
@@ -51,25 +51,4 @@ _SEED: Dict[str, Dict[str, Any]] = {
     },
 }
 
-_COUPONDB: Dict[str, Dict[str, Any]] = copy.deepcopy(_SEED)
-
-
-def get_coupon_record(code: str) -> Optional[Dict[str, Any]]:
-    """Return the stored coupon record for a normalized code."""
-    return _COUPONDB.get(code)
-
-
-def list_coupon_records() -> Dict[str, Dict[str, Any]]:
-    """Return the raw coupon store for internal read-only access."""
-    return _COUPONDB
-
-
-def set_coupon_record(code: str, record: Dict[str, Any]) -> None:
-    """Store a coupon record for tests or internal setup."""
-    _COUPONDB[code] = record
-
-
-def reset_coupon_store() -> None:
-    """Reset the coupon store back to the seeded records."""
-    _COUPONDB.clear()
-    _COUPONDB.update(copy.deepcopy(_SEED))
+COUPON_DB: Dict[str, Dict[str, Any]] = copy.deepcopy(COUPON_SEED)
