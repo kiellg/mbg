@@ -1,6 +1,8 @@
 """API routes related to authentication"""
 
-from fastapi import APIRouter, Response, Request, HTTPException, Depends
+from typing import Optional
+
+from fastapi import APIRouter, Response, Request, HTTPException, Depends, Header
 
 from app.schemas.auth import (
     RegisterRequest,
@@ -21,11 +23,23 @@ from app.services.auth_service import (
 from app.repositories.session_repo import create_session
 
 from app.dependencies import get_current_user
+from app.services.role_service import require_admin
 
 from app.data import users_data
 from app.data import session_store
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+def get_session_token(
+        request: Request,
+        session_token: Optional[str] = Header(default=None),
+) -> Optional[str]:
+    """Return session token from header or cookie."""
+    if session_token:
+        return session_token
+
+    return request.cookies.get("session_token")
 
 @router.post("/register", response_model=RegisterResponse)
 def register(payload: RegisterRequest):
@@ -102,11 +116,19 @@ def confirm_password_reset(payload: PasswordResetConfirm):
     return {"message": "Password reset successful"}
 
 @router.get("/debug/users")
-def debug_users():
+def debug_users(
+    request: Request,
+    session_token: Optional[str] = Header(default=None),
+):
     """Debug to get lists of registered users."""
+    require_admin(get_session_token(request, session_token))
     return users_data.USERS
 
 @router.get("/debug/sessions")
-def debug_sessions():
+def debug_sessions(
+    request: Request,
+    session_token: Optional[str] = Header(default=None),
+):
     """Debug to get lists of current sessions"""
+    require_admin(get_session_token(request, session_token))
     return session_store.SESSIONS

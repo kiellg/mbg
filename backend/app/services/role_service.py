@@ -29,6 +29,10 @@ def require_manager(session_token: str) -> Dict[str, Any]:
     """Ensure the authenticated user is a manager"""
     return require_role(session_token, ["manager"])
 
+def require_admin(session_token: str) -> Dict[str, Any]:
+    """Ensure the authenticated user is an admin"""
+    return require_role(session_token, ["admin"])
+
 def require_driver(session_token: str) -> Dict[str, Any]:
     """Ensure the authenticated user is a driver"""
     return require_role(session_token, ["driver"])

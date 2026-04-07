@@ -7,6 +7,7 @@ from app.data import cart_data, notification_data, order_data, payment_data
 from app.dependencies import get_current_user
 from app.repositories import restaurant_repo, user_repo
 from app.schemas.payment import PaymentStatus
+from app.services import delivery_service
 from main import app
 
 client = TestClient(app)
@@ -65,6 +66,13 @@ def _create_manager() -> dict:
     return manager
 
 
+def _create_driver() -> dict:
+    """Create a driver user for notification visibility checks."""
+    driver = user_repo.create_user("drv", "driver@test.com", "pw123")
+    user_repo.create_driver(driver["user_id"], delivery_method="walk")
+    return driver
+
+
 def _checkout_and_get_order_id() -> str:
     """Add an item to cart, checkout, and return the order id."""
     add_res = client.post("/cart/1/items", json={"menu_item_id": 1, "quantity": 1})
@@ -73,6 +81,13 @@ def _checkout_and_get_order_id() -> str:
     order_res = client.post(f"/checkout/{cart_id}", json={"delivery_method": "walk"})
     assert order_res.status_code == 201
     return order_res.json()["order_id"]
+
+
+def _accept_payment(order_id: str):
+    """Pay for an order so it moves to Cooking and creates a notification."""
+    response = client.post(f"/payments/{order_id}", json=VALID_CARD)
+    assert response.status_code == 201
+    assert response.json()["status"] == PaymentStatus.ACCEPTED.value
 
 
 def test_checkout_creates_notification_visible_through_notifications_route():
@@ -128,12 +143,13 @@ def test_mark_notification_as_read_updates_customer_view():
 
 
 def test_notification_read_state_is_user_specific_for_customer_and_manager():
-    """Customer reads should not mark the same notification as read for a visible manager."""
+    """Customer reads should not mark a shared Cooking notification as read for a manager."""
     customer = _register_customer()
     manager = _create_manager()
     restaurant_repo.get_restaurant_record(1)["owner_id"] = manager["user_id"]
 
     order_id = _checkout_and_get_order_id()
+    _accept_payment(order_id)
     customer_notifications = client.get("/notifications")
     notification_id = customer_notifications.json()[0]["notification_id"]
 
@@ -152,5 +168,44 @@ def test_notification_read_state_is_user_specific_for_customer_and_manager():
     assert len(manager_notifications.json()) == 1
     assert manager_notifications.json()[0]["order_id"] == order_id
     assert manager_notifications.json()[0]["is_read"] is False
-    assert manager_notifications.json()[0]["message"] == "Order placed."
+    assert manager_notifications.json()[0]["message"] == "Order status changed to Cooking."
     assert customer["user_id"] != manager["user_id"]
+
+
+def test_driver_assignment_notification_is_visible_only_to_assigned_driver():
+    """Driver assignment should not leak driver-only notifications to other roles."""
+    customer = _register_customer()
+    manager = _create_manager()
+    driver = _create_driver()
+    restaurant_repo.get_restaurant_record(1)["owner_id"] = manager["user_id"]
+
+    order_id = _checkout_and_get_order_id()
+    _accept_payment(order_id)
+    delivery_service.assign_driver_to_order(
+        order_id,
+        driver["user_id"],
+        manager["user_id"],
+        "walk",
+    )
+
+    _set_current_user(customer["user_id"])
+    customer_notifications = client.get("/notifications")
+    assert customer_notifications.status_code == 200
+    assert [item["message"] for item in customer_notifications.json()] == [
+        "Order status changed to Cooking.",
+        "Order placed.",
+    ]
+
+    _set_current_user(manager["user_id"])
+    manager_notifications = client.get("/notifications")
+    assert manager_notifications.status_code == 200
+    assert [item["message"] for item in manager_notifications.json()] == [
+        "Order status changed to Cooking.",
+    ]
+
+    _set_current_user(driver["user_id"])
+    driver_notifications = client.get("/notifications")
+    assert driver_notifications.status_code == 200
+    assert [item["message"] for item in driver_notifications.json()] == [
+        "You have been assigned a delivery.",
+    ]

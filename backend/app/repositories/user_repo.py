@@ -1,5 +1,6 @@
 """Repository layer for user data access"""
 #pylint: disable=too-many-arguments,too-many-positional-arguments
+import copy
 import uuid
 from datetime import datetime
 from typing import Dict, Any, Optional
@@ -62,9 +63,20 @@ def create_driver(
         "is_available": is_available,
     }
 
+def create_admin(user_id: str):
+    """Create an admin profile"""
+    users_data.ADMINS[user_id] = {
+        "user_id": user_id,
+        "admin_id": user_id,
+    }
+
 def is_customer(user_id: str) -> bool:
     """Return whether a user is a customer"""
     return user_id in users_data.CUSTOMERS
+
+def is_admin(user_id: str) -> bool:
+    """Return whether a user is an admin"""
+    return user_id in users_data.ADMINS
 
 def is_manager(user_id: str) -> bool:
     """Return whether a user is a manager"""
@@ -76,6 +88,9 @@ def is_driver(user_id: str) -> bool:
 
 def get_user_role(user_id: str) -> Optional[str]:
     """Return the role for a user"""
+    if is_admin(user_id):
+        return "admin"
+
     if is_customer(user_id):
         return "customer"
 
@@ -176,9 +191,13 @@ def delete_password_reset_token(token: str) -> None:
 def reset_users():
     """Reset the simulated user db"""
     users_data.USERS.clear()
+    users_data.USERS.update(copy.deepcopy(users_data.USER_SEED))
     users_data.CUSTOMERS.clear()
     users_data.MANAGERS.clear()
     users_data.DRIVERS.clear()
+    users_data.ADMINS.clear()
+    users_data.ADMINS.update(copy.deepcopy(users_data.ADMIN_SEED))
+    users_data.PASSWORD_RESET_TOKENS.clear()
 
 def save_payment_method(
         customer_id: str,
