@@ -136,6 +136,12 @@ def update_order_record(order_id: str, patch: Dict[str, Any]) -> Optional[Dict[s
             )
         order["items"] = replaced_items
 
+    if "is_scheduled" in patch:
+        order["is_scheduled"] = patch["is_scheduled"]
+
+    if "scheduled_time" in patch:
+        order["scheduled_time"] = patch["scheduled_time"]
+
     return order
 
 

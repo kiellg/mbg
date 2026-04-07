@@ -128,6 +128,8 @@ def _build_order_response(order: dict) -> OrderResponse:
         tax=Decimal(str(order["tax"])),
         delivery_fee=Decimal(str(order["delivery_fee"])),
         total=Decimal(str(order["total"])),
+        scheduled_time=order.get("scheduled_time"),
+        is_scheduled=order.get("is_scheduled", False),
     )
     return response
 
@@ -175,6 +177,8 @@ def get_order(order_id: str) -> OrderResponse:
 
 def list_orders() -> list[OrderResponse]:
     """List all orders"""
+    _process_scheduled_orders()
+
     orders = order_repo.list_order_records()
     return [_build_order_response(order) for order in orders]
 
@@ -262,3 +266,20 @@ def cancel_order(order_id: str) -> OrderResponse:
         updated_order["status"],
     )
     return _build_order_response(updated_order)
+
+def _process_scheduled_orders():
+    """Activate scheduled orders when their scheduled_time is reached"""
+    now = datetime.utcnow()
+
+    for order in order_repo.list_order_records():
+        if order.get("is_scheduled") and order.get("scheduled_time"):
+            scheduled_time = datetime.fromisoformat(order["scheduled_time"])
+
+            if scheduled_time <= now:
+                order_repo.update_order_record(
+                    order["order_id"],
+                    {
+                        "status": "Pending",
+                        "is_scheduled": False,
+                    },
+                )
