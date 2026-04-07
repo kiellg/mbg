@@ -11,6 +11,7 @@ from app.routers.payments import router as payment_router
 from app.routers.deliveries import router as deliveries_router
 from app.routers.notifications import router as notifications_router
 from app.routers.recently_viewed import router as recently_viewed_router
+from app.routers.reviews import router as reviews_router
 from app.routers.favourites import router as favourites_router
 from app.routers.coupons import router as coupons_router
 from app.routers.admin import router as admin_router
@@ -26,6 +27,7 @@ app.include_router(payment_router)
 app.include_router(deliveries_router)
 app.include_router(notifications_router)
 app.include_router(recently_viewed_router)
+app.include_router(reviews_router)
 app.include_router(favourites_router)
 app.include_router(coupons_router)
 app.include_router(admin_router)

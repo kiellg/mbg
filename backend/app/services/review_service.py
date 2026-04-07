@@ -57,6 +57,8 @@ def submit_review(customer_id: str, payload: ReviewCreate) -> ReviewResponse:
 
 def get_restaurant_reviews(restaurant_id: int) -> List[ReviewResponse]:
     """Fetch all reviews for a given restaurant"""
+    if not restaurant_repo.get_restaurant_record(restaurant_id):
+        raise HTTPException(status_code=404, detail="Restaurant not found")
     review_records = review_repo.get_reviews_by_restaurant(restaurant_id)
     sorted_reviews = sorted(review_records, key=lambda r: r["created_at"], reverse=True)
     return [_build_review_response(record) for record in sorted_reviews]
