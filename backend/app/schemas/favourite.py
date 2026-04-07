@@ -24,4 +24,3 @@ class FavouriteResponse(BaseModel):
 class RemoveFavouriteResponse(BaseModel):
     """Response schema for removing a favourite restaurant or menu item"""
     detail: str
-    

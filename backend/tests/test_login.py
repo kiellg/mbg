@@ -3,6 +3,7 @@
 from fastapi.testclient import TestClient
 
 from main import app
+from app.data.users_data import SEEDED_ADMIN_EMAIL, SEEDED_ADMIN_PASSWORD
 from app.repositories.user_repo import(
     reset_users,
     create_user,
@@ -66,6 +67,21 @@ def test_login_invalid_email():
 
     assert response.status_code == 401
     assert response.json()["detail"] == "Incorrect email or password"
+
+def test_seeded_admin_can_login():
+    """The seeded internal admin should be able to authenticate normally."""
+    response = client.post(
+        "/auth/login",
+        json={
+            "email": SEEDED_ADMIN_EMAIL,
+            "password": SEEDED_ADMIN_PASSWORD,
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["email"] == SEEDED_ADMIN_EMAIL
+    assert response.json()["role"] == "admin"
+    assert "session_token" in response.cookies
 
 def test_login_locks_after_five_failed_attempts():
     """Account should lock after five failed login attempts"""
