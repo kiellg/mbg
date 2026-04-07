@@ -14,7 +14,7 @@ def submit_review(
     current_user: dict=Depends(get_current_user)):
     """Endpoint to submit a new review for an order"""
     return review_service.submit_review(
-        customer_id=current_user["user_id"], 
+        customer_id=current_user["user_id"],
         payload=payload,
     )
 
