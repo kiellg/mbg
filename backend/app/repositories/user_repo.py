@@ -233,3 +233,32 @@ def get_saved_payment_methods(customer_id: str):
     if customer is None:
         return []
     return customer.get("saved_payment_methods", [])
+
+def list_all_profiles() -> list[dict]:
+    """Return all users with their resolved role"""
+    profiles = []
+    for user in users_data.USERS.values():
+        profiles.append({
+            "user_id": user["user_id"],
+            "name": user["name"],
+            "email": user["email"],
+            "role": get_user_role(user["user_id"]),
+        })
+    return profiles
+
+def delete_user(user_id: str) -> bool:
+    """Remove a user and their role profile from all stores"""
+    if is_admin(user_id):
+        return False
+
+    email = next(
+        (u["email"] for u in users_data.USERS.values() if u["user_id"] == user_id),
+        None,
+    )
+    if email is None:
+        return False
+    del users_data.USERS[email]
+    users_data.CUSTOMERS.pop(user_id, None)
+    users_data.MANAGERS.pop(user_id, None)
+    users_data.DRIVERS.pop(user_id, None)
+    return True
