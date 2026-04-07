@@ -5,7 +5,7 @@ from decimal import Decimal
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
-
+from datetime import datetime, timezone
 from app.dependencies import get_current_user
 from app.schemas.order import DeliveryMethod, OrderResponse, OrderStatus
 from main import app
@@ -14,6 +14,7 @@ CUSTOMER_ID = "9c6dbfcb-72c5-4cc4-9f76-29200f0efda7"
 
 FAKE_ORDER_RESPONSE = OrderResponse(
     order_id="abc1234",
+    created_at=datetime.now(timezone.utc),
     customer_id=CUSTOMER_ID,
     restaurant_id=1,
     status=OrderStatus.PENDING,

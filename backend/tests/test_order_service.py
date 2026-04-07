@@ -3,6 +3,7 @@
 
 from decimal import Decimal
 from unittest.mock import patch
+from datetime import datetime, timezone
 import pytest
 from fastapi import HTTPException
 from app.data.notification_data import NOTIFICATIONS
@@ -19,6 +20,7 @@ from app.schemas.order import (
 
 FAKE_RAW_ORDER = {
     "order_id": "1",
+    "created_at": datetime.now(timezone.utc),
     "customer_id": "9c6dbfcb-72c5-4cc4-9f76-29200f0efda7",
     "restaurant_id": 1,
     "status": "Pending",
