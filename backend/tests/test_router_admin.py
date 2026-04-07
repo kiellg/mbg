@@ -15,8 +15,10 @@ ADMIN_PASSWORD = users_data.SEEDED_ADMIN_PASSWORD
 def reset_state():
     """Reset user stores before each test"""
     user_repo.reset_users()
+    client.cookies.clear()
     yield
     user_repo.reset_users()
+    client.cookies.clear()
 
 def _get_admin_token() -> str:
     """Log in as the seeded admin and return a session token from the cookie"""
