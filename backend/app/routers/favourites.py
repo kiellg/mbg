@@ -1,8 +1,9 @@
 """API router for managing user favourites (restaurants and menu items)"""
 from fastapi import APIRouter, Depends
-from app.schemas.favourite import AddFavouriteRequest, FavouriteResponse
+from app.schemas.favourite import AddFavouriteRequest, FavouriteResponse, RemoveFavouriteResponse
 from app.services import favourite_service
 from app.dependencies import get_current_user
+from typing import Literal
 
 router = APIRouter(prefix="/favourites", tags=["favourites"])
 
@@ -19,15 +20,17 @@ def add_favourite(
         restaurant_id=body.restaurant_id,
     )
 
-@router.delete("/{target_id}", status_code=200)
+@router.delete("/{target_id}", response_model = RemoveFavouriteResponse, status_code=200)
 def remove_favourite(
     target_id: str,
+    target_type: Literal["restaurant", "menu_item"],
     current_user: dict = Depends(get_current_user),
 ):
     """Remove a restaurant or menu item from favourites"""
     return favourite_service.remove_favourite_for_user(
         user_id=current_user["user_id"],
         target_id=target_id,
+        target_type=target_type,
     )
 
 @router.get("", response_model=list[FavouriteResponse])

@@ -64,7 +64,7 @@ def test_remove_favourite_returns_200():
         "/favourites",
         json={"target_id": restaurant_id, "target_type": "restaurant"},
     )
-    response = client.delete(f"/favourites/{restaurant_id}")
+    response = client.delete(f"/favourites/{restaurant_id}?target_type=restaurant")
     assert response.status_code == 200
     assert response.json()["detail"] == "Favourite removed successfully"
 
@@ -73,7 +73,7 @@ def test_remove_nonexistent_favourite_returns_404():
     user = _register_and_login()
     _set_current_user(user["user_id"])
 
-    response = client.delete("/favourites/nonexistent-id")
+    response = client.delete("/favourites/nonexistent-id?target_type=restaurant")
     assert response.status_code == 404
 
 def test_list_favourites_returns_only_current_users_favourites():
@@ -93,3 +93,49 @@ def test_list_favourites_returns_only_current_users_favourites():
     response = client.get("/favourites")
     assert response.status_code == 200
     assert response.json() == []
+
+def test_same_target_id_different_target_type_no_collision():
+    """A restaurant and menu item sharing the same target_id should be treated as distinct favourites"""
+    user = _register_and_login()
+    _set_current_user(user["user_id"])
+
+    client.post(
+        "/favourites",
+        json={"target_id": "1", "target_type": "restaurant"},
+    )
+
+    response = client.post(
+        "/favourites",
+        json={"target_id": "1", "target_type": "menu_item", "restaurant_id": 1},
+    )
+    assert response.status_code == 201
+
+    list_response = client.get("/favourites")
+    assert list_response.status_code == 200
+    favourites = list_response.json()
+    assert len(favourites) == 2
+    target_types = {f["target_type"] for f in favourites}
+    assert target_types == {"restaurant", "menu_item"}
+
+
+def test_remove_restaurant_does_not_remove_menu_item_with_same_target_id():
+    """Removing a restaurant favourite should not affect a menu item favourite with the same target_id"""
+    user = _register_and_login()
+    _set_current_user(user["user_id"])
+
+    client.post(
+        "/favourites",
+        json={"target_id": "1", "target_type": "restaurant"},
+    )
+    client.post(
+        "/favourites",
+        json={"target_id": "1", "target_type": "menu_item", "restaurant_id": 1},
+    )
+
+    response = client.delete("/favourites/1?target_type=restaurant")
+    assert response.status_code == 200
+
+    list_response = client.get("/favourites")
+    favourites = list_response.json()
+    assert len(favourites) == 1
+    assert favourites[0]["target_type"] == "menu_item"
