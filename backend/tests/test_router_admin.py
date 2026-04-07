@@ -38,27 +38,24 @@ def _get_customer_token(email="cust@test.com", password="pass123") -> str:
 
 def _register_customer(email="cust@test.com", password="pass123"):
     """Register a new customer user for testing"""
-    client.post("/auth/register", json={
+    response = client.post("/auth/register", json={
         "name": "Test Customer",
         "email": email,
         "password": password,
         "role": "customer",
     })
+    assert response.status_code in (200, 201), f"Registration failed: {response.json()}"
 
 def test_list_profiles_returns_all_users():
-    """Admin should be able to list all user profiles"""
+    """Admin should be able to list all user profiles with role and no sensitive fields"""
     _register_customer()
     token = _get_admin_token()
     response = client.get("/admin/users", cookies={"session_token": token})
     assert response.status_code == 200
     assert len(response.json()) >= 2
-
-def test_list_profiles_includes_role():
-    """Each profile in the list should include a resolved role"""
-    token = _get_admin_token()
-    response = client.get("/admin/users", cookies={"session_token": token})
     for profile in response.json():
         assert "role" in profile
+        assert "password_hash" not in profile
 
 def test_list_profiles_requires_admin_role():
     """Non-admin users should not be able to list profiles"""
@@ -78,6 +75,15 @@ def test_delete_user_removes_profile():
         cookies={"session_token": token},
     )
     assert response.status_code == 204
+
+    profiles_after = client.get("/admin/users", cookies={"session_token": token}).json()
+    assert not any(p["user_id"] == customer["user_id"] for p in profiles_after)
+
+    repeat_response = client.delete(
+        f"/admin/users/{customer['user_id']}",
+        cookies={"session_token": token},
+    )
+    assert repeat_response.status_code == 404
 
 def test_delete_user_returns_404_for_nonexistent_user():
     """Deleting a nonexistent user should return 404"""
@@ -101,3 +107,13 @@ def test_delete_user_cannot_delete_admin():
     )
     assert response.status_code == 403
     assert response.json()["detail"] == "Admin accounts cannot be deleted."
+
+def test_list_users_requires_authentication():
+    """GET /admin/users should return 401 when no session token is provided"""
+    response = client.get("/admin/users")
+    assert response.status_code == 401
+
+def test_delete_user_requires_authentication():
+    """DELETE /admin/users/{id} should return 401 when no session token is provided"""
+    response = client.delete("/admin/users/some-user-id")
+    assert response.status_code == 401
