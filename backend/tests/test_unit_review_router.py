@@ -162,12 +162,16 @@ def test_get_restaurant_reviews_is_public(mocker):
     assert response.status_code == 200
 
 def test_submit_review_returns_422_when_missing_required_fields():
+    """Test that submitting a review with missing required fields
+    returns a 422 status code."""
     response = client.post("/reviews", json={
         "comment": "No order or rating provided.",
     })
     assert response.status_code == 422
 
 def test_submit_review_returns_422_when_missing_order_id():
+    """Test that submitting a review without an order_id
+    returns a 422 status code."""
     response = client.post("/reviews", json={
         "rating": 5,
         "comment": "No order id.",
@@ -175,6 +179,8 @@ def test_submit_review_returns_422_when_missing_order_id():
     assert response.status_code == 422
 
 def test_submit_review_returns_422_when_missing_rating():
+    """Test that submitting a review without a rating
+    returns a 422 status code."""
     response = client.post("/reviews", json={
         "order_id": "order-abc",
         "comment": "No rating provided.",
