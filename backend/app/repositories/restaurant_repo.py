@@ -55,8 +55,10 @@ def update_restaurant(
 def update_restaurant_rating(restaurant_id: int, new_rating: float) -> Optional[Dict[str, Any]]:
     """Update the rating field on a restaurant record"""
     restaurant = get_restaurant_record(restaurant_id)
-    if restaurant:
-        restaurant["rating"] = new_rating
+    if not restaurant:
+        return None
+    restaurant["rating"] = new_rating
+    return restaurant
 
 def delete_restaurant(restaurant_id: int) -> bool:
     """Remove a restaurant from the simulated DB"""
