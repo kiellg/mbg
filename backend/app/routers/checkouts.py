@@ -4,10 +4,17 @@ from fastapi import APIRouter, Depends, status
 
 from app.dependencies import get_current_user
 from app.schemas.checkout import CheckoutRequest
+from app.schemas.coupon import CouponRecord
 from app.schemas.order import OrderResponse
-from app.services import checkout_service
+from app.services import checkout_service, coupon_service
 
 router = APIRouter(prefix="/checkout", tags=["checkout"])
+
+
+@router.get("/debug/coupons", response_model=list[CouponRecord])
+def debug_coupons():
+    """Return seeded discount codes for local debugging."""
+    return coupon_service.list_coupons_for_debug()
 
 @router.post("/{restaurant_id}", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 def checkout(

@@ -59,6 +59,11 @@ def get_coupon_record(code: str) -> Optional[Dict[str, Any]]:
     return _COUPONDB.get(code)
 
 
+def list_coupon_records() -> Dict[str, Dict[str, Any]]:
+    """Return the raw coupon store for internal read-only access."""
+    return _COUPONDB
+
+
 def set_coupon_record(code: str, record: Dict[str, Any]) -> None:
     """Store a coupon record for tests or internal setup."""
     _COUPONDB[code] = record

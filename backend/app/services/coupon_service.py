@@ -2,6 +2,7 @@
 
 from datetime import datetime, timezone
 from decimal import Decimal
+from typing import Any
 
 from fastapi import HTTPException
 from pydantic import ValidationError
@@ -59,3 +60,19 @@ def get_coupon_snapshot_for_checkout(
 
     snapshot = CouponSnapshot.model_validate(coupon.model_dump())
     return snapshot.model_dump(mode="json")
+
+
+def list_coupons_for_debug() -> list[dict[str, Any]]:
+    """Return all seeded coupons for debug visibility."""
+    coupons = []
+    for raw_coupon in coupon_repo.list_coupons():
+        try:
+            coupon = CouponRecord.model_validate(raw_coupon)
+        except ValidationError as exc:
+            code = raw_coupon.get("code", "<unknown>")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Invalid coupon configuration for code '{code}'.",
+            ) from exc
+        coupons.append(coupon.model_dump(mode="json"))
+    return coupons

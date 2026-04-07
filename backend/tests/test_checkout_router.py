@@ -1,4 +1,4 @@
-# pylint: disable=unused-argument, unused-import
+# pylint: disable=unused-argument, unused-import, duplicate-code
 """Unit tests for checkout_router.py with mocked service and auth."""
 
 from decimal import Decimal
@@ -117,6 +117,37 @@ def test_checkout_passes_coupon_code_to_service(mock_user, mock_checkout):
         delivery_method=DeliveryMethod.WALK,
         coupon_code="SAVE10",
     )
+
+
+@patch("app.routers.checkouts.coupon_service.list_coupons_for_debug")
+def test_debug_coupons_returns_seeded_coupons(mock_list_coupons):
+    """Test that the debug coupon endpoint returns the seeded coupon list."""
+    mock_list_coupons.return_value = [
+        {
+            "code": "SAVE10",
+            "discount_type": "percentage",
+            "percent_off": 10,
+            "amount_off_cents": None,
+            "minimum_subtotal_cents": 0,
+            "expires_at": "2099-12-31T23:59:59+00:00",
+            "is_active": True,
+        }
+    ]
+
+    response = client.get("/checkout/debug/coupons")
+
+    assert response.status_code == 200
+    assert response.json() == [
+        {
+            "code": "SAVE10",
+            "discount_type": "percentage",
+            "percent_off": 10,
+            "amount_off_cents": None,
+            "minimum_subtotal_cents": 0,
+            "expires_at": "2099-12-31T23:59:59Z",
+            "is_active": True,
+        }
+    ]
 
 
 @patch("app.routers.checkouts.checkout_service.checkout")
