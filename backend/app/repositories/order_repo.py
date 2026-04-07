@@ -2,8 +2,8 @@
 
 # pylint: disable=protected-access, too-many-branches, duplicate-code
 from typing import Any, Dict, List, Optional
-import shortuuid
 from datetime import datetime, timezone
+import shortuuid
 from app.data import order_data
 
 

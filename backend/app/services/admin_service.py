@@ -1,6 +1,6 @@
 """Service layer for admin user profile management"""
+from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException
-from datetime import datetime, timezone, timedelta
 from app.repositories import user_repo
 from app.schemas.user import ProfileResponse
 from backend.app.repositories import order_repo, restaurant_repo, session_repo
@@ -29,10 +29,12 @@ def delete_user(user_id: str) -> None:
     order_repo.clear_driver_reference(user_id)
 
 def get_order_analytics() -> dict:
+    """Return analytics on orders, including totals and breakdowns by
+    status and time periods"""
     now = datetime.now(timezone.utc)
     today = now.date()
     week_ago = today - timedelta(days=7)
-    
+
     orders_today = 0
     orders_this_week = 0
     orders_by_status = {}

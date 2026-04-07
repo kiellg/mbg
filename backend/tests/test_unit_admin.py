@@ -1,11 +1,12 @@
 #pylint: disable=protected-access
 """Unit tests for admin_service profile management"""
+from datetime import datetime, timezone
 import pytest
 from fastapi import HTTPException
 
 from app.data import users_data, restaurants_data, order_data, session_store
 from app.repositories import user_repo
-from app.services import admin_service
+from app.services import admin_service, get_order_analytics
 
 @pytest.fixture(autouse=True)
 def reset_state():
@@ -82,10 +83,6 @@ def test_delete_user_clears_driver_reference():
     admin_service.delete_user("cust-1")
     assert order_data._ORDERDB["o1"]["driver_id"] == ""
 
-from app.services.admin_service import get_order_analytics
-from datetime import datetime, timezone
-
-
 def _seed_order(order_id: str, status: str = "Delivered"):
     order_data._ORDERDB[order_id] = {
         "order_id": order_id,
@@ -135,4 +132,4 @@ def test_get_order_analytics_empty_db():
     assert result["total_orders"] == 0
     assert result["orders_today"] == 0
     assert result["orders_this_week"] == 0
-    assert result["orders_by_status"] == {}
+    assert not result["orders_by_status"]

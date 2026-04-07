@@ -1,4 +1,6 @@
 """Integration tests for admin user profile management endpoints"""
+#pylint: disable=protected-access
+from datetime import datetime, timezone
 import pytest
 from fastapi.testclient import TestClient
 
@@ -122,11 +124,6 @@ def test_delete_user_requires_authentication():
     """DELETE /admin/users/{id} should return 401 when no session token is provided"""
     response = client.delete("/admin/users/some-user-id")
     assert response.status_code == 401
-
-from app.data import order_data
-from app.repositories import order_repo
-from datetime import datetime, timezone
-
 
 def _seed_order(order_id: str, status: str = "Delivered"):
     """Seed a fake order directly into the order DB."""

@@ -3,9 +3,8 @@
 
 from decimal import Decimal
 from unittest.mock import patch
-
-from fastapi.testclient import TestClient
 from datetime import datetime, timezone
+from fastapi.testclient import TestClient
 from app.dependencies import get_current_user
 from app.schemas.order import DeliveryMethod, OrderResponse, OrderStatus
 from main import app
