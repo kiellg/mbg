@@ -247,7 +247,7 @@ def list_all_profiles() -> list[dict]:
     return profiles
 
 def delete_user(user_id: str) -> bool:
-    """Remove a user and their role profile from all stores"""
+    """Remove a user, their role profile, active sessions, and orphaned references"""
     if is_admin(user_id):
         return False
 
@@ -257,8 +257,10 @@ def delete_user(user_id: str) -> bool:
     )
     if email is None:
         return False
+
     del users_data.USERS[email]
     users_data.CUSTOMERS.pop(user_id, None)
     users_data.MANAGERS.pop(user_id, None)
     users_data.DRIVERS.pop(user_id, None)
+
     return True

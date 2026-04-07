@@ -191,3 +191,9 @@ def get_orders_assigned_to_driver(driver_id: str) -> List[Dict[str, Any]]:
         if order.get("driver_id") == driver_id
         and order.get("status") in  ("Cooking","Out for Delivery")
     ]
+
+def clear_driver_reference(user_id: str) -> None:
+    """Clear driver_id from any order assigned to this user."""
+    for order in order_data._ORDERDB.values():
+        if order.get("driver_id") == user_id:
+            order["driver_id"] = ""

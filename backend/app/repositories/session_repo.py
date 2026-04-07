@@ -29,3 +29,13 @@ def delete_session(session_token: str) -> bool:
 def reset_session():
     """Reset all sessions"""
     session_store.SESSIONS.clear()
+
+def delete_sessions_for_user(user_id: str) -> None:
+    """Revoke all active sessions for a given user ID"""
+    tokens_to_delete = [
+        token for token, session in session_store.SESSIONS.items()
+        if session["user_id"] == user_id
+    ]
+    for token in tokens_to_delete:
+        del session_store.SESSIONS[token]
+        

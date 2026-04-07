@@ -287,3 +287,9 @@ def sort_menu_items(
         )
 
     return menu_items
+
+def clear_owner_reference(user_id: str) -> None:
+    """Clear owner_id from any restaurant owned by this user"""
+    for restaurant in _DB.values():
+        if restaurant.get("owner_id") == user_id:
+            restaurant["owner_id"] = None
