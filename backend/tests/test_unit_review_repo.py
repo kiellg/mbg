@@ -26,16 +26,6 @@ def test_create_review_record_stores_and_returns_review():
     assert review["rating"] == 5
     assert review["comment"] == "Delicious!"
     assert "created_at" in review
-
-def test_create_review_record_stores_in_db():
-    """Test that the created review record is stored in the in-memory DB"""
-    review = review_repo.create_review_record(
-        customer_id="cust123",
-        order_id="order456",
-        restaurant_id=1,
-        rating=5,
-        comment=None,
-    )
     assert review["review_id"] in review_data.REVIEW_DB
 
 def test_create_review_record_with_no_comment():
@@ -129,4 +119,4 @@ def test_get_reviews_by_restaurant_returns_all_reviews_for_restaurant():
 
 def test_get_reviews_by_restaurant_returns_empty_list_for_no_reviews():
     """Test that fetching reviews for a restaurant with no reviews returns an empty list"""
-    assert review_repo.get_reviews_by_restaurant("nonexistent_restaurant") == []
+    assert review_repo.get_reviews_by_restaurant(999) == []
