@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 
 from app.data import cart_data, order_data, payment_data
 from app.dependencies import get_current_user
-from app.repositories import user_repo, restaurant_repo
+from app.repositories import coupon_repo, user_repo, restaurant_repo
 from app.schemas.order import OrderStatus
 from app.schemas.payment import PaymentStatus
 from main import app
@@ -35,6 +35,7 @@ def setup_function():
     order_data.NEXT_ORDER_ITEM_ID = 1
     payment_data._PAYMENTDB.clear()
     payment_data._TOKENDB.clear()
+    coupon_repo.reset_coupons()
     user_repo.reset_users()
     restaurant_repo.reset_restaurants()
     app.dependency_overrides.clear()
@@ -183,3 +184,23 @@ def test_expired_card_returns_400():
     })
 
     assert response.status_code == 400
+
+
+def test_payment_uses_discounted_order_total_when_coupon_applied():
+    """Accepted payments should charge the discounted order total."""
+    _register_customer()
+    client.post("/cart/1/items", json={"menu_item_id": 1, "quantity": 1})
+    cart_id = client.get("/cart/1").json()["id"]
+    order_res = client.post(
+        f"/checkout/{cart_id}",
+        json={"delivery_method": "walk", "coupon_code": "SAVE10"},
+    )
+    assert order_res.status_code == 201
+    order_id = order_res.json()["order_id"]
+    assert order_res.json()["total"] == "54.49"
+
+    response = client.post(f"/payments/{order_id}", json=VALID_CARD)
+
+    assert response.status_code == 201
+    assert response.json()["amount"] == "54.49"
+    assert payment_data._PAYMENTDB[response.json()["payment_id"]]["amount"] == "54.49"
