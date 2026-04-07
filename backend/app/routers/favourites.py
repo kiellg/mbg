@@ -1,9 +1,9 @@
 """API router for managing user favourites (restaurants and menu items)"""
+from typing import Literal
 from fastapi import APIRouter, Depends
 from app.schemas.favourite import AddFavouriteRequest, FavouriteResponse, RemoveFavouriteResponse
 from app.services import favourite_service
 from app.dependencies import get_current_user
-from typing import Literal
 
 router = APIRouter(prefix="/favourites", tags=["favourites"])
 

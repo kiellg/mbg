@@ -18,11 +18,11 @@ def _validate_target_exists(
     """Validate that the target restaurant or menu item exists"""
     try:
         numeric_id = int(target_id)
-    except ValueError:
+    except ValueError as exc:
         raise HTTPException(
             status_code=400,
             detail=f"Invalid target_id '{target_id}': must be a numeric value.",
-        )
+        ) from exc
 
     if target_type == "restaurant":
         if get_restaurant_record(numeric_id) is None:

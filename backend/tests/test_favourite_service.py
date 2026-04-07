@@ -107,7 +107,8 @@ def test_remove_favourite_success(mock_is_favourite, mock_remove):
     """Test removing a favourite successfully"""
     mock_is_favourite.return_value = True
 
-    result = favourite_service.remove_favourite_for_user(USER_ID, RESTAURANT_TARGET_ID)
+    result = favourite_service.remove_favourite_for_user(USER_ID, RESTAURANT_TARGET_ID, 
+                                                         "restaurant")
     assert result["detail"] == "Favourite removed successfully"
 
 @patch(PATCH_IS_FAVOURITE)
@@ -116,5 +117,6 @@ def test_remove_favourite_raises_404_if_not_found(mock_is_favourite):
     mock_is_favourite.return_value = False
 
     with pytest.raises(HTTPException) as exc:
-        favourite_service.remove_favourite_for_user(USER_ID, RESTAURANT_TARGET_ID)
+        favourite_service.remove_favourite_for_user(USER_ID, RESTAURANT_TARGET_ID, 
+                                                    "restaurant")
     assert exc.value.status_code == 404

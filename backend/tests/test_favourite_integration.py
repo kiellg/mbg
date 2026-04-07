@@ -95,7 +95,8 @@ def test_list_favourites_returns_only_current_users_favourites():
     assert response.json() == []
 
 def test_same_target_id_different_target_type_no_collision():
-    """A restaurant and menu item sharing the same target_id should be treated as distinct favourites"""
+    """A restaurant and menu item sharing the same target_id should be treated 
+    as distinct favourites"""
     user = _register_and_login()
     _set_current_user(user["user_id"])
 
@@ -119,7 +120,8 @@ def test_same_target_id_different_target_type_no_collision():
 
 
 def test_remove_restaurant_does_not_remove_menu_item_with_same_target_id():
-    """Removing a restaurant favourite should not affect a menu item favourite with the same target_id"""
+    """Removing a restaurant favourite should not affect a menu item favourite with 
+    the same target_id"""
     user = _register_and_login()
     _set_current_user(user["user_id"])
 
