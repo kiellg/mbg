@@ -10,7 +10,7 @@ export function AuthProvider({children}) {
 
     const clearError = useCallback(() => setError(null), []);
 
-    const login = useCallback(async (ElementInternals, password) => {
+    const login = useCallback(async (email, password) => {
         setLoading(true);
         setError(null);
         try {
