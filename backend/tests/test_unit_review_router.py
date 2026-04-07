@@ -127,12 +127,13 @@ def test_submit_review_requires_auth():
 def test_get_restaurant_reviews_returns_200(mocker):
     """Test that fetching reviews for a restaurant returns a 200 status code
     and the expected response."""
-    mocker.patch.object(reviews.review_service, "get_restaurant_reviews",
+    mock_get =mocker.patch.object(reviews.review_service, "get_restaurant_reviews",
                         return_value=[FAKE_REVIEW_RESPONSE])
     response = client.get("/reviews/restaurant/1")
     assert response.status_code == 200
     assert len(response.json()) == 1
     assert response.json()[0]["review_id"] == "review-uuid-001"
+    mock_get.assert_called_once_with(1)
 
 
 def test_get_restaurant_reviews_returns_empty_list(mocker):
@@ -159,3 +160,23 @@ def test_get_restaurant_reviews_is_public(mocker):
                         return_value=[])
     response = client.get("/reviews/restaurant/1")
     assert response.status_code == 200
+
+def test_submit_review_returns_422_when_missing_required_fields():
+    response = client.post("/reviews", json={
+        "comment": "No order or rating provided.",
+    })
+    assert response.status_code == 422
+
+def test_submit_review_returns_422_when_missing_order_id():
+    response = client.post("/reviews", json={
+        "rating": 5,
+        "comment": "No order id.",
+    })
+    assert response.status_code == 422
+
+def test_submit_review_returns_422_when_missing_rating():
+    response = client.post("/reviews", json={
+        "order_id": "order-abc",
+        "comment": "No rating provided.",
+    })
+    assert response.status_code == 422
