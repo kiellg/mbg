@@ -1,18 +1,7 @@
-#pylint: disable=ungrouped-imports
+#pylint: disable=ungrouped-imports, wrong-import-position
 """Main FastAPI app"""
 
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
-app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:1573"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 from app.routers.auth import router as auth_router
 from app.routers.restaurants import router as restaurants_router
 from app.routers.carts import router as carts_router
@@ -27,6 +16,16 @@ from app.routers.reviews import router as reviews_router
 from app.routers.favourites import router as favourites_router
 from app.routers.coupons import router as coupons_router
 from app.routers.admin import router as admin_router
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:1573"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(auth_router)
 app.include_router(restaurants_router)
