@@ -1,4 +1,4 @@
-#pylint: disable=protected-access
+#pylint: disable=protected-access, duplicate-code
 """Unit tests for admin_service profile management"""
 from datetime import datetime, timezone
 import pytest

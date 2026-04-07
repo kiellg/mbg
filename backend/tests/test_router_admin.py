@@ -1,5 +1,5 @@
 """Integration tests for admin user profile management endpoints"""
-#pylint: disable=protected-access
+#pylint: disable=protected-access, duplicate-code
 from datetime import datetime, timezone
 import pytest
 from fastapi.testclient import TestClient
