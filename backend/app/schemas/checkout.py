@@ -1,10 +1,10 @@
 """Schemas for checkout request payload."""
 
+from datetime import datetime
+
 from typing import Optional
 
 from pydantic import BaseModel
-
-from datetime import datetime
 
 from app.schemas.order import DeliveryMethod
 
