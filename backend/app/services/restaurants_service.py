@@ -105,11 +105,23 @@ def get_restaurant_menu(restaurant_id: int) -> RestaurantOut:
     record["menu"] = processed
     return RestaurantOut(**record)
 
-def delete_restaurant_by_id(restaurant_id: int) -> None:
-    """Delete a restaurant only if it has no active menu items"""
+def require_restaurant_owner(restaurant_id: int, manager_id: str) -> dict:
+    """Return a restaurant only when it belongs to the given manager"""
     record = get_restaurant_record(restaurant_id)
     if record is None:
         raise HTTPException(status_code=404, detail="Restaurant not found")
+
+    if str(record.get("owner_id")) != str(manager_id):
+        raise HTTPException(
+            status_code=403,
+            detail="Managers can only manage their own restaurant",
+        )
+
+    return record
+
+def delete_restaurant_by_id(restaurant_id: int, manager_id: str) -> None:
+    """Delete a restaurant only if it has no active menu items"""
+    require_restaurant_owner(restaurant_id, manager_id)
 
     active_items = get_active_menu_items(restaurant_id)
     if active_items:
@@ -120,11 +132,9 @@ def delete_restaurant_by_id(restaurant_id: int) -> None:
         )
     delete_restaurant(restaurant_id)
 
-def delete_menu_item_by_id(restaurant_id: int, item_id: int) -> None:
+def delete_menu_item_by_id(restaurant_id: int, item_id: int, manager_id: str) -> None:
     """Delete a menu item from a restaurant"""
-    record = get_restaurant_record(restaurant_id)
-    if record is None:
-        raise HTTPException(status_code=404, detail="Restaurant not found")
+    require_restaurant_owner(restaurant_id, manager_id)
 
     removed = delete_menu_item(restaurant_id, item_id)
     if not removed:
@@ -145,25 +155,28 @@ def create_new_restaurant(item: RestaurantCreate, owner_id: str) -> dict:
 
     return create_restaurant(**args)
 
-def add_menu_item(restaurant_id: int, item: MenuItemCreate) -> dict:
+def add_menu_item(restaurant_id: int, item: MenuItemCreate, manager_id: str) -> dict:
     """Add a new menu item to a restaurant"""
-    record = get_restaurant_record(restaurant_id)
-    if record is None:
-        raise HTTPException(status_code=404, detail="Restaurant not found")
+    require_restaurant_owner(restaurant_id, manager_id)
     return repo_add_menu_item(restaurant_id, item.model_dump())
 
-def update_restaurant_by_id(restaurant_id: int, patch: RestaurantUpdate) -> dict:
+def update_restaurant_by_id(
+        restaurant_id: int,
+        patch: RestaurantUpdate,
+        manager_id: str,
+) -> dict:
     """Update restaurant fields"""
-    record = get_restaurant_record(restaurant_id)
-    if record is None:
-        raise HTTPException(status_code=404, detail="Restaurant not found")
+    require_restaurant_owner(restaurant_id, manager_id)
     return repo_update_restaurant(restaurant_id, patch.model_dump(exclude_none=True))
 
-def update_menu_item_by_id(restaurant_id: int, item_id: int, patch: MenuItemUpdate) -> dict:
+def update_menu_item_by_id(
+        restaurant_id: int,
+        item_id: int,
+        patch: MenuItemUpdate,
+        manager_id: str,
+) -> dict:
     """Update menu item fields"""
-    record = get_restaurant_record(restaurant_id)
-    if record is None:
-        raise HTTPException(status_code=404, detail="Restaurant not found")
+    require_restaurant_owner(restaurant_id, manager_id)
     updated = repo_update_menu_item(restaurant_id, item_id, patch.model_dump(exclude_none=True))
     if updated is None:
         raise HTTPException(status_code=404, detail="Menu item not found")
