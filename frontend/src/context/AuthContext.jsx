@@ -2,9 +2,46 @@ import { createContext, useContext, useState, useCallback } from "react";
 import { authApi } from "../api/auth";
 
 const AuthContext = createContext(null);
+const AUTH_STORAGE_KEY = "mbg.auth.user";
+
+function readStoredUser() {
+    if (typeof window === "undefined") {
+        return null;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
+        if (!raw) {
+            return null;
+        }
+
+        const parsed = JSON.parse(raw);
+        if (parsed?.user_id && parsed?.email && parsed?.role) {
+            return parsed;
+        }
+    } catch (_) {}
+
+    window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    return null;
+}
+
+function persistUser(user) {
+    if (typeof window === "undefined") {
+        return;
+    }
+
+    try {
+        if (user) {
+            window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+            return;
+        }
+
+        window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    } catch (_) {}
+}
 
 export function AuthProvider({children}) {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(() => readStoredUser());
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -15,7 +52,9 @@ export function AuthProvider({children}) {
         setError(null);
         try {
             const { data } = await authApi.login(email, password);
-            setUser({ user_id: data.user_id, email: data.email, role: data.role });
+            const nextUser = { user_id: data.user_id, email: data.email, role: data.role };
+            setUser(nextUser);
+            persistUser(nextUser);
             return { success: true, message: data.message };
         } catch (err) {
             const msg = err.response?.data?.detail || 'Login failed';
@@ -46,6 +85,7 @@ export function AuthProvider({children}) {
             await authApi.logout();
         } catch (_) {}
         setUser(null);
+        persistUser(null);
     }, []);
 
     const forgotPassword = useCallback(async (email) => {
