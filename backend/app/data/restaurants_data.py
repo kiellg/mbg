@@ -1,4 +1,5 @@
 """This module simulates a database of restaurant records"""
+#pylint: disable=line-too-long
 from typing import Dict, Any
 import copy
 
