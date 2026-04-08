@@ -15,7 +15,7 @@ import {
   PersonOutlined, StoreOutlined, TwoWheelerOutlined,
   DashboardOutlined, GroupOutlined, ConfirmationNumberOutlined,
   LogoutOutlined, MenuOutlined, RestaurantOutlined,
-  FavoriteOutlined, MenuBookOutlined,
+  FavoriteOutlined, MenuBookOutlined, HomeOutlined, SearchOutlined
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 
@@ -29,14 +29,19 @@ const ROLE_NAV = {
   ],
   customer: [
     {
+        label: "Home",
+        to: "/restaurants/browse",
+        icon: <SearchOutlined fontSize="small" />,
+    },
+    {
+        label: "Search",
+        to: "/restaurants",
+        icon: <RestaurantOutlined fontSize="small" />,
+    },
+    {
       label: "My Profile",
       to: "/profile/customer",
       icon: <PersonOutlined fontSize="small" />,
-    },
-    {
-      label: "Restaurants",
-      to: "/restaurants",
-      icon: <RestaurantOutlined fontSize="small" />,
     },
     {
       label: "Favourites",
@@ -45,6 +50,16 @@ const ROLE_NAV = {
     },
   ],
   manager: [
+    {
+        label: "Home",
+        to: "/restaurants/browse",
+        icon: <SearchOutlined fontSize="small" />,
+    },
+    {
+        label: "Search",
+        to: "/restaurants",
+        icon: <RestaurantOutlined fontSize="small" />,
+    },
     {
       label: "Manage Restaurant",
       to: "/manager/restaurant",
@@ -58,6 +73,16 @@ const ROLE_NAV = {
   ],
   driver: [
     {
+        label: "Home",
+        to: "/restaurants/browse",
+        icon: <SearchOutlined fontSize="small" />,
+    },
+    {
+        label: "Search",
+        to: "/restaurants",
+        icon: <RestaurantOutlined fontSize="small" />,
+    },
+    {
       label: "Driver Profile",
       to: "/profile/driver",
       icon: <TwoWheelerOutlined fontSize="small" />,
@@ -66,10 +91,10 @@ const ROLE_NAV = {
 };
 
 const ROLE_META = {
-  admin: { label: 'Admin', emoji: 'A', color: '#7D6608' },
-  customer: { label: 'Customer', emoji: 'C', color: '#C0392B' },
-  manager: { label: 'Manager', emoji: 'M', color: '#1A5276' },
-  driver: { label: 'Driver', emoji: 'D', color: '#1E8449' },
+  admin: { label: 'Admin', color: '#7D6608' },
+  customer: { label: 'Customer', color: '#C0392B' },
+  manager: { label: 'Manager', color: '#1A5276' },
+  driver: { label: 'Driver', color: '#1E8449' },
 };
 
 function SidebarContent({ user, onLogout }) {
@@ -120,7 +145,7 @@ function SidebarContent({ user, onLogout }) {
         <Box sx={{ minWidth: 0 }}>
           <Typography variant="body2" fontWeight={600} noWrap sx={{ maxWidth: 130 }}>{user?.email}</Typography>
           <Chip
-            label={`${meta.emoji} ${meta.label}`}
+            label={meta.label}
             size="small"
             sx={{ height: 18, fontSize: '0.65rem', bgcolor: `${meta.color}18`, color: meta.color, fontWeight: 600, border: 'none' }}
           />

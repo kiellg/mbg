@@ -21,6 +21,8 @@ import AdminCouponsPage    from './pages/admin/AdminCouponsPage';
 
 import RestaurantListPage   from './pages/restaurant/RestaurantListPage';
 import RestaurantDetailPage from './pages/restaurant/RestaurantDetailPage';
+import MenuItemDetailPage   from './pages/restaurant/MenuItemDetailPage';
+import BrowsePage           from './pages/restaurant/BrowsePage';
 import ManageRestaurantPage from './pages/restaurant/manager/ManageRestaurantPage';
 import ManageMenuPage       from './pages/restaurant/manager/ManageMenuPage';
 import FavouritesPage       from './pages/FavouritesPage';
@@ -48,8 +50,9 @@ export default function App() {
                 <Route element={<ProtectedRoute />}>
                   <Route path="/me"                  element={<MePage />} />
                   <Route path="/restaurants"         element={<RestaurantListPage />} />
+                  <Route path="/restaurants/browse"  element={<BrowsePage />} />
                   <Route path="/restaurants/:id"     element={<RestaurantDetailPage />} />
-                  <Route path="/favourites"          element={<FavouritesPage />} />
+                  <Route path="/restaurants/:id/menu/:itemId" element={<MenuItemDetailPage />} />
                 </Route>
 
                 {/* Customer only */}
@@ -58,6 +61,7 @@ export default function App() {
                   <Route path="/cart/:restaurantId"     element={<CartPage />} />
                   <Route path="/checkout/:restaurantId" element={<CheckoutPage />} />
                   <Route path="/payment/:orderId"       element={<PaymentPage />} />
+                  <Route path="/favourites"          element={<FavouritesPage />} />
                 </Route>
 
                 {/* Driver only */}
