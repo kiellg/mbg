@@ -4,6 +4,8 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from datetime import datetime
+
 from app.schemas.order import DeliveryMethod
 
 
@@ -12,3 +14,4 @@ class CheckoutRequest(BaseModel):
 
     delivery_method: DeliveryMethod
     coupon_code: Optional[str] = None
+    scheduled_time: Optional[datetime] = None
