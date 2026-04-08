@@ -18,11 +18,20 @@ export default function RecentlyViewed() {
 
     recentlyViewedApi.getRecentlyViewed()
       .then(async ({ data }) => {
-        const items = (data.items || []).slice(0, 8);
+        const items = data.items || [];
+
+        // Deduplicate — keep only the most recent occurrence of each id+type
+        const seen = new Set();
+        const unique = items.filter(item => {
+          const key = `${item.type}:${item.id}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        }).slice(0, 8);
 
         // Fetch restaurant name for each item
         const results = await Promise.allSettled(
-          items.map(async (item) => {
+          unique.map(async (item) => {
             try {
               const { data: restaurant } = await restaurantApi.getMenu(item.id);
               return { ...item, name: restaurant.name };

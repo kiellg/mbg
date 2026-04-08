@@ -13,7 +13,7 @@ export default function MenuItemCard({ item, managerMode = false, onEdit, onDele
     ? `$${(item.price_cents / 100).toFixed(2)}`
     : 'Market price';
 
-  const unavailable = !item.is_available || item.is_active;
+  const unavailable = !item.is_available || !item.is_active;
   const dietaryStyle = item.dietary_tag ? DIETARY_COLORS[item.dietary_tag] : null;
 
   // Don't allow adding to cart if price is invalid or item unavailable
