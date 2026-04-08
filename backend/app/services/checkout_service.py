@@ -46,7 +46,7 @@ def checkout(restaurant_id: int,
                    f"(order #{existing_pending['order_id']}). "
                    f"Please pay or cancel it before placing a new one."
         )
-    
+
     cart = cart_repo.get_cart_by_customer_and_restaurant(customer_id, restaurant_id)
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found.")
