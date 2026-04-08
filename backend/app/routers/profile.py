@@ -30,6 +30,13 @@ def update_customer_profile(
 
     return result
 
+@router.get("/customer", response_model=CustomerProfileUpdateResponse)
+def get_customer_profile(current_user=Depends(get_current_user)):
+    """Return the logged in customer's profile"""
+    return profile_service.get_customer_profile(
+        user_id=current_user["user_id"]
+    )
+
 @router.patch("/restaurant/{restaurant_id}",
               response_model=RestaurantProfileUpdateResponse
 )
