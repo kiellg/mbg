@@ -62,6 +62,8 @@ def create_order_record(# pylint: disable=too-many-arguments, too-many-positiona
                 "order_id": order_id,
                 "quantity": item["quantity"],
                 "item_price": str(item["item_price"]),
+                "menu_item_id": item.get("menu_item_id"),
+                "item_name": item.get("item_name"),
             }
         )
 
@@ -147,6 +149,8 @@ def update_order_record(order_id: str, patch: Dict[str, Any]) -> Optional[Dict[s
                     "order_id": order_id,
                     "quantity": item["quantity"],
                     "item_price": str(item["item_price"]),
+                    "menu_item_id": item.get("menu_item_id"),
+                    "item_name": item.get("item_name"),
                 }
             )
         order["items"] = replaced_items
