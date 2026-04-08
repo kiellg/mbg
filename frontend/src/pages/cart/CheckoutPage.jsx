@@ -36,6 +36,7 @@ export default function CheckoutPage() {
   const [couponCode, setCouponCode]         = useState('');
   const [isScheduled, setIsScheduled]       = useState(false);
   const [scheduledTime, setScheduledTime]   = useState('');
+  const [minScheduledTime, setMinScheduledTime] = useState('');
   const [loading, setLoading]               = useState(false);
   const [error, setError]                   = useState(null);
 
@@ -121,8 +122,13 @@ export default function CheckoutPage() {
               <Switch
                 checked={isScheduled}
                 onChange={(e) => {
-                  setIsScheduled(e.target.checked);
-                  if (!e.target.checked) setScheduledTime('');
+                    setIsScheduled(e.target.checked);
+                    if (e.target.checked) {
+                        setMinScheduledTime(getMinScheduledTime()); // ← capture once
+                    } else {
+                        setScheduledTime('');
+                        setMinScheduledTime('');
+                    }
                 }}
                 color="primary"
               />
@@ -136,7 +142,7 @@ export default function CheckoutPage() {
                 label="Scheduled time"
                 value={scheduledTime}
                 onChange={(e) => setScheduledTime(e.target.value)}
-                inputProps={{ min: getMinScheduledTime() }}
+                inputProps={{ min: minScheduledTime }}
                 InputLabelProps={{ shrink: true }}
                 sx={{ mt: 1 }}
                 helperText="Minimum 15 minutes from now"
