@@ -7,9 +7,9 @@ def _gen_favourite_id() -> str:
     """Generate a unique ID for a favourite record"""
     return shortuuid.ShortUUID().random(length=7)
 
-def add_favourite(user_id: str, 
-                  target_id: str, 
-                  target_type: str, 
+def add_favourite(user_id: str,
+                  target_id: str,
+                  target_type: str,
                   restaurant_id: str) -> dict[str, Any]:
     """Add a restaurant or menu item to the user's favourites"""
     record = {
