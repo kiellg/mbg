@@ -14,7 +14,6 @@ export default function PaymentPage() {
   const { orderId }  = useParams();
   const navigate     = useNavigate();
   const location     = useLocation();
-
   // Order passed from CheckoutPage via navigate state.
   // Fall back to fetching from the API so the summary survives a page refresh.
   const [order, setOrder] = useState(location.state?.order ?? null);
