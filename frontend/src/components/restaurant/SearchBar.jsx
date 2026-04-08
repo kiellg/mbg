@@ -16,6 +16,7 @@ export default function SearchBar({ onSearch }) {
   const { query, setQuery, suggestions, loading, clear } = useSearchSuggestions();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(-1);
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -32,9 +33,20 @@ export default function SearchBar({ onSearch }) {
   }, [suggestions]);
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && query.trim()) {
-      setOpen(false);
-      onSearch?.(query);
+    if (e.key === 'ArrowDown') {
+        setActiveIndex(prev => Math.min(prev + 1, suggestions.length - 1));
+      } else if (e.key === 'ArrowUp') {
+        setActiveIndex(prev => Math.max(prev - 1, 0));
+      } else if (e.key === 'Enter') {
+        if (activeIndex >= 0 && suggestions[activeIndex]) {
+          handleSuggestionClick(suggestions[activeIndex]);
+        } else if (query.trim()) {
+          setOpen(false);
+          onSearch?.(query);
+        }
+      } else if (e.key === 'Escape') {
+        setOpen(false);
+        setActiveIndex(-1);
     }
   };
 
@@ -97,11 +109,20 @@ export default function SearchBar({ onSearch }) {
               </Box>
               <List dense disablePadding>
                 {restaurantSuggestions.map((s) => (
-                  <ListItem key={`r-${s.id}`} button onClick={() => handleSuggestionClick(s)}
-                    sx={{ '&:hover': { bgcolor: 'rgba(192,57,43,0.05)' } }}>
-                    <RestaurantOutlined sx={{ fontSize: 16, color: 'text.secondary', mr: 1.5 }} />
-                    <ListItemText primary={s.name} primaryTypographyProps={{ variant: 'body2' }} />
-                  </ListItem>
+                    <ListItem
+                        key={`r-${s.id}`}
+                        button
+                        selected={getGlobalIndex(s) === activeIndex}
+                        onClick={() => handleSuggestionClick(s)}
+                        sx={{
+                            '&:hover': { bgcolor: 'rgba(192,57,43,0.05)' },
+                            '&.Mui-selected': { bgcolor: 'rgba(192,57,43,0.08)' },
+                            '&.Mui-selected:hover': { bgcolor: 'rgba(192,57,43,0.1)' },
+                        }}
+                        >
+                        <RestaurantOutlined sx={{ fontSize: 16, color: 'text.secondary', mr: 1.5 }} />
+                        <ListItemText primary={s.name} primaryTypographyProps={{ variant: 'body2' }} />
+                    </ListItem>
                 ))}
               </List>
             </>
@@ -119,11 +140,20 @@ export default function SearchBar({ onSearch }) {
               </Box>
               <List dense disablePadding>
                 {menuSuggestions.map((s) => (
-                  <ListItem key={`m-${s.id}`} button onClick={() => handleSuggestionClick(s)}
-                    sx={{ '&:hover': { bgcolor: 'rgba(192,57,43,0.05)' } }}>
-                    <MenuBookOutlined sx={{ fontSize: 16, color: 'text.secondary', mr: 1.5 }} />
-                    <ListItemText primary={s.name} primaryTypographyProps={{ variant: 'body2' }} />
-                  </ListItem>
+                    <ListItem
+                        key={`m-${s.id}`}
+                        button
+                        selected={getGlobalIndex(s) === activeIndex}
+                        onClick={() => handleSuggestionClick(s)}
+                        sx={{
+                            '&:hover': { bgcolor: 'rgba(192,57,43,0.05)' },
+                            '&.Mui-selected': { bgcolor: 'rgba(192,57,43,0.08)' },
+                            '&.Mui-selected:hover': { bgcolor: 'rgba(192,57,43,0.1)' },
+                        }}
+                        >
+                        <MenuBookOutlined sx={{ fontSize: 16, color: 'text.secondary', mr: 1.5 }} />
+                        <ListItemText primary={s.name} primaryTypographyProps={{ variant: 'body2' }} />
+                    </ListItem>
                 ))}
               </List>
             </>
