@@ -11,18 +11,13 @@ export function useMenuItems(restaurantId) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Reset page when restaurant changes
-  useEffect(() => {
-    setPage(1);
-  }, [restaurantId]);
-
-  const fetch = useCallback(async () => {
+  const fetch = useCallback(async (pageToFetch) => {
     if (!restaurantId) return;
     setLoading(true);
     setError(null);
     try {
       const { data } = await restaurantApi.getMenuPaginatedSorted(
-        restaurantId, page, limit, sortBy, order
+        restaurantId, pageToFetch, limit, sortBy, order
       );
       setItems(data.items);
       setTotal(data.total);
@@ -33,7 +28,15 @@ export function useMenuItems(restaurantId) {
     }
   }, [restaurantId, page, limit, sortBy, order]);
 
-  useEffect(() => { fetch(); }, [fetch]);
+  useEffect(() => {
+    setPage(1);
+    fetchPage(1);
+  }, [restaurantId, sortBy, order]); // eslint-disable-line react-hooks/exhaustive-deps
+
+
+  useEffect(() => {
+    fetchPage(page);
+  }, [page]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalPages = Math.ceil(total / limit);
 
@@ -43,6 +46,6 @@ export function useMenuItems(restaurantId) {
     sortBy, setSortBy,
     order, setOrder,
     loading, error,
-    refetch: fetch,
+    refetch: () => fetchPage(page),
   };
 }

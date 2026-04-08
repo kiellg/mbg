@@ -8,7 +8,7 @@ export function useRestaurants() {
   const [limit] = useState(10);
   const [sortBy, setSortBy] = useState('rating');
   const [order, setOrder] = useState('desc');
-  const [cuisineTypes, setCuisineTypes] = useState([]);
+  const [cuisineTypes, _setCuisineTypes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -16,10 +16,17 @@ export function useRestaurants() {
     setLoading(true);
     setError(null);
     try {
-      if (cuisineTypes.length > 0) {
+      // Search mode
+      if (searchQuery.trim()) {
+        const { data } = await restaurantApi.search(searchQuery);
+        setRestaurants(data);
+        setTotal(data.length);
+      // Filter mode
+      } else if (cuisineTypes.length > 0) {
         const { data } = await restaurantApi.filter(cuisineTypes);
         setRestaurants(data);
         setTotal(data.length);
+      // Default paginated mode
       } else {
         const { data } = await restaurantApi.getAllPaginated(page, limit, sortBy, order);
         setRestaurants(data.items);
@@ -30,36 +37,26 @@ export function useRestaurants() {
     } finally {
       setLoading(false);
     }
-  }, [page, limit, sortBy, order, cuisineTypes]);
+  }, [searchQuery, cuisineTypes, page, limit, sortBy, order]);
 
   useEffect(() => { fetch(); }, [fetch]);
 
-  const search = useCallback(async (q) => {
-    if (!q.trim()) { fetch(); return; }
-
-    // Reset pagination state when searching
+  // Search — resets pagination and filter state
+  const search = useCallback((q) => {
+    setSearchQuery(q);
     setPage(1);
     setSortBy('rating');
     setOrder('desc');
-    setLoading(true);
-    setError(null);
-    try {
-      const { data } = await restaurantApi.search(q);
-      setRestaurants(data);
-      setTotal(data.length);
-    } catch (err) {
-      setError(err.response?.data?.detail || 'Search failed');
-    } finally {
-      setLoading(false);
-    }
-  }, [fetch]);
+    _setCuisineTypes([]);
+  }, []);
 
-  // Reset pagination when cuisine filter changes
-  const handleSetCuisineTypes = useCallback((val) => {
+  // Cuisine filter — resets pagination and clears search
+  const setCuisineTypes = useCallback((val) => {
+    _setCuisineTypes(val);
+    setSearchQuery('');
     setPage(1);
     setSortBy('rating');
     setOrder('desc');
-    setCuisineTypes(val);
   }, []);
 
   const totalPages = Math.ceil(total / limit);
@@ -70,8 +67,8 @@ export function useRestaurants() {
     sortBy, setSortBy,
     order, setOrder,
     cuisineTypes, setCuisineTypes,
-    setCuisineTypes: handleSetCuisineTypes,
+    searchQuery, search,
     loading, error,
-    search, refetch: fetch,
+    refetch: fetch,
   };
 }

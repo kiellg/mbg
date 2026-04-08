@@ -10,6 +10,8 @@ export function useSearchSuggestions() {
   useEffect(() => {
     if (!query.trim()) {
       setSuggestions([]);
+      setLoading(false);
+      clearTimeout(debounceRef, current);
       return;
     }
 
@@ -39,6 +41,7 @@ export function useSearchSuggestions() {
   const clear = () => {
     setQuery('');
     setSuggestions([]);
+    setLoading(false);
   };
 
   return { query, setQuery, suggestions, loading, clear };
