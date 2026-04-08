@@ -20,6 +20,7 @@ class FavouriteResponse(BaseModel):
     user_id: str
     target_id: str
     target_type: str
+    restaurant_id: Optional[int] = None
 
 class RemoveFavouriteResponse(BaseModel):
     """Response schema for removing a favourite restaurant or menu item"""

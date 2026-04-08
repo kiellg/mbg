@@ -48,7 +48,7 @@ def add_favourite_for_user(
     if is_favourite(user_id, target_id, target_type):
         raise HTTPException(status_code=409, detail="Already in favourites")
 
-    record = add_favourite(user_id, target_id, target_type)
+    record = add_favourite(user_id, target_id, target_type, restaurant_id)
     return FavouriteResponse(**record)
 
 def remove_favourite_for_user(user_id: str, target_id: str, target_type: str) -> dict:
