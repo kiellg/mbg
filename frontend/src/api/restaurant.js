@@ -1,31 +1,25 @@
 import api from './axios';
 
 export const restaurantApi = {
-    // Restaurants
+    // Browse
     getAll: () =>
         api.get('/restaurants'),
     getAllPaginated: (page = 1, limit = 10, sort_by = 'rating', order = 'desc') =>
         api.get('/restaurants/paginated/sorted', { params: { page, limit, sort_by, order } }),
+    getSorted: (sort_by = 'rating', order = 'desc') =>
+        api.get('/restaurant/sorted', { params: { sort_by, order } }),
+
+    // Restaurant detail + menu
     getMenu: (restaurantId) =>
         api.get(`/restaurants/${restaurantId}/menu`),
-    getMenuPaginated: (restaurantId, page = 1, limit = 10, sort_by = 'price', order = 'asc') =>
+    getMenuPaginated: (restaurantId, page = 1, limit = 10) =>
+        api.get(`/restaurants/${restaurantId}/menu/paginated`, { params: { page, limit } }),
+    getMenuPaginatedSorted: (restaurantId, page = 1, limit = 10, sort_by = 'price', order = 'asc') =>
         api.get(`/restaurants/${restaurantId}/menu/paginated/sorted`, { params: { page, limit, sort_by, order } }),
-    create: (payload) =>
-        api.post('/restaurants', payload),
-    update: (restaurantId, payload) =>
-        api.patch(`/restaurants/${restaurantId}`, payload),
-    delete: (restaurantId) =>
-        api.delete(`/restaurants/${restaurantId}`),
 
     // Menu items
     getMenuItem: (restaurantId, itemId) =>
         api.get(`/restaurants/${restaurantId}/menu/${itemId}`),
-    createMenuItem: (restaurantId, payload) =>
-        api.post(`/restaurants/${restaurantId}/menu`, payload),
-    updateMenuItem: (restaurantId, itemId, payload) =>
-        api.patch(`/restaurants/${restaurantId}/menu/${itemId}`, payload),
-    deleteMenuItem: (restaurantId, itemId) =>
-        api.delete(`/restaurants/${restaurantId}/menu/${itemId}`),
 
     // Search & filter
     search: (q) =>
@@ -38,4 +32,18 @@ export const restaurantApi = {
         api.get('/restaurants/filter', { params: { cuisine_types } }),
     getCategories: () =>
         api.get('/restaurants/categories'),
+
+    // CRUD (manager)
+    create: (payload) =>
+        api.post('/restaurants', payload),
+    update: (restaurantId, payload) =>
+        api.patch(`/restaurants/${restaurantId}`, payload),
+    delete: (restaurantId) =>
+        api.delete(`/restaurants/${restaurantId}`),
+    createMenuItem: (restaurantId, payload) =>
+        api.post(`/restaurants/${restaurantId}/menu`, payload),
+    updateMenuItem: (restaurantId, itemId, payload) =>
+        api.patch(`/restaurants/${restaurantId}/menu/${itemId}`, payload),
+    deleteMenuItem: (restaurantId, itemId) =>
+        api.delete(`/restaurants/${restaurantId}/menu/${itemId}`),
 };

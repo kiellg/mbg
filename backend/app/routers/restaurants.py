@@ -125,8 +125,8 @@ def delete_restaurant(restaurant_id: int,
                       request: Request,
                       session_token: Optional[str] = Header(default=None),):
     """Endpoint to delete a restaurant if it has no active menu items"""
-    authenticate_manager(request, session_token)
-    delete_restaurant_by_id(restaurant_id)
+    session = authenticate_manager(request, session_token)
+    delete_restaurant_by_id(restaurant_id, session["user_id"])
 
 @router.delete("/{restaurant_id}/menu/{item_id}",
                status_code=status.HTTP_204_NO_CONTENT)
@@ -135,8 +135,8 @@ def delete_menu_item(restaurant_id: int,
                      request: Request,
                      session_token: Optional[str] = Header(default=None),):
     """Endpoint to delete a menu item by id"""
-    authenticate_manager(request, session_token)
-    delete_menu_item_by_id(restaurant_id, item_id)
+    session = authenticate_manager(request, session_token)
+    delete_menu_item_by_id(restaurant_id, item_id, session["user_id"])
 
 @router.post("", response_model=RestaurantOut, status_code=status.HTTP_201_CREATED)
 def create_restaurant(body: RestaurantCreate,
@@ -155,8 +155,8 @@ def patch_restaurant(
     session_token: Optional[str] = Header(default=None),
 ):
     """Endpoint to update restaurant details"""
-    authenticate_manager(request, session_token)
-    return update_restaurant_by_id(restaurant_id, body)
+    session = authenticate_manager(request, session_token)
+    return update_restaurant_by_id(restaurant_id, body, session["user_id"])
 
 @router.patch("/{restaurant_id}/menu/{item_id}", response_model=MenuItemOut)
 def patch_menu_item(
@@ -167,8 +167,8 @@ def patch_menu_item(
     session_token: Optional[str] = Header(default=None),
 ):
     """Endpoint to update a menu item"""
-    authenticate_manager(request, session_token)
-    return update_menu_item_by_id(restaurant_id, item_id, body)
+    session = authenticate_manager(request, session_token)
+    return update_menu_item_by_id(restaurant_id, item_id, body, session["user_id"])
 
 @router.get("/search/suggestions", response_model=SuggestionResponse)
 def search_suggestions_endpoint(q: str):
@@ -206,8 +206,8 @@ def create_menu_item(restaurant_id: int,
                      request: Request,
                      session_token: Optional[str] = Header(default=None),):
     """Endpoint to add a new menu item to a restaurant"""
-    authenticate_manager(request, session_token)
-    return add_menu_item(restaurant_id, item)
+    session = authenticate_manager(request, session_token)
+    return add_menu_item(restaurant_id, item, session["user_id"])
 
 @router.get("/{restaurant_id}/menu/{item_id}", response_model=MenuItemOut)
 def read_menu_item_detail(

@@ -9,6 +9,7 @@ import { restaurantApi } from '../../../api/restaurant';
 import { useRestaurant } from '../../../context/RestaurantContext';
 import MenuItemCard from '../../../components/restaurant/MenuItemCard';
 import DashboardLayout from '../../../components/shared/DashboardLayout';
+import { useAuth } from '../../../context/AuthContext';
 
 
 const EMPTY_FORM = {
@@ -18,6 +19,7 @@ const EMPTY_FORM = {
 
 
 export default function ManageMenuPage() {
+    const { user } = useAuth();
     const { createMenuItem, updateMenuItem, deleteMenuItem, loading } = useRestaurant();
     const [restaurant, setRestaurant] = useState(null);
     const [categories, setCategories] = useState([]);
@@ -32,17 +34,24 @@ export default function ManageMenuPage() {
     useEffect(() => {
         Promise.all([restaurantApi.getAll(), restaurantApi.getCategories()])
             .then(([rRes, cRes]) => {
-                if (rRes.data.length > 0) {
-                    const r = rRes.data[0];
-                    return restaurantApi.getMenu(r.id).then(({ data }) => {
-                        setRestaurant(data);
-                        setCategories(cRes.data.categories);
-                        setDietaryTags(cRes.data.dietary_tags);
-                    });
+                setCategories(cRes.data.categories);
+                setDietaryTags(cRes.data.dietary_tags);
+
+                const ownedRestaurant = rRes.data.find(
+                    (r) => String(r.owner_id) === String(user?.user_id),
+                );
+
+                if (!ownedRestaurant) {
+                    setRestaurant(null);
+                    return null;
                 }
+
+                return restaurantApi.getMenu(ownedRestaurant.id).then(({ data }) => {
+                    setRestaurant(data);
+                });
             })
             .finally(() => setFetching(false));
-    }, []);
+    }, [user?.user_id]);
 
 
     const openCreate = () => { setEditingItem(null); setForm(EMPTY_FORM); setDialogOpen(true); };
