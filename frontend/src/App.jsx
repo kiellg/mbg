@@ -21,6 +21,8 @@ import AdminCouponsPage    from './pages/admin/AdminCouponsPage';
 
 import RestaurantListPage   from './pages/restaurant/RestaurantListPage';
 import RestaurantDetailPage from './pages/restaurant/RestaurantDetailPage';
+import MenuItemDetailPage   from './pages/restaurant/MenuItemDetailPage';
+import BrowsePage           from './pages/restaurant/BrowsePage';
 import ManageRestaurantPage from './pages/restaurant/manager/ManageRestaurantPage';
 import ManageMenuPage       from './pages/restaurant/manager/ManageMenuPage';
 import FavouritesPage       from './pages/FavouritesPage';
@@ -29,6 +31,8 @@ import CartPage     from './pages/cart/CartPage';
 import CheckoutPage from './pages/cart/CheckoutPage';
 import PaymentPage  from './pages/payment/PaymentPage';
 import OrdersPage from './pages/orders/OrdersPage';
+import AssignedDeliveriesPage from './pages/delivery/AssignedDeliveriesPage';
+import KitchenQueuePage     from './pages/delivery/KitchenQueuePage';
 
 export default function App() {
   return (
@@ -49,8 +53,9 @@ export default function App() {
                 <Route element={<ProtectedRoute />}>
                   <Route path="/me"                  element={<MePage />} />
                   <Route path="/restaurants"         element={<RestaurantListPage />} />
+                  <Route path="/restaurants/browse"  element={<BrowsePage />} />
                   <Route path="/restaurants/:id"     element={<RestaurantDetailPage />} />
-                  <Route path="/favourites"          element={<FavouritesPage />} />
+                  <Route path="/restaurants/:id/menu/:itemId" element={<MenuItemDetailPage />} />
                 </Route>
 
                 {/* Customer only */}
@@ -60,11 +65,13 @@ export default function App() {
                   <Route path="/checkout/:restaurantId" element={<CheckoutPage />} />
                   <Route path="/payment/:orderId"       element={<PaymentPage />} />
                   <Route path="/orders" element={<OrdersPage />} />
+                  <Route path="/favourites"          element={<FavouritesPage />} />
                 </Route>
 
                 {/* Driver only */}
                 <Route element={<ProtectedRoute roles={['driver']} />}>
                   <Route path="/profile/driver" element={<DriverProfilePage />} />
+                  <Route path="/deliveries"     element={<AssignedDeliveriesPage />} />
                 </Route>
 
                 {/* Manager only */}
@@ -72,6 +79,7 @@ export default function App() {
                   <Route path="/profile/manager"   element={<ManagerProfilePage />} />
                   <Route path="/manage/restaurant" element={<ManageRestaurantPage />} />
                   <Route path="/manage/menu"       element={<ManageMenuPage />} />
+                  <Route path="/manager/kitchen-queue" element={<KitchenQueuePage />} />
                 </Route>
 
                 {/* Admin only */}

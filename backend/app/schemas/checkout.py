@@ -1,5 +1,7 @@
 """Schemas for checkout request payload."""
 
+from datetime import datetime
+
 from typing import Optional
 
 from pydantic import BaseModel
@@ -12,3 +14,4 @@ class CheckoutRequest(BaseModel):
 
     delivery_method: DeliveryMethod
     coupon_code: Optional[str] = None
+    scheduled_time: Optional[datetime] = None

@@ -28,7 +28,6 @@ class OrderSchemaModel(BaseModel):
 
 class OrderStatus(str, Enum):
     """Valid statuses for an order."""
-    # SR26: System define order states as Pending, Cooking, Out for Delivery, Delivered, Cancelled
 
     PENDING = "Pending"
     COOKING = "Cooking"
@@ -71,7 +70,7 @@ class OrderBase(OrderSchemaModel):
     restaurant_id: int
     delivery_address: str
     delivery_method: DeliveryMethod
-    status: OrderStatus = OrderStatus.PENDING # Current order status is clearly displayed (US48)
+    status: OrderStatus = OrderStatus.PENDING
     scheduled_time: Optional[datetime] = None
     is_scheduled: bool = False
 

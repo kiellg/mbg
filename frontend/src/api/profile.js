@@ -1,6 +1,9 @@
 import api from './axios';
 
 export const profileApi = {
+    getCustomer: () =>
+        api.get('/profile/customer'),
+
     updateCustomer: (name, delivery_address) =>
         api.patch('/profile/customer', { name, delivery_address }),
 
