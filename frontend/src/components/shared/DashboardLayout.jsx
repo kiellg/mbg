@@ -6,6 +6,7 @@ import {
 } from '@mui/material';
 import {
   PersonOutlined, StoreOutlined, TwoWheelerOutlined,
+  DashboardOutlined, GroupOutlined, ConfirmationNumberOutlined,
   LogoutOutlined, MenuOutlined,
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
@@ -13,20 +14,27 @@ import { useAuth } from '../../context/AuthContext';
 const SIDEBAR_WIDTH = 240;
 
 const ROLE_NAV = {
-  customer: [{ label: 'My Profile',        to: '/profile/customer', icon: <PersonOutlined fontSize="small" /> }],
-  manager:  [{ label: 'Restaurant Profile', to: '/profile/manager',  icon: <StoreOutlined fontSize="small" /> }],
-  driver:   [{ label: 'Driver Profile',     to: '/profile/driver',   icon: <TwoWheelerOutlined fontSize="small" /> }],
+  admin: [
+    { label: 'Dashboard', to: '/admin', icon: <DashboardOutlined fontSize="small" /> },
+    { label: 'Users', to: '/admin/users', icon: <GroupOutlined fontSize="small" /> },
+    { label: 'Coupons', to: '/admin/coupons', icon: <ConfirmationNumberOutlined fontSize="small" /> },
+  ],
+  customer: [{ label: 'My Profile', to: '/profile/customer', icon: <PersonOutlined fontSize="small" /> }],
+  manager: [{ label: 'Restaurant Profile', to: '/profile/manager', icon: <StoreOutlined fontSize="small" /> }],
+  driver: [{ label: 'Driver Profile', to: '/profile/driver', icon: <TwoWheelerOutlined fontSize="small" /> }],
 };
 
 const ROLE_META = {
-  customer: { label: 'Customer', emoji: '🛍️', color: '#C0392B' },
-  manager:  { label: 'Manager',  emoji: '🏪', color: '#1A5276' },
-  driver:   { label: 'Driver',   emoji: '🚴', color: '#1E8449' },
+  admin: { label: 'Admin', emoji: 'A', color: '#7D6608' },
+  customer: { label: 'Customer', emoji: 'C', color: '#C0392B' },
+  manager: { label: 'Manager', emoji: 'M', color: '#1A5276' },
+  driver: { label: 'Driver', emoji: 'D', color: '#1E8449' },
 };
 
 function SidebarContent({ user, onLogout }) {
-  const meta = ROLE_META[user?.role] || { label: 'User', emoji: '👤', color: '#555' };
+  const meta = ROLE_META[user?.role] || { label: 'User', emoji: 'U', color: '#555' };
   const navItems = ROLE_NAV[user?.role] || [];
+  const sectionLabel = user?.role === 'admin' ? 'Admin' : 'Account';
   const initials = user?.email?.slice(0, 2).toUpperCase() ?? '??';
 
   return (
@@ -52,7 +60,7 @@ function SidebarContent({ user, onLogout }) {
 
       <Typography variant="caption" color="text.secondary"
         sx={{ px: 1, mb: 0.5, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-        Account
+        {sectionLabel}
       </Typography>
 
       {navItems.map((item) => (
@@ -92,7 +100,7 @@ function SidebarContent({ user, onLogout }) {
   );
 }
 
-export default function DashboardLayout({ children }) {
+export default function DashboardLayout({ children, contentMaxWidth = 720 }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const muiTheme = useTheme();
@@ -134,7 +142,7 @@ export default function DashboardLayout({ children }) {
             </Typography>
           </Box>
         )}
-        <Box sx={{ p: { xs: 2.5, md: 4 }, maxWidth: 720, width: '100%' }}>
+        <Box sx={{ p: { xs: 2.5, md: 4 }, maxWidth: contentMaxWidth, width: '100%' }}>
           {children}
         </Box>
       </Box>

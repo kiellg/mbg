@@ -13,6 +13,9 @@ import MePage             from './pages/auth/MePage';
 import CustomerProfilePage from './pages/profile/CustomerProfilePage';
 import DriverProfilePage   from './pages/profile/DriverProfilePage';
 import ManagerProfilePage  from './pages/profile/ManagerProfilePage';
+import AdminDashboardPage  from './pages/admin/AdminDashboardPage';
+import AdminUsersPage      from './pages/admin/AdminUsersPage';
+import AdminCouponsPage    from './pages/admin/AdminCouponsPage';
 
 import CartPage from './pages/cart/CartPage';
 import CheckoutPage from './pages/cart/CheckoutPage';
@@ -46,6 +49,12 @@ export default function App() {
 
             <Route element={<ProtectedRoute roles={['manager']} />}>
               <Route path="/profile/manager" element={<ManagerProfilePage />} />
+            </Route>
+
+            <Route element={<ProtectedRoute roles={['admin']} />}>
+              <Route path="/admin" element={<AdminDashboardPage />} />
+              <Route path="/admin/users" element={<AdminUsersPage />} />
+              <Route path="/admin/coupons" element={<AdminCouponsPage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/login" replace />} />
