@@ -49,6 +49,8 @@ class OrderItemBase(OrderSchemaModel):
 
     quantity: int = Field(..., ge=1)
     item_price: Decimal = Field(..., ge=0)
+    menu_item_id: Optional[int] = None
+    item_name: Optional[str] = None
 
 
 class OrderItemCreate(OrderItemBase):

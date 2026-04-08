@@ -119,6 +119,8 @@ def _build_order_response(order: dict) -> OrderResponse:
                 order_id=item["order_id"],
                 quantity=item["quantity"],
                 item_price=Decimal(str(item["item_price"])),
+                menu_item_id=item.get("menu_item_id"),  # ← add this
+                item_name=item.get("item_name"),         # ← add this
             )
         )
 
@@ -163,6 +165,8 @@ def create_order(payload: OrderCreate) -> OrderResponse:
         {
             "quantity": item.quantity,
             "item_price": item.item_price,
+            "menu_item_id": item.menu_item_id,
+            "item_name": item.item_name,
         }
         for item in payload.items
     ]
@@ -227,6 +231,8 @@ def update_order(order_id: str, payload: OrderUpdate) -> OrderResponse:
             {
                 "quantity": item.quantity,
                 "item_price": item.item_price,
+                "menu_item_id": item.menu_item_id,
+                "item_name": item.item_name,
             }
             for item in payload.items
         ]

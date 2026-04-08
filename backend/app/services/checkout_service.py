@@ -74,7 +74,9 @@ def checkout(restaurant_id: int,
     items = [
         OrderItemCreate(
             quantity=item["quantity"],
-            item_price=Decimal(item["price_cents"]) / Decimal("100")
+            item_price=Decimal(item["price_cents"]) / Decimal("100"),
+            menu_item_id=item["menu_item_id"],
+            item_name=item["item_name"],
         )
         for item in validated_items
     ]
@@ -121,6 +123,8 @@ def _validate_cart_items(cart: dict) -> list[dict]:
             {
                 "quantity": cart_item["quantity"],
                 "price_cents": price_cents,
+                "menu_item_id": cart_item["menu_item_id"],
+                "item_name": menu_item.get("name"),  # snapshot the name at checkout
             }
         )
 

@@ -99,9 +99,12 @@ export default function OrdersPage() {
               {/* Items list */}
               <Stack spacing={0.25} sx={{ mb: 1 }}>
                 {order.items.map((item, idx) => (
-                  <Typography key={idx} variant="body2" color="text.secondary">
-                    {item.quantity}× {item.item_name}
-                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }} key={idx}>
+                    <Typography variant="body2" color="text.secondary">
+                      {item.quantity}× {item.item_name}
+                    </Typography>
+                    <Typography variant="body2">${parseFloat(item.item_price).toFixed(2)}</Typography>
+                  </Box>
                 ))}
               </Stack>
 

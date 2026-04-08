@@ -301,7 +301,12 @@ def test_update_pending_order_recalculates_and_persists_totals(
     )
 
     order_patch = mock_repo.update_order_record.call_args[0][1]
-    assert order_patch["items"] == [{"quantity": 3, "item_price": Decimal("7.50")}]
+    assert order_patch["items"] == [{
+    "quantity": 3,
+    "item_price": Decimal("7.50"),
+    "menu_item_id": None,
+    "item_name": None,
+    }]
     assert order_patch["subtotal"] == Decimal("22.50")
     assert order_patch["tax"] == Decimal("2.25")
     assert order_patch["delivery_fee"] == Decimal("5.00")
