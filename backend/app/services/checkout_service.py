@@ -5,7 +5,9 @@ Bridges the cart and order systems:
 - Creates the order via order_service
 - Marks the cart as checked out to prevent further modifications"""
 
+import re
 from decimal import Decimal
+from datetime import datetime
 from fastapi import HTTPException
 from app.repositories import cart_repo
 from app.repositories import user_repo
@@ -20,6 +22,39 @@ from app.schemas.order import (
 from app.services import coupon_service, order_service
 from app.services.pricing_service import PricingService
 
+def _validate_scheduled_time_within_hours(
+        scheduled_time: datetime,
+        opening_hours: str,
+) -> None:
+    """Validate that scheduled_time falls within restaurant opening hours"""
+    if not opening_hours:
+        return
+
+    if scheduled_time.tzinfo is not None:
+        scheduled_time = scheduled_time.replace(tzinfo=None)
+
+    scheduled_hour_minute = scheduled_time.hour * 60 + scheduled_time.minute
+
+    segments = [s.strip() for s in opening_hours.split(',')]
+
+    for segment in segments:
+        time_match = re.search(r'(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})', segment)
+        if not time_match:
+            continue
+
+        open_h, open_m, close_h, close_m = map(int, time_match.groups())
+        open_minutes = open_h * 60 + open_m
+        close_minutes = close_h * 60 + close_m
+
+        if open_minutes <= scheduled_hour_minute <= close_minutes:
+            return
+
+    raise HTTPException(
+        status_code=400,
+        detail=f"Scheduled time is outside restaurant opening hours ({opening_hours}).",
+    )
+
+# pylint: disable=too-many-locals
 def checkout(restaurant_id: int,
              customer_id: str,
              delivery_method: DeliveryMethod,
@@ -68,6 +103,14 @@ def checkout(restaurant_id: int,
     delivery_address = customer["delivery_address"]
     if not delivery_address:
         raise HTTPException(status_code=400, detail="Customer does not have a delivery address.")
+
+    if scheduled_time:
+        restaurant = restaurant_repo.get_restaurant_record(restaurant_id)
+        if restaurant:
+            _validate_scheduled_time_within_hours(
+                scheduled_time,
+                restaurant.get("opening_hours", ""),
+            )
 
     validated_items = _validate_cart_items(cart)
 
