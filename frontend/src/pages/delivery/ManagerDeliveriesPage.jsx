@@ -35,15 +35,16 @@ const STATUS_META = {
   Cancelled: { icon: "❌", color: "error", label: "Cancelled" },
 };
 
-function DeliveryCard({ delivery, onUpdateStatus, loading }) {
+function ManagerDeliveryCard({ delivery, onUpdateStatus, loading }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState(delivery.status);
 
   const statusMeta = STATUS_META[delivery.status] || {};
+  // Manager can only cancel when order is in Cooking status
   const nextStatuses = {
     Pending: [],
-    Cooking: ["Out for Delivery"],
-    "Out for Delivery": ["Delivered"],
+    Cooking: ["Cancelled"],
+    "Out for Delivery": [],
     Delivered: [],
     Cancelled: [],
   };
@@ -83,7 +84,7 @@ function DeliveryCard({ delivery, onUpdateStatus, loading }) {
               Order ID: {delivery.order_id}
             </Typography>
             <Typography variant="h6" fontWeight={600}>
-              Delivery to Customer
+              Order Management
             </Typography>
           </Box>
           <Chip
@@ -141,13 +142,14 @@ function DeliveryCard({ delivery, onUpdateStatus, loading }) {
         {nextStatuses[delivery.status]?.length > 0 && (
           <Button
             variant="contained"
+            color="error"
             size="small"
             fullWidth
             sx={{ mt: 2 }}
             onClick={() => setDialogOpen(true)}
             disabled={loading}
           >
-            Update Status
+            Cancel Order
           </Button>
         )}
       </Card>
@@ -158,31 +160,21 @@ function DeliveryCard({ delivery, onUpdateStatus, loading }) {
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle>Update Delivery Status</DialogTitle>
+        <DialogTitle>Cancel Delivery</DialogTitle>
         <DialogContent>
-          <FormControl fullWidth sx={{ mt: 2 }}>
-            <InputLabel>New Status</InputLabel>
-            <Select
-              value={newStatus}
-              label="New Status"
-              onChange={(e) => setNewStatus(e.target.value)}
-            >
-              {nextStatuses[delivery.status]?.map((status) => (
-                <MenuItem key={status} value={status}>
-                  {STATUS_META[status]?.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Typography variant="body2" sx={{ mt: 2 }}>
+            Are you sure you want to cancel this order?
+          </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setDialogOpen(false)}>Keep Order</Button>
           <Button
             variant="contained"
+            color="error"
             onClick={handleStatusUpdate}
-            disabled={loading || newStatus === delivery.status}
+            disabled={loading}
           >
-            {loading ? "Updating..." : "Update"}
+            {loading ? "Cancelling..." : "Cancel Order"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -190,7 +182,7 @@ function DeliveryCard({ delivery, onUpdateStatus, loading }) {
   );
 }
 
-export default function AssignedDeliveriesPage() {
+export default function ManagerDeliveriesPage() {
   const [deliveries, setDeliveries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -224,13 +216,13 @@ export default function AssignedDeliveriesPage() {
       await deliveryApi.updateDeliveryStatus(orderId, newStatus);
       setFeedback({
         type: "success",
-        message: `Order status updated to "${newStatus}"`,
+        message: `Order cancelled successfully`,
       });
       await fetchDeliveries();
     } catch (err) {
       setFeedback({
         type: "error",
-        message: err.response?.data?.detail || "Failed to update status",
+        message: err.response?.data?.detail || "Failed to cancel order",
       });
     } finally {
       setUpdating(false);
@@ -242,9 +234,7 @@ export default function AssignedDeliveriesPage() {
       ? deliveries
       : deliveries.filter((d) => d.status === filter);
 
-  const activeCount = deliveries.filter(
-    (d) => d.status !== "Delivered" && d.status !== "Cancelled",
-  ).length;
+  const cookingCount = deliveries.filter((d) => d.status === "Cooking").length;
 
   return (
     <DashboardLayout>
@@ -261,14 +251,15 @@ export default function AssignedDeliveriesPage() {
               justifyContent: "center",
             }}
           >
-            <LocalShippingOutlined sx={{ color: "#1A5276", fontSize: 22 }} />
+            <CancelOutlined sx={{ color: "#1A5276", fontSize: 22 }} />
           </Box>
           <Box sx={{ flex: 1 }}>
             <Typography variant="h4" sx={{ fontSize: "1.4rem" }}>
-              My Deliveries
+              Order Management
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {activeCount} active delivery{activeCount !== 1 ? "ies" : ""}
+              {cookingCount} order{cookingCount !== 1 ? "s" : ""} available to
+              cancel
             </Typography>
           </Box>
         </Box>
@@ -284,6 +275,8 @@ export default function AssignedDeliveriesPage() {
             { value: "all", label: "All" },
             { value: "Cooking", label: "Cooking" },
             { value: "Out for Delivery", label: "Out for Delivery" },
+            { value: "Delivered", label: "Delivered" },
+            { value: "Cancelled", label: "Cancelled" },
           ].map(({ value, label }) => (
             <Button
               key={value}
@@ -307,14 +300,14 @@ export default function AssignedDeliveriesPage() {
             />
             <Typography color="text.secondary">
               {filter === "all"
-                ? "No deliveries assigned yet"
+                ? "No deliveries found"
                 : `No "${filter}" deliveries`}
             </Typography>
           </Box>
         ) : (
           <Stack spacing={2}>
             {filteredDeliveries.map((delivery) => (
-              <DeliveryCard
+              <ManagerDeliveryCard
                 key={delivery.order_id}
                 delivery={delivery}
                 onUpdateStatus={handleUpdateStatus}
