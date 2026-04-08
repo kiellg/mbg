@@ -1,7 +1,7 @@
 """Service layer for order management, handling business logic
 and interactions with the order repository."""
 from decimal import Decimal
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from types import SimpleNamespace
 from fastapi import HTTPException
 
@@ -146,12 +146,12 @@ def _build_order_response(order: dict) -> OrderResponse:
 def create_order(payload: OrderCreate) -> OrderResponse:
     """Create a new order and return the created order details."""
     scheduled_time = payload.scheduled_time
-    
+
     if scheduled_time:
-        now = datetime.now(UTC)
+        now = datetime.now(timezone.utc)
 
         if scheduled_time.tzinfo is None:
-            scheduled_time = scheduled_time.replace(tzinfo=UTC)
+            scheduled_time = scheduled_time.replace(tzinfo=timezone.utc)
 
         if scheduled_time <= now:
             raise HTTPException(
@@ -292,15 +292,15 @@ def cancel_order(order_id: str) -> OrderResponse:
 
 def _process_scheduled_orders():
     """Activate scheduled orders when their scheduled_time is reached"""
-    now = datetime.now(UTC)
+    now = datetime.now(timezone.utc)
 
     for order in order_repo.list_order_records():
         if order.get("is_scheduled") and order.get("scheduled_time"):
             scheduled_time = datetime.fromisoformat(order["scheduled_time"])
 
             if scheduled_time.tzinfo is None:
-                scheduled_time = scheduled_time.replace(tzinfo=UTC)
-            
+                scheduled_time = scheduled_time.replace(tzinfo=timezone.utc)
+
             if scheduled_time <= now:
                 order_repo.update_order_record(
                     order["order_id"],
