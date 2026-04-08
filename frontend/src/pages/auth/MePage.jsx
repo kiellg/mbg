@@ -18,10 +18,10 @@ import AuthLayout from "../../components/shared/AuthLayout";
 import { useAuth } from "../../context/AuthContext";
 
 const ROLE_META = {
-  admin:    { label: 'Admin',    emoji: 'A', color: 'secondary' },
-  customer: { label: 'Customer', emoji: 'C', color: 'warning' },
-  manager:  { label: 'Manager',  emoji: 'M', color: 'info'    },
-  driver:   { label: 'Driver',   emoji: 'D', color: 'success' },
+  admin: { label: "Admin", emoji: "A", color: "secondary" },
+  customer: { label: "Customer", emoji: "C", color: "warning" },
+  manager: { label: "Manager", emoji: "M", color: "info" },
+  driver: { label: "Driver", emoji: "D", color: "success" },
 };
 
 function InfoRow({ icon: Icon, label, value }) {
@@ -29,8 +29,16 @@ function InfoRow({ icon: Icon, label, value }) {
     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, py: 1.25 }}>
       <Icon sx={{ fontSize: 18, color: "text.secondary", flexShrink: 0 }} />
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="caption" color="text.secondary" display="block">{label}</Typography>
-        <Typography variant="body2" fontWeight={500} sx={{ wordBreak: 'break-all' }}>{value ?? '--'}</Typography>
+        <Typography variant="caption" color="text.secondary" display="block">
+          {label}
+        </Typography>
+        <Typography
+          variant="body2"
+          fontWeight={500}
+          sx={{ wordBreak: "break-all" }}
+        >
+          {value ?? "--"}
+        </Typography>
       </Box>
     </Box>
   );
@@ -58,18 +66,25 @@ export default function MePage() {
   }
 
   const roleRoute = {
-    admin: '/admin',
+    admin: "/admin",
     customer: "/profile/customer",
-    manager: "/manager/restaurant",
-    driver: "/profile/driver",
+    manager: "/manage/restaurant",
+    driver: "/deliveries",
   };
   if (user.role && roleRoute[user.role]) {
     return <Navigate to={roleRoute[user.role]} replace />;
   }
 
-  const meta = ROLE_META[user.role] || { label: user.role, emoji: 'U', color: 'default' };
-  const initials = user.email?.slice(0, 2).toUpperCase() ?? '??';
-  const handleLogout = async () => { await logout(); navigate('/login'); };
+  const meta = ROLE_META[user.role] || {
+    label: user.role,
+    emoji: "U",
+    color: "default",
+  };
+  const initials = user.email?.slice(0, 2).toUpperCase() ?? "??";
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
 
   return (
     <AuthLayout title="My profile" subtitle="Your current session">

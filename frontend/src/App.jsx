@@ -28,6 +28,8 @@ import FavouritesPage       from './pages/FavouritesPage';
 import CartPage     from './pages/cart/CartPage';
 import CheckoutPage from './pages/cart/CheckoutPage';
 import PaymentPage  from './pages/payment/PaymentPage';
+import AssignedDeliveriesPage from './pages/delivery/AssignedDeliveriesPage';
+import KitchenQueuePage     from './pages/delivery/KitchenQueuePage';
 
 export default function App() {
   return (
@@ -63,6 +65,7 @@ export default function App() {
                 {/* Driver only */}
                 <Route element={<ProtectedRoute roles={['driver']} />}>
                   <Route path="/profile/driver" element={<DriverProfilePage />} />
+                  <Route path="/deliveries"     element={<AssignedDeliveriesPage />} />
                 </Route>
 
                 {/* Manager only */}
@@ -70,6 +73,7 @@ export default function App() {
                   <Route path="/profile/manager"   element={<ManagerProfilePage />} />
                   <Route path="/manage/restaurant" element={<ManageRestaurantPage />} />
                   <Route path="/manage/menu"       element={<ManageMenuPage />} />
+                  <Route path="/manager/kitchen-queue" element={<KitchenQueuePage />} />
                 </Route>
 
                 {/* Admin only */}
