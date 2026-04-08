@@ -121,6 +121,7 @@ class OrderResponse(OrderBase):
     """Schema for returning order details with cost breakdown."""
 
     order_id: str
+    created_at: datetime
     items: list[OrderItemResponse] = Field(default_factory=list)
     coupon_code: Optional[str] = None
     subtotal: Decimal = Field(..., ge=0)

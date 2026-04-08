@@ -124,6 +124,7 @@ def _build_order_response(order: dict) -> OrderResponse:
 
     response = OrderResponse(
         order_id=order["order_id"],
+        created_at=order["created_at"],
         status=order["status"],
         customer_id=order["customer_id"],
         restaurant_id=order["restaurant_id"],

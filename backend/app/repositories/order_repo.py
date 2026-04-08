@@ -2,8 +2,8 @@
 
 # pylint: disable=protected-access, too-many-branches, duplicate-code
 from typing import Any, Dict, List, Optional
+from datetime import datetime, timezone
 import shortuuid
-
 from app.data import order_data
 
 
@@ -67,6 +67,7 @@ def create_order_record(# pylint: disable=too-many-arguments, too-many-positiona
 
     order_record: Dict[str, Any] = {
         "order_id": order_id,
+        "created_at": datetime.now(timezone.utc),
         "status": status,
         "customer_id": customer_id,
         "restaurant_id": restaurant_id,

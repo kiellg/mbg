@@ -20,6 +20,8 @@ import RestaurantDetailPage from './pages/restaurant/RestaurantDetailPage';
 import ManageRestaurantPage from './pages/restaurant/manager/ManageRestaurantPage';
 import ManageMenuPage       from './pages/restaurant/manager/ManageMenuPage';
 import FavouritesPage       from './pages/FavouritesPage';
+import CartPage from './pages/cart/CartPage';
+import CheckoutPage from './pages/cart/CheckoutPage';
 
 export default function App() {
   return (
@@ -64,6 +66,35 @@ export default function App() {
             </Routes>
           </BrowserRouter>
         </RestaurantProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/"                element={<Navigate to="/login" replace />} />
+            <Route path="/login"           element={<LoginPage />} />
+            <Route path="/register"        element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password"  element={<ResetPasswordPage />} />
+
+            <Route element={<ProtectedRoute />}>
+              <Route path="/me" element={<MePage />} />
+            </Route>
+
+            <Route element={<ProtectedRoute roles={['customer']} />}>
+              <Route path="/profile/customer" element={<CustomerProfilePage />} />
+              <Route path="/cart/:restaurantId" element={<CartPage />} />
+              <Route path="/checkout/:restaurantId" element={<CheckoutPage />} />
+            </Route>
+
+            <Route element={<ProtectedRoute roles={['driver']} />}>
+              <Route path="/profile/driver" element={<DriverProfilePage />} />
+            </Route>
+
+            <Route element={<ProtectedRoute roles={['manager']} />}>
+              <Route path="/profile/manager" element={<ManagerProfilePage />} />
+            </Route>
+
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
   );

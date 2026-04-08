@@ -1,9 +1,12 @@
 """Integration tests for admin user profile management endpoints"""
+#pylint: disable=protected-access, duplicate-code
+from datetime import datetime, timezone
 import pytest
 from fastapi.testclient import TestClient
 
 from app.data import users_data
 from app.repositories import user_repo
+from app.data import order_data
 from main import app
 
 client = TestClient(app)
@@ -16,9 +19,11 @@ def reset_state():
     """Reset user stores before each test"""
     user_repo.reset_users()
     client.cookies.clear()
+    order_data._ORDERDB.clear()
     yield
     user_repo.reset_users()
     client.cookies.clear()
+    order_data._ORDERDB.clear()
 
 def _get_admin_token() -> str:
     """Log in as the seeded admin and return a session token from the cookie"""
@@ -119,3 +124,54 @@ def test_delete_user_requires_authentication():
     """DELETE /admin/users/{id} should return 401 when no session token is provided"""
     response = client.delete("/admin/users/some-user-id")
     assert response.status_code == 401
+
+def _seed_order(order_id: str, status: str = "Delivered"):
+    """Seed a fake order directly into the order DB."""
+    order_data._ORDERDB[order_id] = {
+        "order_id": order_id,
+        "customer_id": "cust-1",
+        "restaurant_id": 1,
+        "status": status,
+        "created_at": datetime.now(timezone.utc),
+        "total": "20.00",
+    }
+
+
+def test_get_order_analytics_returns_200():
+    """Admin should be able to get order analytics."""
+    token = _get_admin_token()
+    response = client.get("/admin/analytics/orders", cookies={"session_token": token})
+    assert response.status_code == 200
+
+
+def test_get_order_analytics_returns_correct_shape():
+    """Analytics response should contain expected fields."""
+    token = _get_admin_token()
+    response = client.get("/admin/analytics/orders", cookies={"session_token": token})
+    data = response.json()
+    assert "total_orders" in data
+    assert "orders_today" in data
+    assert "orders_this_week" in data
+    assert "orders_by_status" in data
+
+
+def test_get_order_analytics_counts_todays_orders():
+    """Orders created today should be reflected in orders_today."""
+    _seed_order("order-today", status="Delivered")
+    token = _get_admin_token()
+    response = client.get("/admin/analytics/orders", cookies={"session_token": token})
+    assert response.json()["orders_today"] >= 1
+
+
+def test_get_order_analytics_requires_authentication():
+    """GET /admin/analytics/orders should return 401 with no token."""
+    response = client.get("/admin/analytics/orders")
+    assert response.status_code == 401
+
+
+def test_get_order_analytics_requires_admin_role():
+    """Non-admin users should not be able to access analytics."""
+    _register_customer()
+    token = _get_customer_token()
+    response = client.get("/admin/analytics/orders", cookies={"session_token": token})
+    assert response.status_code == 403
