@@ -20,7 +20,6 @@ export default function RecentlyViewed() {
       .then(async ({ data }) => {
         const items = data.items || [];
 
-        // Deduplicate — keep only the most recent occurrence of each id+type
         const seen = new Set();
         const unique = items.filter(item => {
           const key = `${item.type}:${item.id}`;
@@ -29,15 +28,18 @@ export default function RecentlyViewed() {
           return true;
         }).slice(0, 8);
 
-        // Fetch restaurant name for each item
         const results = await Promise.allSettled(
           unique.map(async (item) => {
-            try {
-              const { data: restaurant } = await restaurantApi.getMenu(item.id);
-              return { ...item, name: restaurant.name };
-            } catch {
-              return { ...item, name: `Restaurant #${item.id}` };
+            if (item.type === 'restaurant') {
+              try {
+                const { data: restaurant } = await restaurantApi.getMenu(item.id);
+                return { ...item, name: restaurant.name };
+              } catch {
+                return { ...item, name: `Restaurant #${item.id}` };
+              }
             }
+            // For menu items, just show a generic label
+            return { ...item, name: `Menu item #${item.id}` };
           })
         );
 
@@ -55,10 +57,12 @@ export default function RecentlyViewed() {
   const handleClick = (item) => {
     if (item.type === 'restaurant') {
       navigate(`/restaurants/${item.id}`);
-    } else {
-      navigate('/restaurants');
     }
   };
+
+  const restaurantItems = enriched.filter(item => item.type === 'restaurant');
+
+  if (!loading && restaurantItems.length === 0) return null;
 
   return (
     <Box sx={{ mb: 3 }}>
@@ -76,7 +80,7 @@ export default function RecentlyViewed() {
             <Skeleton key={i} variant="rounded" width={140} height={40}
               sx={{ borderRadius: 2, flexShrink: 0 }} />
           ))
-          : enriched.map((item) => (
+          : restaurantItems.map((item) => (
             <Paper key={`${item.type}-${item.id}`} elevation={0} onClick={() => handleClick(item)}
               sx={{
                 px: 1.5, py: 1, borderRadius: 2, flexShrink: 0,
