@@ -8,25 +8,36 @@ import {
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { paymentApi } from '../../api/payment';
+import { checkoutApi } from '../../api/checkout';
 
 export default function PaymentPage() {
-  const { orderId }    = useParams();
-  const navigate       = useNavigate();
-  const location       = useLocation();
+  const { orderId }  = useParams();
+  const navigate     = useNavigate();
+  const location     = useLocation();
 
-  // Order passed from CheckoutPage via navigate state
-  const order = location.state?.order ?? null;
+  // Order passed from CheckoutPage via navigate state.
+  // Fall back to fetching from the API so the summary survives a page refresh.
+  const [order, setOrder] = useState(location.state?.order ?? null);
 
-  const [savedMethods, setSavedMethods]       = useState([]);
-  const [selectedMethod, setSelectedMethod]   = useState('new');
-  const [cardNumber, setCardNumber]           = useState('');
-  const [expiryDate, setExpiryDate]           = useState('');
-  const [cvv, setCvv]                         = useState('');
-  const [cardholderName, setCardholderName]   = useState('');
-  const [loading, setLoading]                 = useState(false);
-  const [fetchingMethods, setFetchingMethods] = useState(true);
-  const [error, setError]                     = useState(null);
-  const [receipt, setReceipt]                 = useState(null);
+  const [savedMethods, setSavedMethods]         = useState([]);
+  const [selectedMethod, setSelectedMethod]     = useState('new');
+  const [cardNumber, setCardNumber]             = useState('');
+  const [expiryDate, setExpiryDate]             = useState('');
+  const [cvv, setCvv]                           = useState('');
+  const [cardholderName, setCardholderName]     = useState('');
+  const [loading, setLoading]                   = useState(false);
+  const [fetchingMethods, setFetchingMethods]   = useState(true);
+  const [error, setError]                       = useState(null);
+  const [receipt, setReceipt]                   = useState(null);
+
+  // If the user refreshed or navigated directly, re-fetch order details
+  useEffect(() => {
+    if (!order && orderId) {
+      checkoutApi.getOrder(orderId)
+        .then(({ data }) => setOrder(data))
+        .catch(() => {}); // non-fatal — summary card just stays hidden
+    }
+  }, [orderId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     paymentApi.getMethods()
@@ -46,15 +57,26 @@ export default function PaymentPage() {
   const handlePay = async () => {
     setLoading(true); setError(null);
     try {
+      let payResult;
       if (selectedMethod !== 'new') {
-        await paymentApi.payWithSaved(orderId, selectedMethod);
+        payResult = await paymentApi.payWithSaved(orderId, selectedMethod);
       } else {
-        await paymentApi.processPayment(orderId, {
-          card_number:      cardNumber.replace(/\s/g, ''),
-          expiry_date:      expiryDate,   // ← correct field name
-          cvv:              cvv,
-          cardholder_name:  cardholderName, // ← required field
+        payResult = await paymentApi.processPayment(orderId, {
+          card_number:     cardNumber.replace(/\s/g, ''),
+          expiry_date:     expiryDate, // correct field name
+          cvv:             cvv,
+          cardholder_name: cardholderName, // required field
         });
+      }
+      // Check for a declined status returned in the response body
+      // (some payment APIs return 200 with a status field instead of throwing)
+      const payStatus = payResult?.data?.status;
+      if (payStatus && payStatus !== 'success' && payStatus !== 'paid') {
+        setError(
+          payResult?.data?.message ||
+          'Your payment was declined. Please check your card details and try again.'
+        );
+        return;
       }
       const { data } = await paymentApi.getReceipt(orderId);
       setReceipt(data);
@@ -63,7 +85,7 @@ export default function PaymentPage() {
     } finally { setLoading(false); }
   };
 
-  // ── Receipt / Success Screen ──────────────────────────────
+  // Receipt / Success Screen
   if (receipt) {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: 'background.default',
@@ -79,9 +101,7 @@ export default function PaymentPage() {
                 {receipt.message}
               </Typography>
             </Box>
-
             <Divider sx={{ mb: 2.5, borderColor: '#EDE5D8' }} />
-
             {/* Receipt details */}
             <Stack spacing={1.5}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -111,7 +131,6 @@ export default function PaymentPage() {
                 </Typography>
               </Box>
             </Stack>
-
             <Divider sx={{ my: 3, borderColor: '#EDE5D8' }} />
             <Button variant="contained" color="primary" fullWidth
               onClick={() => navigate('/restaurants')}>
@@ -123,20 +142,17 @@ export default function PaymentPage() {
     );
   }
 
-  // ── Payment Form ──────────────────────────────────────────
+  // Payment Form
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', px: { xs: 2, sm: 4 }, py: 5 }}>
       <Box sx={{ maxWidth: 560, mx: 'auto' }}>
-
         <Typography variant="h2" sx={{ mb: 1, fontSize: '2rem', color: '#1C2833' }}>
           Payment
         </Typography>
         <Box sx={{ height: 4, width: 48,
           background: 'linear-gradient(90deg, #C0392B, #E74C3C)',
           borderRadius: 2, mb: 4 }} />
-
         {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
-
         {/* Order total from checkout */}
         {order && (
           <Card sx={{ mb: 3 }}>
@@ -178,7 +194,6 @@ export default function PaymentPage() {
             </CardContent>
           </Card>
         )}
-
         {/* Saved methods */}
         {!fetchingMethods && savedMethods.length > 0 && (
           <Card sx={{ mb: 3 }}>
@@ -208,7 +223,6 @@ export default function PaymentPage() {
             </CardContent>
           </Card>
         )}
-
         {/* New card form */}
         {selectedMethod === 'new' && (
           <Card sx={{ mb: 3 }}>
@@ -244,7 +258,6 @@ export default function PaymentPage() {
             </CardContent>
           </Card>
         )}
-
         <Button variant="contained" color="primary" fullWidth size="large"
           disabled={loading} onClick={handlePay}>
           {loading
@@ -252,7 +265,6 @@ export default function PaymentPage() {
             : `Pay Now${order ? ` · $${parseFloat(order.total).toFixed(2)}` : ''}`
           }
         </Button>
-
       </Box>
     </Box>
   );
