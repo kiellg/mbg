@@ -7,7 +7,7 @@ Bridges the cart and order systems:
 
 import re
 from decimal import Decimal
-from datetime import datetime, timezone
+from datetime import datetime
 from fastapi import HTTPException
 from app.repositories import cart_repo
 from app.repositories import user_repo
@@ -54,6 +54,7 @@ def _validate_scheduled_time_within_hours(
         detail=f"Scheduled time is outside restaurant opening hours ({opening_hours}).",
     )
 
+# pylint: disable=too-many-locals
 def checkout(restaurant_id: int,
              customer_id: str,
              delivery_method: DeliveryMethod,
