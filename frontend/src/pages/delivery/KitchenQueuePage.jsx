@@ -129,7 +129,7 @@ function OrderCard({ order, onAssignDriver, onCancelOrder, loading }) {
             Total
           </Typography>
           <Typography variant="body2" fontWeight={600}>
-            ${(parseInt(order.total) / 100).toFixed(2)}
+            ${parseFloat(order.total).toFixed(2)}
           </Typography>
         </Box>
 

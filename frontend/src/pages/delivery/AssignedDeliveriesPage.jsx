@@ -111,7 +111,6 @@ function DeliveryCard({ delivery, onUpdateStatus, loading }) {
             <Typography variant="body2" fontWeight={500}>
               {delivery.delivery_method === "walk" && "🚶 Walking"}
               {delivery.delivery_method === "bike" && "🚴 Bicycle"}
-              {delivery.delivery_method === "motorcycle" && "🏍️ Motorcycle"}
               {delivery.delivery_method === "car" && "🚗 Car"}
             </Typography>
           </Box>
