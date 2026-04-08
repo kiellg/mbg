@@ -5,8 +5,8 @@ import {
   import { SortOutlined } from '@mui/icons-material';
   
   const CUISINE_OPTIONS = [
-    'Italian', 'Japanese', 'Chinese', 'Mexican', 'Indian',
-    'Thai', 'American', 'Mediterranean', 'Korean', 'Vietnamese',
+    'italian', 'japanese', 'chinese', 'mexican', 'indian',
+    'thai', 'american', 'mediterranean', 'korean', 'vietnamese',
   ];
   
   export default function RestaurantFilters({
@@ -60,6 +60,7 @@ import {
             value={`${sortBy}-${order}`}
             onChange={handleSortChange}
             sx={{
+                gap: 1,
               '& .MuiToggleButton-root': {
                 px: 1.5, py: 0.5, fontSize: '0.75rem',
                 borderRadius: '8px !important',

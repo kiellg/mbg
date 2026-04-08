@@ -3,24 +3,45 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Paper, Skeleton } from '@mui/material';
 import { HistoryOutlined } from '@mui/icons-material';
 import { recentlyViewedApi } from '../../api/recentlyViewed';
+import { restaurantApi } from '../../api/restaurant';
 import { useAuth } from '../../context/AuthContext';
 
 export default function RecentlyViewed() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [items, setItems] = useState([]);
+  const [enriched, setEnriched] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     setLoading(true);
+
     recentlyViewedApi.getRecentlyViewed()
-      .then(({ data }) => setItems(data.items || []))
-      .catch(() => setItems([]))
+      .then(async ({ data }) => {
+        const items = (data.items || []).slice(0, 8);
+
+        // Fetch restaurant name for each item
+        const results = await Promise.allSettled(
+          items.map(async (item) => {
+            try {
+              const { data: restaurant } = await restaurantApi.getMenu(item.id);
+              return { ...item, name: restaurant.name };
+            } catch {
+              return { ...item, name: `Restaurant #${item.id}` };
+            }
+          })
+        );
+
+        setEnriched(results
+          .filter(r => r.status === 'fulfilled')
+          .map(r => r.value)
+        );
+      })
+      .catch(() => setEnriched([]))
       .finally(() => setLoading(false));
   }, [user]);
 
-  if (!user || (!loading && items.length === 0)) return null;
+  if (!user || (!loading && enriched.length === 0)) return null;
 
   const handleClick = (item) => {
     if (item.type === 'restaurant') {
@@ -43,10 +64,10 @@ export default function RecentlyViewed() {
       <Box sx={{ display: 'flex', gap: 1.5, overflowX: 'auto', pb: 1 }}>
         {loading
           ? [1, 2, 3].map(i => (
-            <Skeleton key={i} variant="rounded" width={120} height={40}
+            <Skeleton key={i} variant="rounded" width={140} height={40}
               sx={{ borderRadius: 2, flexShrink: 0 }} />
           ))
-          : items.slice(0, 8).map((item, i) => (
+          : enriched.map((item, i) => (
             <Paper key={i} elevation={0} onClick={() => handleClick(item)}
               sx={{
                 px: 1.5, py: 1, borderRadius: 2, flexShrink: 0,
@@ -55,8 +76,9 @@ export default function RecentlyViewed() {
                 '&:hover': { borderColor: 'primary.main', bgcolor: 'rgba(192,57,43,0.04)' },
               }}
             >
-              <Typography variant="caption" fontWeight={500} color="text.primary">
-                {item.type === 'restaurant' ? '🍽️' : '🍜'} {item.type} #{item.id}
+              <Typography variant="caption" fontWeight={500} color="text.primary" noWrap
+                sx={{ maxWidth: 140, display: 'block' }}>
+                🍽️ {item.name}
               </Typography>
             </Paper>
           ))
