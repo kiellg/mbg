@@ -31,12 +31,12 @@ const ROLE_NAV = {
     {
         label: "Home",
         to: "/restaurants/browse",
-        icon: <SearchOutlined fontSize="small" />,
+        icon: <HomeOutlined fontSize="small" />,
     },
     {
         label: "Search",
         to: "/restaurants",
-        icon: <RestaurantOutlined fontSize="small" />,
+        icon: <SearchOutlined fontSize="small" />,
     },
     {
       label: "My Profile",
@@ -53,12 +53,12 @@ const ROLE_NAV = {
     {
         label: "Home",
         to: "/restaurants/browse",
-        icon: <SearchOutlined fontSize="small" />,
+        icon: <HomeOutlined fontSize="small" />,
     },
     {
         label: "Search",
         to: "/restaurants",
-        icon: <RestaurantOutlined fontSize="small" />,
+        icon: <SearchOutlined fontSize="small" />,
     },
     {
       label: "Manage Restaurant",
@@ -75,12 +75,12 @@ const ROLE_NAV = {
     {
         label: "Home",
         to: "/restaurants/browse",
-        icon: <SearchOutlined fontSize="small" />,
+        icon: <HomeOutlined fontSize="small" />,
     },
     {
         label: "Search",
         to: "/restaurants",
-        icon: <RestaurantOutlined fontSize="small" />,
+        icon: <SearchOutlined fontSize="small" />,
     },
     {
       label: "Driver Profile",
