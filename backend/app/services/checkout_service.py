@@ -10,6 +10,7 @@ from fastapi import HTTPException
 from app.repositories import cart_repo
 from app.repositories import user_repo
 from app.repositories import restaurant_repo
+from app.repositories import order_repo
 from app.schemas.order import (
     DeliveryMethod,
     OrderCreate,
@@ -29,6 +30,23 @@ def checkout(restaurant_id: int,
     Raises 403 if the cart does not belong to the customer.
     Raises 400 if the cart is empty or already checked out."""
 
+    existing_pending = next(
+        (
+            o for o in order_repo.list_order_records()
+            if o["customer_id"] == customer_id
+            and o["restaurant_id"] == restaurant_id
+            and o["status"] == "Pending"
+        ),
+        None,
+    )
+    if existing_pending:
+        raise HTTPException(
+            status_code=400,
+            detail=f"You already have a pending order for this restaurant "
+                   f"(order #{existing_pending['order_id']}). "
+                   f"Please pay or cancel it before placing a new one."
+        )
+    
     cart = cart_repo.get_cart_by_customer_and_restaurant(customer_id, restaurant_id)
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found.")
