@@ -43,7 +43,9 @@ export default function CheckoutPage() {
       const { data } = await checkoutApi.checkout(restaurantId, {
         delivery_method: deliveryMethod,
         ...(couponCode && { coupon_code: couponCode }),
-      });
+                    });
+      // If a coupon was submitted, mark it as applied on success
+      if (couponCode) setCouponApplied(true);
       clearCart();
       // data is OrderResponse — navigate with order embedded in state
       navigate(`/payment/${data.order_id}`, { state: { order: data } });
