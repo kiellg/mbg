@@ -9,31 +9,49 @@ export function CartProvider({ children }) {
   const [error, setError]     = useState(null);
 
   const clearError = useCallback(() => setError(null), []);
+  const clearCart = useCallback(() => {
+    setCart(null);
+  }, []);
 
   const fetchCart = useCallback(async (restaurantId) => {
-    setLoading(true); setError(null);
-    try {
-      const { data } = await cartApi.getCart(restaurantId);
-      setCart(data);
+  setLoading(true); setError(null);
+  try {
+    const { data } = await cartApi.getCart(restaurantId);
+
+    // If cart has already been checked out, treat it as empty
+    if (data.checked_out) {
+      setCart(null);
       return { success: true };
-    } catch (err) {
-      const msg = err.response?.data?.detail || 'Failed to load cart';
-      setError(msg);
-      return { success: false, message: msg };
-    } finally { setLoading(false); }
+    }
+
+    setCart(data);
+    return { success: true };
+  } catch (err) {
+    if (err.response?.status === 404) {
+      setCart(null);
+      return { success: true };
+    }
+    const msg = err.response?.data?.detail || 'Failed to load cart';
+    setError(msg);
+    return { success: false, message: msg };
+  } finally { setLoading(false); }
   }, []);
 
   const addItem = useCallback(async (restaurantId, payload) => {
-    setLoading(true); setError(null);
-    try {
-      const { data } = await cartApi.addItem(restaurantId, payload);
-      setCart(data);
-      return { success: true };
-    } catch (err) {
-      const msg = err.response?.data?.detail || 'Failed to add item';
-      setError(msg);
-      return { success: false, message: msg };
-    } finally { setLoading(false); }
+  setLoading(true); setError(null);
+  try {
+    const { data } = await cartApi.addItem(restaurantId, payload);
+    setCart(data);
+    return { success: true };
+  } catch (err) {
+    const msg = err.response?.data?.detail || 'Failed to add item';
+    // Checked-out cart — clear local state so next fetchCart starts fresh
+    if (typeof msg === 'string' && msg.toLowerCase().includes('checked out')) {
+      setCart(null);
+    }
+    setError(msg);
+    return { success: false, message: msg };
+  } finally { setLoading(false); }
   }, []);
 
   const updateItem = useCallback(async (restaurantId, itemId, {quantity: qty}) => {
@@ -63,7 +81,7 @@ export function CartProvider({ children }) {
   }, []);
 
   return (
-    <CartContext.Provider value={{ cart, loading, error, clearError, fetchCart, addItem, updateItem, removeItem }}>
+    <CartContext.Provider value={{ cart, loading, error, clearError, fetchCart, addItem, updateItem, removeItem, clearCart }}>
       {children}
     </CartContext.Provider>
   );

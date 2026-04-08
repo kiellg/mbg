@@ -9,7 +9,9 @@ def get_cart_by_customer_and_restaurant(customer_id: str,
                                         restaurant_id: int) -> Optional[Dict[str, Any]]:
     """Search for a cart matching the given customer and restaurant IDs."""
     for cart in cart_data._CARTDB.values():
-        if cart["customer_id"] == customer_id and cart["restaurant_id"] == restaurant_id:
+        if (cart["customer_id"] == customer_id
+        and cart["restaurant_id"] == restaurant_id
+        and not cart.get("checked_out", False)):
             return cart
     return None
 
