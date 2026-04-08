@@ -1,7 +1,7 @@
 """Service layer for order management, handling business logic
 and interactions with the order repository."""
 from decimal import Decimal
-from datetime import datetime
+from datetime import datetime, timezone
 from types import SimpleNamespace
 from fastapi import HTTPException
 
@@ -145,8 +145,15 @@ def _build_order_response(order: dict) -> OrderResponse:
 
 def create_order(payload: OrderCreate) -> OrderResponse:
     """Create a new order and return the created order details."""
-    if payload.scheduled_time:
-        if payload.scheduled_time <= datetime.utcnow():
+    scheduled_time = payload.scheduled_time
+
+    if scheduled_time:
+        now = datetime.now(timezone.utc)
+
+        if scheduled_time.tzinfo is None:
+            scheduled_time = scheduled_time.replace(tzinfo=timezone.utc)
+
+        if scheduled_time <= now:
             raise HTTPException(
                 status_code=400,
                 detail="Scheduled time must be in the future",
@@ -166,8 +173,8 @@ def create_order(payload: OrderCreate) -> OrderResponse:
         delivery_address=payload.delivery_address,
         items=items,
         delivery_method=payload.delivery_method.value,
-        status=payload.status.value,
-        scheduled_time=payload.scheduled_time.isoformat() if payload.scheduled_time else None,
+        status = "Scheduled" if scheduled_time else payload.status.value,
+        scheduled_time=scheduled_time.isoformat() if scheduled_time else None,
         coupon_code=payload.coupon_code,
         coupon_snapshot=(
             payload.coupon_snapshot.model_dump(mode="json")
@@ -285,11 +292,14 @@ def cancel_order(order_id: str) -> OrderResponse:
 
 def _process_scheduled_orders():
     """Activate scheduled orders when their scheduled_time is reached"""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     for order in order_repo.list_order_records():
         if order.get("is_scheduled") and order.get("scheduled_time"):
             scheduled_time = datetime.fromisoformat(order["scheduled_time"])
+
+            if scheduled_time.tzinfo is None:
+                scheduled_time = scheduled_time.replace(tzinfo=timezone.utc)
 
             if scheduled_time <= now:
                 order_repo.update_order_record(
