@@ -23,6 +23,7 @@ def checkout(restaurant_id: int,
              customer_id: str,
              delivery_method: DeliveryMethod,
              coupon_code: str | None = None,
+             scheduled_time=None,
              ) -> OrderResponse:
     """Convert a cart into a new pending order.
     Raises 404 if the cart is not found.
@@ -70,6 +71,7 @@ def checkout(restaurant_id: int,
         items=items,
         coupon_code=coupon_snapshot["code"] if coupon_snapshot else None,
         coupon_snapshot=coupon_snapshot,
+        scheduled_time=scheduled_time
     )
 
     order = order_service.create_order(payload)
