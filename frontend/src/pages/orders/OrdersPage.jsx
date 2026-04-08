@@ -7,11 +7,13 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
+import ScheduleIcon from '@mui/icons-material/Schedule';
 import DashboardLayout from '../../components/shared/DashboardLayout';
 import ReviewDialog from '../../components/orders/ReviewDialog';
 import { ordersApi } from '../../api/orders';
 
 const STATUS_COLOR = {
+  'Scheduled':        'default',
   'Pending':          'warning',
   'Cooking':          'info',
   'Out for Delivery': 'primary',
@@ -104,6 +106,15 @@ export default function OrdersPage() {
                   </Typography>
                 ))}
               </Stack>
+
+              {order.is_scheduled && order.scheduled_time && order.status === 'Scheduled' && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                  <ScheduleIcon fontSize="small" sx={{ color: 'text.secondary', fontSize: 14 }} />
+                  <Typography variant="caption" color="text.secondary">
+                    Activates: {new Date(order.scheduled_time).toLocaleString()}
+                  </Typography>
+                </Box>
+              )}
 
               {/* Expandable cost breakdown */}
               <Collapse in={!!expanded[order.order_id]}>

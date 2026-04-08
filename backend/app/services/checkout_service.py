@@ -4,7 +4,7 @@ Bridges the cart and order systems:
 - Converts cart item from cents to Decimal for order pricing
 - Creates the order via order_service
 - Marks the cart as checked out to prevent further modifications"""
-
+from datetime import datetime
 from decimal import Decimal
 from fastapi import HTTPException
 from app.repositories import cart_repo
@@ -24,6 +24,8 @@ def checkout(restaurant_id: int,
              customer_id: str,
              delivery_method: DeliveryMethod,
              coupon_code: str | None = None,
+             is_scheduled: bool = False,
+             scheduled_time: datetime | None = None,
              ) -> OrderResponse:
     """Convert a cart into a new pending order.
     Raises 404 if the cart is not found.
@@ -88,6 +90,8 @@ def checkout(restaurant_id: int,
         items=items,
         coupon_code=coupon_snapshot["code"] if coupon_snapshot else None,
         coupon_snapshot=coupon_snapshot,
+        is_scheduled=is_scheduled,
+        scheduled_time=scheduled_time,
     )
 
     order = order_service.create_order(payload)

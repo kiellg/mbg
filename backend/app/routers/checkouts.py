@@ -54,4 +54,6 @@ def checkout(
         customer_id=current_user["user_id"],
         delivery_method=payload.delivery_method,
         coupon_code=payload.coupon_code,
+        is_scheduled=payload.is_scheduled,
+        scheduled_time=payload.scheduled_time,
     )
