@@ -1,4 +1,5 @@
 """Router for user endpoints"""
+#pylint: disable=trailing-whitespace
 from typing import Optional
 from fastapi import APIRouter, Header
 
@@ -27,7 +28,6 @@ def get_drivers(
                 "is_available": driver_data.get("is_available", True),
             }
             
-            # Filter by delivery_method if provided
             if delivery_method is None or driver_info["delivery_method"] == delivery_method:
                 drivers.append(driver_info)
     
