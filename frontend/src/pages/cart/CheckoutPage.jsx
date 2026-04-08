@@ -27,7 +27,7 @@ export default function CheckoutPage() {
         ...(couponCode && { coupon_code: couponCode }),
       });
       // data should return the order_id → hand off to Payment
-      // navigate(`/payment/${data.order_id}`);
+      navigate(`/payment/${data.order_id}`);
     } catch (err) {
       setError(err.response?.data?.detail || 'Checkout failed. Please try again.');
     } finally { setLoading(false); }
