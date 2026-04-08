@@ -7,13 +7,11 @@ import {
 import { useRestaurant } from '../../../context/RestaurantContext';
 import { restaurantApi } from '../../../api/restaurant';
 import DashboardLayout from '../../../components/shared/DashboardLayout';
-import { useAuth } from '../../../context/AuthContext'; // adjust path if needed
-
-
+import { useAuth } from '../../../context/AuthContext';
 
 export default function ManageRestaurantPage() {
     const navigate = useNavigate();
-    const { user } = useAuth(); // assumes { user: { id, ... } }
+    const { user } = useAuth();
     const { createRestaurant, updateRestaurant, loading, error } = useRestaurant();
     const [restaurant, setRestaurant] = useState(null);
     const [fetching, setFetching] = useState(true);
@@ -25,11 +23,11 @@ export default function ManageRestaurantPage() {
 
 
     useEffect(() => {
+        const managerId = user?.user_id;
+
         restaurantApi.getAll()
             .then(({ data }) => {
-                // Find the restaurant owned by the current manager, not just data[0],
-                // to avoid loading another manager's restaurant when multiple exist.
-                const owned = data.find((r) => String(r.owner_id) === String(user?.id));
+                const owned = data.find((r) => String(r.owner_id) === String(managerId));
                 if (owned) {
                     setRestaurant(owned);
                     setForm({
@@ -39,10 +37,13 @@ export default function ManageRestaurantPage() {
                         cuisine_type: owned.cuisine_type ?? '',
                         rating: owned.rating ?? '',
                     });
+                    return;
                 }
+
+                setRestaurant(null);
             })
             .finally(() => setFetching(false));
-    }, [user?.id]);
+    }, [user?.user_id]);
 
 
 
