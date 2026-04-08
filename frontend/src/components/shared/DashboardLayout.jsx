@@ -16,7 +16,7 @@ import {
   DashboardOutlined, GroupOutlined, ConfirmationNumberOutlined,
   LogoutOutlined, MenuOutlined, RestaurantOutlined,
   FavoriteOutlined, MenuBookOutlined, HomeOutlined, SearchOutlined,
-  ReceiptLongOutlined
+  ReceiptLongOutlined, LocalShippingOutlined
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 
