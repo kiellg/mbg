@@ -28,6 +28,7 @@ import FavouritesPage       from './pages/FavouritesPage';
 import CartPage     from './pages/cart/CartPage';
 import CheckoutPage from './pages/cart/CheckoutPage';
 import PaymentPage  from './pages/payment/PaymentPage';
+import OrdersPage from './pages/orders/OrdersPage';
 
 export default function App() {
   return (
@@ -58,6 +59,7 @@ export default function App() {
                   <Route path="/cart/:restaurantId"     element={<CartPage />} />
                   <Route path="/checkout/:restaurantId" element={<CheckoutPage />} />
                   <Route path="/payment/:orderId"       element={<PaymentPage />} />
+                  <Route path="/orders" element={<OrdersPage />} />
                 </Route>
 
                 {/* Driver only */}

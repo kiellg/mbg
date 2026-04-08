@@ -15,7 +15,7 @@ import {
   PersonOutlined, StoreOutlined, TwoWheelerOutlined,
   DashboardOutlined, GroupOutlined, ConfirmationNumberOutlined,
   LogoutOutlined, MenuOutlined, RestaurantOutlined,
-  FavoriteOutlined, MenuBookOutlined,
+  FavoriteOutlined, MenuBookOutlined, ReceiptLongOutlined,
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 
@@ -42,6 +42,11 @@ const ROLE_NAV = {
       label: "Favourites",
       to: "/favourites",
       icon: <FavoriteOutlined fontSize="small" />,
+    },
+    {
+    label: "My Orders",
+    to: "/orders",
+    icon: <ReceiptLongOutlined fontSize="small" />,
     },
   ],
   manager: [

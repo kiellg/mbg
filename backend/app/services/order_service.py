@@ -191,11 +191,13 @@ def get_order(order_id: str) -> OrderResponse:
 
     return _build_order_response(order)
 
-def list_orders() -> list[OrderResponse]:
+def list_orders(user_id: str | None = None) -> list[OrderResponse]:
     """List all orders"""
     _process_scheduled_orders()
 
     orders = order_repo.list_order_records()
+    if user_id:
+        orders = [o for o in orders if o["customer_id"] == user_id]
     return [_build_order_response(order) for order in orders]
 
 def update_order(order_id: str, payload: OrderUpdate) -> OrderResponse:

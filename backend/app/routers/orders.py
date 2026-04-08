@@ -35,4 +35,4 @@ def create_order(
 @router.get("", response_model=list[OrderResponse])
 def list_order(_current_user: dict = Depends(get_current_user)):
     """List all orders"""
-    return order_service.list_orders()
+    return order_service.list_orders(user_id=_current_user["user_id"])
