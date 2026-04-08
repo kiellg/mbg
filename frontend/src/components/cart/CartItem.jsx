@@ -11,20 +11,19 @@ export default function CartItem({ item, restaurantId }) {
     <Box sx={{ display: 'flex', alignItems: 'center', py: 2,
       borderBottom: '1px solid #EDE5D8', gap: 2 }}>
 
-      {/* Name + price */}
       <Box sx={{ flex: 1 }}>
         <Typography variant="body1" fontWeight={600} color="secondary">
           {item.item_name}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          ${item.display_unit_price} each
+          {item.display_unit_price} each
         </Typography>
       </Box>
 
-      {/* Quantity controls */}
       <Stack direction="row" alignItems="center" spacing={0.5}>
-        <IconButton size="small" disabled={loading || item.quantity <= 1}
-          onClick={() => updateItem(restaurantId, item.id, item.quantity - 1)}
+        <IconButton size="small"
+          disabled={loading || item.quantity <= 1}
+          onClick={() => updateItem(restaurantId, item.id, { quantity: item.quantity - 1 })}
           sx={{ color: '#C0392B' }}>
           <RemoveIcon fontSize="small" />
         </IconButton>
@@ -34,18 +33,17 @@ export default function CartItem({ item, restaurantId }) {
         </Typography>
 
         <IconButton size="small" disabled={loading}
-          onClick={() => updateItem(restaurantId, item.id, item.quantity + 1)}
+          onClick={() => updateItem(restaurantId, item.id, { quantity: item.quantity + 1 })}
           sx={{ color: '#C0392B' }}>
           <AddIcon fontSize="small" />
         </IconButton>
       </Stack>
 
-      {/* Subtotal */}
-      <Typography variant="body1" fontWeight={700} sx={{ minWidth: 64, textAlign: 'right', color: '#1C2833' }}>
-        ${item.display_item_subtotal}
+      <Typography variant="body1" fontWeight={700}
+        sx={{ minWidth: 64, textAlign: 'right', color: '#1C2833' }}>
+        {item.display_item_subtotal}
       </Typography>
 
-      {/* Remove */}
       <IconButton size="small" disabled={loading}
         onClick={() => removeItem(restaurantId, item.id)}
         sx={{ color: '#5D6D7E', '&:hover': { color: '#C0392B' } }}>
