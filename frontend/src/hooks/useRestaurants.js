@@ -3,6 +3,7 @@ import { restaurantApi } from '../api/restaurant';
 
 export function useRestaurants() {
   const [restaurants, setRestaurants] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);

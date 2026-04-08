@@ -11,7 +11,7 @@ export function useSearchSuggestions() {
     if (!query.trim()) {
       setSuggestions([]);
       setLoading(false);
-      clearTimeout(debounceRef, current);
+      clearTimeout(debounceRef.current);
       return;
     }
 
