@@ -14,6 +14,9 @@ import CustomerProfilePage from './pages/profile/CustomerProfilePage';
 import DriverProfilePage   from './pages/profile/DriverProfilePage';
 import ManagerProfilePage  from './pages/profile/ManagerProfilePage';
 
+import CartPage from './pages/cart/CartPage';
+import CheckoutPage from './pages/cart/CheckoutPage';
+
 export default function App() {
   return (
     <ThemeProvider theme={theme}>
@@ -33,6 +36,8 @@ export default function App() {
 
             <Route element={<ProtectedRoute roles={['customer']} />}>
               <Route path="/profile/customer" element={<CustomerProfilePage />} />
+              <Route path="/cart/:restaurantId" element={<CartPage />} />
+              <Route path="/checkout/:restaurantId" element={<CheckoutPage />} />
             </Route>
 
             <Route element={<ProtectedRoute roles={['driver']} />}>
