@@ -68,14 +68,9 @@ export default function PaymentPage() {
           cardholder_name: cardholderName, // required field
         });
       }
-      // Check for a declined status returned in the response body
-      // (some payment APIs return 200 with a status field instead of throwing)
-      const payStatus = payResult?.data?.status;
-      if (payStatus && payStatus !== 'success' && payStatus !== 'paid') {
-        setError(
-          payResult?.data?.message ||
-          'Your payment was declined. Please check your card details and try again.'
-        );
+      // Backend returns PaymentStatus "Accepted" or "Declined" (never throws for declined)
+      if (payResult?.data?.status === 'Declined') {
+        setError('Your payment was declined. Please check your card details and try again.');
         return;
       }
       const { data } = await paymentApi.getReceipt(orderId);
