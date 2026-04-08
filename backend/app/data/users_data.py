@@ -11,7 +11,7 @@ SEEDED_ADMIN_PASSWORD = "admin123"
 USER_SEED: Dict[str, Dict[str, Any]] = {
     SEEDED_ADMIN_EMAIL: {
         "user_id": SEEDED_ADMIN_USER_ID,
-        "name": "Seeded Admin",
+        "name": "Admin",
         "email": SEEDED_ADMIN_EMAIL,
         "password_hash": hashlib.sha256(SEEDED_ADMIN_PASSWORD.encode()).hexdigest(),
     }
