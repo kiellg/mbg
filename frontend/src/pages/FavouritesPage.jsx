@@ -72,10 +72,14 @@ export default function FavouritesPage() {
             .finally(() => setLoading(false));
     }, []);
 
-    const handleRemove = async (targetId, targetType) => {
-        await favouritesApi.remove(String(targetId), targetType);
+    const handleRemove = async (targetId, targetType, restaurantId = null) => {
+        await favouritesApi.remove(String(targetId), targetType, restaurantId);
         setFavourites((prev) =>
-            prev.filter((f) => !(String(f.target_id) === String(targetId) && f.target_type === targetType))
+            prev.filter((f) => !(
+                String(f.target_id) === String(targetId) &&
+                f.target_type === targetType &&
+                (targetType !== 'menu_item' || String(f.restaurant_id) === String(restaurantId))
+            ))
         );
     };
 
@@ -223,7 +227,7 @@ function FavouriteCard({ fav, onRemove, onNavigate }) {
                 </CardActionArea>
                 <Tooltip title="Remove from favourites">
                     <IconButton size="small" sx={{ mr: 1.5 }}
-                        onClick={() => onRemove(fav.target_id, fav.target_type)}>
+                        onClick={() => onRemove(fav.target_id, fav.target_type, fav.restaurant_id)}>
                         <Favorite fontSize="small" sx={{ color: 'error.main' }} />
                     </IconButton>
                 </Tooltip>

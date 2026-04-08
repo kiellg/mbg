@@ -39,15 +39,17 @@ export default function App() {
 
               {/* Any logged-in user */}
               <Route element={<ProtectedRoute />}>
-                <Route path="/me"           element={<MePage />} />
-                <Route path="/restaurants"  element={<RestaurantListPage />} />
+                <Route path="/me"              element={<MePage />} />
+                <Route path="/restaurants"     element={<RestaurantListPage />} />
                 <Route path="/restaurants/:id" element={<RestaurantDetailPage />} />
-                <Route path="/favourites"   element={<FavouritesPage />} />
+                <Route path="/favourites"      element={<FavouritesPage />} />
               </Route>
 
               {/* Customer only */}
               <Route element={<ProtectedRoute roles={['customer']} />}>
-                <Route path="/profile/customer" element={<CustomerProfilePage />} />
+                <Route path="/profile/customer"          element={<CustomerProfilePage />} />
+                <Route path="/cart/:restaurantId"         element={<CartPage />} />
+                <Route path="/checkout/:restaurantId"     element={<CheckoutPage />} />
               </Route>
 
               {/* Driver only */}
@@ -57,44 +59,15 @@ export default function App() {
 
               {/* Manager only */}
               <Route element={<ProtectedRoute roles={['manager']} />}>
-                <Route path="/profile/manager"          element={<ManagerProfilePage />} />
-                <Route path="/manager/restaurant"       element={<ManageRestaurantPage />} />
-                <Route path="/manager/restaurant/menu"  element={<ManageMenuPage />} />
+                <Route path="/profile/manager"         element={<ManagerProfilePage />} />
+                <Route path="/manager/restaurant"      element={<ManageRestaurantPage />} />
+                <Route path="/manager/restaurant/menu" element={<ManageMenuPage />} />
               </Route>
 
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
           </BrowserRouter>
         </RestaurantProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/"                element={<Navigate to="/login" replace />} />
-            <Route path="/login"           element={<LoginPage />} />
-            <Route path="/register"        element={<RegisterPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password"  element={<ResetPasswordPage />} />
-
-            <Route element={<ProtectedRoute />}>
-              <Route path="/me" element={<MePage />} />
-            </Route>
-
-            <Route element={<ProtectedRoute roles={['customer']} />}>
-              <Route path="/profile/customer" element={<CustomerProfilePage />} />
-              <Route path="/cart/:restaurantId" element={<CartPage />} />
-              <Route path="/checkout/:restaurantId" element={<CheckoutPage />} />
-            </Route>
-
-            <Route element={<ProtectedRoute roles={['driver']} />}>
-              <Route path="/profile/driver" element={<DriverProfilePage />} />
-            </Route>
-
-            <Route element={<ProtectedRoute roles={['manager']} />}>
-              <Route path="/profile/manager" element={<ManagerProfilePage />} />
-            </Route>
-
-            <Route path="*" element={<Navigate to="/login" replace />} />
-          </Routes>
-        </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
   );

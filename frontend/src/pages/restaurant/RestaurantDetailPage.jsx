@@ -37,13 +37,12 @@ export default function RestaurantDetailPage() {
 
 
     const toggleFavourite = async (targetId, targetType, restaurantId = null) => {
-        // ✅ key includes restaurantId for menu items so different restaurants don't collide
         const key = targetType === 'menu_item'
             ? `menu_item:${String(restaurantId)}:${String(targetId)}`
             : `restaurant:${String(targetId)}`;
         try {
             if (favourites.has(key)) {
-                await favouritesApi.remove(String(targetId), targetType);
+                await favouritesApi.remove(String(targetId), targetType, restaurantId);
                 setFavourites((prev) => { const s = new Set(prev); s.delete(key); return s; });
             } else {
                 await favouritesApi.add(String(targetId), targetType, restaurantId);
