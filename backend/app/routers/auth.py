@@ -77,6 +77,7 @@ def login(payload: LoginRequest, response: Response):
         "user_id": user["user_id"],
         "email": user["email"],
         "role": user["role"],
+        "session_token": session_token,
     }
 
 @router.post("/logout")

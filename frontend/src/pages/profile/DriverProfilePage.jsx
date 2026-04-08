@@ -12,7 +12,6 @@ import { useAuth } from '../../context/AuthContext';
 
 const DELIVERY_METHODS = [
   { value: 'bike',       label: '🚴 Bicycle'    },
-  { value: 'motorcycle', label: '🏍️ Motorcycle' },
   { value: 'car',        label: '🚗 Car'         },
   { value: 'scooter',    label: '🛵 Scooter'     },
 ];
