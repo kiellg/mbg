@@ -1,9 +1,16 @@
-import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
-  Box, Typography, Avatar, Chip, Divider,
-  IconButton, Drawer, useMediaQuery, useTheme,
-} from '@mui/material';
+  Box,
+  Typography,
+  Avatar,
+  Chip,
+  Divider,
+  IconButton,
+  Drawer,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import {
   PersonOutlined, StoreOutlined, TwoWheelerOutlined,
   DashboardOutlined, GroupOutlined, ConfirmationNumberOutlined,
@@ -21,17 +28,40 @@ const ROLE_NAV = {
     { label: 'Coupons', to: '/admin/coupons', icon: <ConfirmationNumberOutlined fontSize="small" /> },
   ],
   customer: [
-    { label: 'My Profile', to: '/profile/customer', icon: <PersonOutlined fontSize="small" /> },
-    { label: 'Restaurants', to: '/restaurants', icon: <RestaurantOutlined fontSize="small" /> },
-    { label: 'Favourites', to: '/favourites', icon: <FavoriteOutlined fontSize="small" /> },
+    {
+      label: "My Profile",
+      to: "/profile/customer",
+      icon: <PersonOutlined fontSize="small" />,
+    },
+    {
+      label: "Restaurants",
+      to: "/restaurants",
+      icon: <RestaurantOutlined fontSize="small" />,
+    },
+    {
+      label: "Favourites",
+      to: "/favourites",
+      icon: <FavoriteOutlined fontSize="small" />,
+    },
   ],
   manager: [
-    { label: 'Restaurant Profile', to: '/profile/manager', icon: <StoreOutlined fontSize="small" /> },
-    { label: 'Manage Restaurant', to: '/manager/restaurant', icon: <RestaurantOutlined fontSize="small" /> },
-    { label: 'Manage Menu', to: '/manager/restaurant/menu', icon: <MenuBookOutlined fontSize="small" /> },
+    {
+      label: "Manage Restaurant",
+      to: "/manager/restaurant",
+      icon: <RestaurantOutlined fontSize="small" />,
+    },
+    {
+      label: "Manage Menu",
+      to: "/manager/restaurant/menu",
+      icon: <MenuBookOutlined fontSize="small" />,
+    },
   ],
   driver: [
-    { label: 'Driver Profile', to: '/profile/driver', icon: <TwoWheelerOutlined fontSize="small" /> },
+    {
+      label: "Driver Profile",
+      to: "/profile/driver",
+      icon: <TwoWheelerOutlined fontSize="small" />,
+    },
   ],
 };
 
@@ -49,15 +79,42 @@ function SidebarContent({ user, onLogout }) {
   const initials = user?.email?.slice(0, 2).toUpperCase() ?? '??';
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', p: 2.5 }}>
+    <Box
+      sx={{ display: "flex", flexDirection: "column", height: "100%", p: 2.5 }}
+    >
       <Typography
-        sx={{ fontFamily: '"Playfair Display", serif', fontSize: '1.3rem', fontWeight: 700, color: '#C0392B', mb: 3 }}
+        sx={{
+          fontFamily: '"Playfair Display", serif',
+          fontSize: "1.3rem",
+          fontWeight: 700,
+          color: "#C0392B",
+          mb: 3,
+        }}
       >
         Chow
       </Typography>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, borderRadius: 3, bgcolor: 'rgba(192,57,43,0.05)', border: '1px solid rgba(192,57,43,0.1)', mb: 2.5 }}>
-        <Avatar sx={{ width: 38, height: 38, bgcolor: meta.color, fontSize: '0.85rem', fontWeight: 700 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1.5,
+          p: 1.5,
+          borderRadius: 3,
+          bgcolor: "rgba(192,57,43,0.05)",
+          border: "1px solid rgba(192,57,43,0.1)",
+          mb: 2.5,
+        }}
+      >
+        <Avatar
+          sx={{
+            width: 38,
+            height: 38,
+            bgcolor: meta.color,
+            fontSize: "0.85rem",
+            fontWeight: 700,
+          }}
+        >
           {initials}
         </Avatar>
         <Box sx={{ minWidth: 0 }}>
@@ -81,7 +138,12 @@ function SidebarContent({ user, onLogout }) {
       </Typography>
 
       {navItems.map((item) => (
-        <NavLink key={item.to} to={item.to} style={{ textDecoration: 'none' }}>
+        <NavLink
+          key={item.to}
+          to={item.to}
+          end
+          style={{ textDecoration: "none" }}
+        >
           {({ isActive }) => (
             <Box
               sx={{
@@ -140,18 +202,18 @@ export default function DashboardLayout({ children, contentMaxWidth = 720 }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const muiTheme = useTheme();
-  const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down("md"));
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   const sidebar = <SidebarContent user={user} onLogout={handleLogout} />;
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#F5F0EB' }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#F5F0EB" }}>
       {!isMobile && (
         <Box
           sx={{
@@ -177,7 +239,14 @@ export default function DashboardLayout({ children, contentMaxWidth = 720 }) {
         </Drawer>
       )}
 
-      <Box sx={{ flex: 1, ml: isMobile ? 0 : `${SIDEBAR_WIDTH}px`, display: 'flex', flexDirection: 'column' }}>
+      <Box
+        sx={{
+          flex: 1,
+          ml: isMobile ? 0 : `${SIDEBAR_WIDTH}px`,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         {isMobile && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.5, bgcolor: 'background.paper', borderBottom: '0.5px solid', borderColor: 'divider' }}>
             <IconButton size="small" onClick={() => setDrawerOpen(true)}>

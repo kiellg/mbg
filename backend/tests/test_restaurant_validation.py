@@ -1,5 +1,5 @@
 """Tests for restaurant and menu item validation and deletion"""
-
+#pylint: disable=no-value-for-parameter
 import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
