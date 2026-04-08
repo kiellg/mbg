@@ -63,19 +63,21 @@ export default function RestaurantDetailPage() {
 
   // Favourites toggle — edgarspy's logic untouched
   const toggleFavourite = async (targetId, targetType, restaurantId = null) => {
-    const key = targetType === 'menu_item'
-      ? `menu_item:${String(restaurantId)}:${String(targetId)}`
-      : `restaurant:${String(targetId)}`;
-    try {
-      if (favourites.has(key)) {
-        await favouritesApi.remove(String(targetId), targetType, restaurantId);
-        setFavourites((prev) => { const s = new Set(prev); s.delete(key); return s; });
-      } else {
-        await favouritesApi.add(String(targetId), targetType, restaurantId);
-        setFavourites((prev) => new Set(prev).add(key));
-      }
-    } catch (_) {}
-  };
+  const key = targetType === 'menu_item'
+    ? `menu_item:${String(restaurantId)}:${String(targetId)}`
+    : `restaurant:${String(targetId)}`;
+  try {
+    if (favourites.has(key)) {
+      await favouritesApi.remove(String(targetId), targetType, restaurantId);
+      setFavourites((prev) => { const s = new Set(prev); s.delete(key); return s; });
+    } else {
+      await favouritesApi.add(String(targetId), targetType, restaurantId);
+      setFavourites((prev) => new Set(prev).add(key));
+    }
+  } catch (_) {
+    setSnackbar({ open: true, message: 'Could not update favourites. Try again.', severity: 'error' });
+  }
+};
 
   // Cart item count for badge
   const cartItemCount = cart?.items?.reduce((sum, i) => sum + i.quantity, 0) ?? 0;

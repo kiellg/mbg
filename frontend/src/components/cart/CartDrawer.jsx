@@ -12,7 +12,8 @@ export default function CartDrawer({ open, onClose, restaurantId }) {
   const navigate = useNavigate();
   const { cart, loading, error } = useCart();
 
-  const items   = cart?.items ?? [];
+  const cartBelongsHere = cart?.restaurant_id === Number(restaurantId);
+  const items = cartBelongsHere ? (cart?.items ?? []) : [];
   const isEmpty = items.length === 0;
 
   return (
