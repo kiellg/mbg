@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useCallback } from "react";
-import { authApi } from "../api/auth";
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { authApi } from '../api/auth';
 
 const AuthContext = createContext(null);
 const AUTH_STORAGE_KEY = "mbg.auth.user";

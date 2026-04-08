@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box, Typography, CircularProgress, Alert,
   Chip, Divider, Stack, IconButton, Tooltip,
@@ -17,6 +17,7 @@ import { useAuth } from '../../context/AuthContext';
 
 export default function RestaurantDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { cart, addItem, fetchCart } = useCart();
 
@@ -144,6 +145,7 @@ export default function RestaurantDetailPage() {
               <Box sx={{ flex: 1 }}>
                 <MenuItemCard
                   item={item}
+                  onClick={() => navigate(`/restaurants/${id}/menu/${item.id}`)}
                   onAddToCart={isCustomer ? handleAddToCart : undefined}
                 />
               </Box>

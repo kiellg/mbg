@@ -12,20 +12,12 @@ import {
   useTheme,
 } from "@mui/material";
 import {
-  PersonOutlined,
-  StoreOutlined,
-  TwoWheelerOutlined,
-  DashboardOutlined,
-  GroupOutlined,
-  ConfirmationNumberOutlined,
-  LogoutOutlined,
-  MenuOutlined,
-  RestaurantOutlined,
-  FavoriteOutlined,
-  MenuBookOutlined,
-  LocalShippingOutlined,
-} from "@mui/icons-material";
-import { useAuth } from "../../context/AuthContext";
+  PersonOutlined, StoreOutlined, TwoWheelerOutlined,
+  DashboardOutlined, GroupOutlined, ConfirmationNumberOutlined,
+  LogoutOutlined, MenuOutlined, RestaurantOutlined,
+  FavoriteOutlined, MenuBookOutlined, HomeOutlined, SearchOutlined
+} from '@mui/icons-material';
+import { useAuth } from '../../context/AuthContext';
 
 const SIDEBAR_WIDTH = 240;
 
@@ -49,14 +41,19 @@ const ROLE_NAV = {
   ],
   customer: [
     {
+        label: "Home",
+        to: "/restaurants/browse",
+        icon: <HomeOutlined fontSize="small" />,
+    },
+    {
+        label: "Search",
+        to: "/restaurants",
+        icon: <SearchOutlined fontSize="small" />,
+    },
+    {
       label: "My Profile",
       to: "/profile/customer",
       icon: <PersonOutlined fontSize="small" />,
-    },
-    {
-      label: "Restaurants",
-      to: "/restaurants",
-      icon: <RestaurantOutlined fontSize="small" />,
     },
     {
       label: "Favourites",
@@ -65,6 +62,16 @@ const ROLE_NAV = {
     },
   ],
   manager: [
+    {
+        label: "Home",
+        to: "/restaurants/browse",
+        icon: <HomeOutlined fontSize="small" />,
+    },
+    {
+        label: "Search",
+        to: "/restaurants",
+        icon: <SearchOutlined fontSize="small" />,
+    },
     {
       label: "Manage Restaurant",
       to: "/manage/restaurant",
@@ -83,6 +90,16 @@ const ROLE_NAV = {
   ],
   driver: [
     {
+        label: "Home",
+        to: "/restaurants/browse",
+        icon: <HomeOutlined fontSize="small" />,
+    },
+    {
+        label: "Search",
+        to: "/restaurants",
+        icon: <SearchOutlined fontSize="small" />,
+    },
+    {
       label: "Driver Profile",
       to: "/profile/driver",
       icon: <TwoWheelerOutlined fontSize="small" />,
@@ -96,10 +113,10 @@ const ROLE_NAV = {
 };
 
 const ROLE_META = {
-  admin: { label: "Admin", emoji: "A", color: "#7D6608" },
-  customer: { label: "Customer", emoji: "C", color: "#C0392B" },
-  manager: { label: "Manager", emoji: "M", color: "#1A5276" },
-  driver: { label: "Driver", emoji: "D", color: "#1E8449" },
+  admin: { label: 'Admin', color: '#7D6608' },
+  customer: { label: 'Customer', color: '#C0392B' },
+  manager: { label: 'Manager', color: '#1A5276' },
+  driver: { label: 'Driver', color: '#1E8449' },
 };
 
 function SidebarContent({ user, onLogout }) {
@@ -161,7 +178,7 @@ function SidebarContent({ user, onLogout }) {
             {user?.email}
           </Typography>
           <Chip
-            label={`${meta.emoji} ${meta.label}`}
+            label={meta.label}
             size="small"
             sx={{
               height: 18,

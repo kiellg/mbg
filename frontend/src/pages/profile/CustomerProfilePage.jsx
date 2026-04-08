@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TextField, Button, Alert, Box, Typography } from '@mui/material';
 import { SaveOutlined, PersonOutlined } from '@mui/icons-material';
 import DashboardLayout from '../../components/shared/DashboardLayout';
@@ -12,6 +12,13 @@ export default function CustomerProfilePage() {
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [saved, setSaved] = useState(null);
+
+  // Fetch current profile on mount
+  useEffect(() => {
+    profileApi.getCustomer()
+      .then(({ data }) => setSaved(data))
+      .catch(() => {});
+  }, []);
 
   const handleChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -49,18 +56,24 @@ export default function CustomerProfilePage() {
           <Typography variant="body2" color="text.secondary">{user?.email}</Typography>
         </Box>
       </Box>
-      {saved && (
-        <ProfileSection title="Current info" description="Last saved values from the server">
-          <Box>
-            {[{ label: 'Name', value: saved.name }, { label: 'Delivery address', value: saved.delivery_address }].map(({ label, value }) => (
-              <Box key={label} sx={{ display: 'flex', gap: 2, py: 0.75, borderBottom: '0.5px solid', borderColor: 'divider', '&:last-child': { border: 'none' } }}>
-                <Typography variant="body2" color="text.secondary" sx={{ width: 140, flexShrink: 0 }}>{label}</Typography>
-                <Typography variant="body2" fontWeight={500}>{value || '—'}</Typography>
-              </Box>
-            ))}
-          </Box>
-        </ProfileSection>
-      )}
+
+      {/* Current info — always shown */}
+      <ProfileSection title="Current info">
+        <Box>
+          {[
+            { label: 'Email',            value: user?.email },
+            { label: 'Role',             value: 'Customer' },
+            { label: 'Name',             value: saved?.name || '—' },
+            { label: 'Delivery address', value: saved?.delivery_address || '—' },
+          ].map(({ label, value }) => (
+            <Box key={label} sx={{ display: 'flex', gap: 2, py: 0.75, borderBottom: '0.5px solid', borderColor: 'divider', '&:last-child': { border: 'none' } }}>
+              <Typography variant="body2" color="text.secondary" sx={{ width: 140, flexShrink: 0 }}>{label}</Typography>
+              <Typography variant="body2" fontWeight={500}>{value}</Typography>
+            </Box>
+          ))}
+        </Box>
+      </ProfileSection>
+
       <ProfileSection title="Update profile" description="Leave a field blank to keep its current value">
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {feedback && <Alert severity={feedback.type}>{feedback.message}</Alert>}

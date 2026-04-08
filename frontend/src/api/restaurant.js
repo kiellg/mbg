@@ -31,15 +31,20 @@ export const restaurantApi = {
   getMenuItem: (restaurantId, itemId) =>
     api.get(`/restaurants/${restaurantId}/menu/${itemId}`),
 
-  // Search & filter
-  search: (q) => api.get("/restaurants/search", { params: { q } }),
-  searchMenuItems: (q) =>
-    api.get("/restaurants/menu/search", { params: { q } }),
-  getSuggestions: (q) =>
-    api.get("/restaurants/search/suggestions", { params: { q } }),
-  filter: (cuisine_types) =>
-    api.get("/restaurants/filter", { params: { cuisine_types } }),
-  getCategories: () => api.get("/restaurants/categories"),
+    // Search & filter
+    search: (q) =>
+        api.get('/restaurants/search', { params: { q } }),
+    searchMenuItems: (q) =>
+        api.get('/restaurants/menu/search', { params: { q } }),
+    getSuggestions: (q) =>
+        api.get('/restaurants/search/suggestions', { params: { q } }),
+    filter: (cuisine_types) => {
+        const params = new URLSearchParams();
+        cuisine_types.forEach(t => params.append('cuisine_types', t));
+        return api.get(`/restaurants/filter?${params.toString()}`);
+    },
+    getCategories: () =>
+        api.get('/restaurants/categories'),
 
   // CRUD (manager)
   create: (payload) => {
