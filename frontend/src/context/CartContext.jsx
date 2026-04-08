@@ -36,10 +36,10 @@ export function CartProvider({ children }) {
     } finally { setLoading(false); }
   }, []);
 
-  const updateItem = useCallback(async (restaurantId, itemId, qty) => {
+  const updateItem = useCallback(async (restaurantId, itemId, {quantity: qty}) => {
     setLoading(true); setError(null);
     try {
-      const { data } = await cartApi.updateItem(restaurantId, itemId, qty);
+      const { data } = await cartApi.updateItem(restaurantId, itemId, {quantity: qty});
       setCart(data);
       return { success: true };
     } catch (err) {
@@ -52,8 +52,8 @@ export function CartProvider({ children }) {
   const removeItem = useCallback(async (restaurantId, itemId) => {
     setLoading(true); setError(null);
     try {
-      const { data } = await cartApi.removeItem(restaurantId, itemId);
-      setCart(data);
+      await cartApi.removeItem(restaurantId, itemId);
+      await fetchCart(restaurantId);
       return { success: true };
     } catch (err) {
       const msg = err.response?.data?.detail || 'Failed to remove item';

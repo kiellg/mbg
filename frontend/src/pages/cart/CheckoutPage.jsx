@@ -27,7 +27,7 @@ export default function CheckoutPage() {
         ...(couponCode && { coupon_code: couponCode }),
       });
       // data should return the order_id → hand off to Payment
-      navigate(`/payment/${data.order_id}`);
+      // navigate(`/payment/${data.order_id}`);
     } catch (err) {
       setError(err.response?.data?.detail || 'Checkout failed. Please try again.');
     } finally { setLoading(false); }
@@ -77,7 +77,7 @@ export default function CheckoutPage() {
             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
               <Typography variant="body1" fontWeight={700}>Order Total</Typography>
               <Typography variant="body1" fontWeight={700} color="primary">
-                ${cart?.total?.toFixed(2) ?? '—'}
+                ${cart?.display_cart_subtotal ?? '—'}
               </Typography>
             </Box>
           </CardContent>

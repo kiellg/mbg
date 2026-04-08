@@ -14,17 +14,17 @@ export default function CartItem({ item, restaurantId }) {
       {/* Name + price */}
       <Box sx={{ flex: 1 }}>
         <Typography variant="body1" fontWeight={600} color="secondary">
-          {item.name}
+          {item.item_name}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          ${item.unit_price.toFixed(2)} each
+          ${item.display_unit_price} each
         </Typography>
       </Box>
 
       {/* Quantity controls */}
       <Stack direction="row" alignItems="center" spacing={0.5}>
         <IconButton size="small" disabled={loading || item.quantity <= 1}
-          onClick={() => updateItem(restaurantId, item.item_id, item.quantity - 1)}
+          onClick={() => updateItem(restaurantId, item.id, item.quantity - 1)}
           sx={{ color: '#C0392B' }}>
           <RemoveIcon fontSize="small" />
         </IconButton>
@@ -34,7 +34,7 @@ export default function CartItem({ item, restaurantId }) {
         </Typography>
 
         <IconButton size="small" disabled={loading}
-          onClick={() => updateItem(restaurantId, item.item_id, item.quantity + 1)}
+          onClick={() => updateItem(restaurantId, item.id, item.quantity + 1)}
           sx={{ color: '#C0392B' }}>
           <AddIcon fontSize="small" />
         </IconButton>
@@ -42,12 +42,12 @@ export default function CartItem({ item, restaurantId }) {
 
       {/* Subtotal */}
       <Typography variant="body1" fontWeight={700} sx={{ minWidth: 64, textAlign: 'right', color: '#1C2833' }}>
-        ${(item.unit_price * item.quantity).toFixed(2)}
+        ${item.display_item_subtotal}
       </Typography>
 
       {/* Remove */}
       <IconButton size="small" disabled={loading}
-        onClick={() => removeItem(restaurantId, item.item_id)}
+        onClick={() => removeItem(restaurantId, item.id)}
         sx={{ color: '#5D6D7E', '&:hover': { color: '#C0392B' } }}>
         <DeleteOutlineIcon fontSize="small" />
       </IconButton>

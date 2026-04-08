@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function CartSummary({ cart, restaurantId }) {
   const navigate = useNavigate();
-  const total = cart?.total ?? 0;
+  const displayTotal = cart?.display_cart_subtotal ?? '—';
 
   return (
     <Box sx={{ mt: 3, p: 3, bgcolor: '#FDFBF8',
@@ -14,7 +14,7 @@ export default function CartSummary({ cart, restaurantId }) {
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
         <Typography variant="body2" color="text.secondary">Subtotal</Typography>
-        <Typography variant="body2">${total.toFixed(2)}</Typography>
+        <Typography variant="body2">{displayTotal}</Typography>
       </Box>
 
       <Divider sx={{ my: 1.5, borderColor: '#EDE5D8' }} />
@@ -22,11 +22,12 @@ export default function CartSummary({ cart, restaurantId }) {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2.5 }}>
         <Typography variant="body1" fontWeight={700}>Total</Typography>
         <Typography variant="body1" fontWeight={700} color="primary">
-          ${total.toFixed(2)}
+          {displayTotal}
         </Typography>
       </Box>
 
       <Button variant="contained" color="primary" fullWidth
+        disabled={!cart || cart.items.length === 0}
         onClick={() => navigate(`/checkout/${restaurantId}`)}>
         Proceed to Checkout
       </Button>
