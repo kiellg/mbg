@@ -12,6 +12,7 @@ import { paymentApi } from '../../api/payment';
 export default function PaymentPage() {
   const { orderId } = useParams();
   const navigate = useNavigate();
+  const [cardholderName, setCardholderName] = useState('');
 
   const [savedMethods, setSavedMethods]   = useState([]);
   const [selectedMethod, setSelectedMethod] = useState('new'); // 'new' or savedMethod id
@@ -41,8 +42,9 @@ export default function PaymentPage() {
         // Pay with new card
         await paymentApi.processPayment(orderId, {
           card_number: cardNumber,
-          expiry,
+          expiry_date: expiry,
           cvv,
+          cardholder_name: cardholderName,
         });
       }
       // Fetch receipt on success
@@ -103,9 +105,12 @@ export default function PaymentPage() {
               <RadioGroup value={selectedMethod}
                 onChange={(e) => setSelectedMethod(e.target.value)}>
                 {savedMethods.map((m) => (
-                  <FormControlLabel key={m.id} value={String(m.id)}
-                    control={<Radio color="primary" />}
-                    label={`•••• •••• •••• ${m.last4} — ${m.brand}`} />
+                    <FormControlLabel
+                    key={m.saved_method_id}
+                    value={m.saved_method_id}           // was m.id
+                    control={<Radio />}
+                    label={`${m.nickname ?? 'Card'} •••• ${m.last4} — ${m.expiry_date}`}  // no m.brand
+                    />
                 ))}
                 <FormControlLabel value="new"
                   control={<Radio color="primary" />}
@@ -127,6 +132,9 @@ export default function PaymentPage() {
               </Stack>
 
               <Stack spacing={2}>
+                <TextField fullWidth size="small" label="Cardholder Name"
+                placeholder="John Smith"
+                value={cardholderName} onChange={(e) => setCardholderName(e.target.value)} />
                 <TextField fullWidth size="small" label="Card Number"
                   placeholder="1234 5678 9012 3456"
                   value={cardNumber} onChange={(e) => setCardNumber(e.target.value)}
