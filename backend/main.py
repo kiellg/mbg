@@ -16,6 +16,7 @@ from app.routers.reviews import router as reviews_router
 from app.routers.favourites import router as favourites_router
 from app.routers.coupons import router as coupons_router
 from app.routers.admin import router as admin_router
+from app.routers.users import router as users_router
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -41,6 +42,7 @@ app.include_router(reviews_router)
 app.include_router(favourites_router)
 app.include_router(coupons_router)
 app.include_router(admin_router)
+app.include_router(users_router)
 
 @app.get("/health")
 def health():

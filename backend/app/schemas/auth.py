@@ -28,6 +28,7 @@ class LoginResponse(BaseModel):
     user_id: str
     email: EmailStr
     role: Optional[str]
+    session_token: str
 
 class PasswordResetRequest(BaseModel):
     """Request schema for sending a password reset link"""

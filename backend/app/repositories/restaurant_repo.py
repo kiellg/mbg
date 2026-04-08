@@ -272,7 +272,7 @@ def sort_restaurants(
     reverse = order == "desc"
 
     if sort_by == "rating":
-        return sorted(restaurants, key=lambda r: r.get("rating", 0), reverse=reverse)
+        return sorted(restaurants, key=lambda r: r.get("rating") or 0, reverse=reverse)
 
     return restaurants
 
