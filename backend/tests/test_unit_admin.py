@@ -1,5 +1,6 @@
-#pylint: disable=protected-access
+#pylint: disable=protected-access, duplicate-code
 """Unit tests for admin_service profile management"""
+from datetime import datetime, timezone
 import pytest
 from fastapi import HTTPException
 
@@ -11,8 +12,10 @@ from app.services import admin_service
 def reset_state():
     """Reset user data before and after each test"""
     user_repo.reset_users()
+    order_data._ORDERDB.clear()
     yield
     user_repo.reset_users()
+    order_data._ORDERDB.clear()
 
 def _add_customer(user_id="cust-1", email="cust@test.com"):
     """Helper to add a customer user for testing"""
@@ -79,3 +82,54 @@ def test_delete_user_clears_driver_reference():
     _add_customer()
     admin_service.delete_user("cust-1")
     assert order_data._ORDERDB["o1"]["driver_id"] == ""
+
+def _seed_order(order_id: str, status: str = "Delivered"):
+    order_data._ORDERDB[order_id] = {
+        "order_id": order_id,
+        "customer_id": "cust-1",
+        "restaurant_id": 1,
+        "status": status,
+        "created_at": datetime.now(timezone.utc),
+        "total": "20.00",
+    }
+
+
+def test_get_order_analytics_returns_correct_total():
+    """total_orders should reflect the number of seeded orders."""
+    _seed_order("o-1")
+    _seed_order("o-2")
+    result = admin_service.get_order_analytics()
+    assert result["total_orders"] >= 2
+
+
+def test_get_order_analytics_counts_by_status():
+    """orders_by_status should correctly group orders by their status."""
+    _seed_order("o-pending", status="Pending")
+    _seed_order("o-delivered", status="Delivered")
+    result = admin_service.get_order_analytics()
+    assert result["orders_by_status"]["Pending"] >= 1
+    assert result["orders_by_status"]["Delivered"] >= 1
+
+
+def test_get_order_analytics_counts_orders_today():
+    """Orders created today should appear in orders_today."""
+    _seed_order("o-today")
+    result = admin_service.get_order_analytics()
+    assert result["orders_today"] >= 1
+
+
+def test_get_order_analytics_counts_orders_this_week():
+    """Orders created today should appear in orders_this_week."""
+    _seed_order("o-week")
+    result = admin_service.get_order_analytics()
+    assert result["orders_this_week"] >= 1
+
+
+def test_get_order_analytics_empty_db():
+    """Analytics on empty order DB should return zeros."""
+    order_data._ORDERDB.clear()
+    result = admin_service.get_order_analytics()
+    assert result["total_orders"] == 0
+    assert result["orders_today"] == 0
+    assert result["orders_this_week"] == 0
+    assert not result["orders_by_status"]

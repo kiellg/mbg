@@ -8,7 +8,7 @@ from app.schemas.user import ProfileResponse
 from app.services import admin_service
 from app.services.role_service import require_admin
 
-router = APIRouter(prefix="/admin/users", tags=["admin-users"])
+router = APIRouter(prefix="/admin", tags=["admin"])
 
 def get_session_token(
     request: Request,
@@ -26,7 +26,7 @@ def authenticate_admin(
     """Authenticate the user and ensure they are an admin"""
     return require_admin(get_session_token(request, session_token))
 
-@router.get("", response_model=list[ProfileResponse])
+@router.get("/users", response_model=list[ProfileResponse])
 def list_profiles(
     request: Request,
     session_token: Optional[str] = Header(default=None),
@@ -35,7 +35,7 @@ def list_profiles(
     authenticate_admin(request, session_token)
     return admin_service.list_all_profiles()
 
-@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(
     user_id: str,
     request: Request,
@@ -44,3 +44,12 @@ def delete_user(
     """Delete a user and their role profile from all stores but not admin"""
     authenticate_admin(request, session_token)
     admin_service.delete_user(user_id)
+
+@router.get("/analytics/orders")
+def get_order_analytics(
+    request: Request,
+    session_token: Optional[str] = Header(default=None),
+):
+    """Get aggregated order analytics for admin dashboard"""
+    authenticate_admin(request, session_token)
+    return admin_service.get_order_analytics()
