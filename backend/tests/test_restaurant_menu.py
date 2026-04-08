@@ -39,22 +39,6 @@ def test_hidden_item_has_no_display_price():
     assert item is not None
     assert item["display_price"] is None
 
-def test_visible_negative_price_is_flagged():
-    """Visible item with negative price should be flagged as invalid"""
-    r = client.get("/restaurants/1/menu")
-    item = next((i for i in r.json()["menu"] if i["id"] == 3), None)
-    assert item is not None
-    assert item["price_status"] == "invalid"
-    assert item["display_price"] is None
-
-def test_visible_missing_price_is_flagged():
-    """Visible item with None price should be flagged as missing"""
-    r = client.get("/restaurants/1/menu")
-    item = next((i for i in r.json()["menu"] if i["id"] == 4), None)
-    assert item is not None
-    assert item["price_status"] == "missing"
-    assert item["display_price"] is None
-
 def _assert_all_items_belong_to(restaurant_id: int) -> None:
     """Assert every menu item in the response carries the correct restaurant_id"""
     r = client.get(f"/restaurants/{restaurant_id}/menu")

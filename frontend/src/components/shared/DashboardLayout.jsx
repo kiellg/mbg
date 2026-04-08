@@ -6,16 +6,27 @@ import {
 } from '@mui/material';
 import {
   PersonOutlined, StoreOutlined, TwoWheelerOutlined,
-  LogoutOutlined, MenuOutlined,
+  LogoutOutlined, MenuOutlined, RestaurantOutlined,
+  FavoriteOutlined, MenuBookOutlined,
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 
 const SIDEBAR_WIDTH = 240;
 
 const ROLE_NAV = {
-  customer: [{ label: 'My Profile',        to: '/profile/customer', icon: <PersonOutlined fontSize="small" /> }],
-  manager:  [{ label: 'Restaurant Profile', to: '/profile/manager',  icon: <StoreOutlined fontSize="small" /> }],
-  driver:   [{ label: 'Driver Profile',     to: '/profile/driver',   icon: <TwoWheelerOutlined fontSize="small" /> }],
+  customer: [
+    { label: 'My Profile',   to: '/profile/customer', icon: <PersonOutlined fontSize="small" /> },
+    { label: 'Restaurants',  to: '/restaurants',       icon: <RestaurantOutlined fontSize="small" /> },
+    { label: 'Favourites',   to: '/favourites',        icon: <FavoriteOutlined fontSize="small" /> },
+  ],
+  manager: [
+    { label: 'Restaurant Profile', to: '/profile/manager',         icon: <StoreOutlined fontSize="small" /> },
+    { label: 'Manage Restaurant',  to: '/manager/restaurant',      icon: <RestaurantOutlined fontSize="small" /> },
+    { label: 'Manage Menu',        to: '/manager/restaurant/menu', icon: <MenuBookOutlined fontSize="small" /> },
+  ],
+  driver: [
+    { label: 'Driver Profile', to: '/profile/driver', icon: <TwoWheelerOutlined fontSize="small" /> },
+  ],
 };
 
 const ROLE_META = {
