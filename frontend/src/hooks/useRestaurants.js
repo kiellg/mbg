@@ -36,6 +36,11 @@ export function useRestaurants() {
 
   const search = useCallback(async (q) => {
     if (!q.trim()) { fetch(); return; }
+
+    // Reset pagination state when searching
+    setPage(1);
+    setSortBy('rating');
+    setOrder('desc');
     setLoading(true);
     setError(null);
     try {
@@ -49,6 +54,14 @@ export function useRestaurants() {
     }
   }, [fetch]);
 
+  // Reset pagination when cuisine filter changes
+  const handleSetCuisineTypes = useCallback((val) => {
+    setPage(1);
+    setSortBy('rating');
+    setOrder('desc');
+    setCuisineTypes(val);
+  }, []);
+
   const totalPages = Math.ceil(total / limit);
 
   return {
@@ -57,6 +70,7 @@ export function useRestaurants() {
     sortBy, setSortBy,
     order, setOrder,
     cuisineTypes, setCuisineTypes,
+    setCuisineTypes: handleSetCuisineTypes,
     loading, error,
     search, refetch: fetch,
   };

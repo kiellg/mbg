@@ -12,19 +12,28 @@ export function useSearchSuggestions() {
       setSuggestions([]);
       return;
     }
+
+    let isCancelled = false;
+
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       setLoading(true);
       try {
         const { data } = await restaurantApi.getSuggestions(query);
-        setSuggestions(data.suggestions || []);
+        if (!isCancelled) {
+            setSuggestions(data.suggestions || []);
+        }
       } catch {
-        setSuggestions([]);
+        if (!isCancelled) setSuggestions([]);
       } finally {
-        setLoading(false);
+        if (!isCancelled) setLoading(false);
       }
     }, 300);
-    return () => clearTimeout(debounceRef.current);
+
+    return () => {
+        isCancelled = true;
+        clearTimeout(debounceRef.current);
+    };
   }, [query]);
 
   const clear = () => {

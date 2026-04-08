@@ -11,6 +11,11 @@ export function useMenuItems(restaurantId) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Reset page when restaurant changes
+  useEffect(() => {
+    setPage(1);
+  }, [restaurantId]);
+
   const fetch = useCallback(async () => {
     if (!restaurantId) return;
     setLoading(true);
