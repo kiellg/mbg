@@ -23,8 +23,14 @@ const DELIVERY_OPTIONS = [
 // Minimum scheduled time = 15 minutes from now
 function getMinScheduledTime() {
   const d = new Date(Date.now() + 15 * 60 * 1000);
-  // datetime-local input needs format: YYYY-MM-DDTHH:MM
-  return d.toISOString().slice(0, 16);
+  // Pad helper
+  const pad = (n) => String(n).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  const mm = pad(d.getMonth() + 1);
+  const dd = pad(d.getDate());
+  const hh = pad(d.getHours());
+  const min = pad(d.getMinutes());
+  return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
 }
 
 export default function CheckoutPage() {
