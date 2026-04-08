@@ -59,9 +59,9 @@ export default function MePage() {
 
   const roleRoute = {
     admin: '/admin',
-    customer: "/profile/customer",
-    manager: "/manager/restaurant",
-    driver: "/profile/driver",
+    customer: '/restaurants/browse',
+    manager: '/restaurants/browse',
+    driver: '/restaurants/browse',
   };
   if (user.role && roleRoute[user.role]) {
     return <Navigate to={roleRoute[user.role]} replace />;
