@@ -5,9 +5,10 @@ import AuthLayout from '../../components/shared/AuthLayout';
 import { useAuth } from '../../context/AuthContext';
 
 const ROLE_META = {
-  customer: { label: 'Customer', emoji: '🛍️', color: 'warning' },
-  manager:  { label: 'Manager',  emoji: '🏪', color: 'info'    },
-  driver:   { label: 'Driver',   emoji: '🚴', color: 'success' },
+  admin:    { label: 'Admin',    emoji: 'A', color: 'secondary' },
+  customer: { label: 'Customer', emoji: 'C', color: 'warning' },
+  manager:  { label: 'Manager',  emoji: 'M', color: 'info'    },
+  driver:   { label: 'Driver',   emoji: 'D', color: 'success' },
 };
 
 function InfoRow({ icon: Icon, label, value }) {
@@ -16,7 +17,7 @@ function InfoRow({ icon: Icon, label, value }) {
       <Icon sx={{ fontSize: 18, color: 'text.secondary', flexShrink: 0 }} />
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography variant="caption" color="text.secondary" display="block">{label}</Typography>
-        <Typography variant="body2" fontWeight={500} sx={{ wordBreak: 'break-all' }}>{value ?? '—'}</Typography>
+        <Typography variant="body2" fontWeight={500} sx={{ wordBreak: 'break-all' }}>{value ?? '--'}</Typography>
       </Box>
     </Box>
   );
@@ -34,12 +35,12 @@ export default function MePage() {
     );
   }
 
-  const roleRoute = { customer: '/profile/customer', manager: '/profile/manager', driver: '/profile/driver' };
+  const roleRoute = { admin: '/admin', customer: '/profile/customer', manager: '/profile/manager', driver: '/profile/driver' };
   if (user.role && roleRoute[user.role]) {
     return <Navigate to={roleRoute[user.role]} replace />;
   }
 
-  const meta = ROLE_META[user.role] || { label: user.role, emoji: '👤', color: 'default' };
+  const meta = ROLE_META[user.role] || { label: user.role, emoji: 'U', color: 'default' };
   const initials = user.email?.slice(0, 2).toUpperCase() ?? '??';
   const handleLogout = async () => { await logout(); navigate('/login'); };
 
