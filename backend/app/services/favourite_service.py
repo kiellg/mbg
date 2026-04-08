@@ -45,18 +45,23 @@ def add_favourite_for_user(
 
     _validate_target_exists(target_id, target_type, restaurant_id)
 
-    if is_favourite(user_id, target_id, target_type):
+    if is_favourite(user_id, target_id, target_type, restaurant_id):
         raise HTTPException(status_code=409, detail="Already in favourites")
 
-    record = add_favourite(user_id, target_id, target_type)
+    record = add_favourite(user_id, target_id, target_type, restaurant_id)
     return FavouriteResponse(**record)
 
-def remove_favourite_for_user(user_id: str, target_id: str, target_type: str) -> dict:
+def remove_favourite_for_user(
+    user_id: str,
+    target_id: str,
+    target_type: str,
+    restaurant_id: int | None = None,
+) -> dict:
     """Remove a restaurant or menu item from the user's favourites"""
-    if not is_favourite(user_id, target_id, target_type):
+    if not is_favourite(user_id, target_id, target_type, restaurant_id):
         raise HTTPException(status_code=404, detail="Favourite not found")
 
-    remove_favourite(user_id, target_id, target_type)
+    remove_favourite(user_id, target_id, target_type, restaurant_id)
     return {"detail": "Favourite removed successfully"}
 
 def list_favourites_for_user(user_id: str) -> list[FavouriteResponse]:

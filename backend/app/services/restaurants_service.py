@@ -71,6 +71,7 @@ def get_restaurant_menu(restaurant_id: int) -> RestaurantOut:
         order="asc",
     )
 
+    processed = []
     for item in record.get("menu", []):
         item["restaurant_id"] = restaurant_id
 
@@ -86,18 +87,22 @@ def get_restaurant_menu(restaurant_id: int) -> RestaurantOut:
         if not (visible and active):
             item["display_price"] = None
             item["price_status"] = PriceStatus.OK
+            processed.append(item)
             continue
 
         if cents is None:
-            item["display_price"] = None
             item["price_status"] = PriceStatus.MISSING
-        elif cents < 0:
-            item["display_price"] = None
-            item["price_status"] = PriceStatus.INVALID
-        else:
-            item["display_price"] = format_cad_from_cents(cents)
-            item["price_status"] = PriceStatus.OK
+            continue
 
+        if cents < 0:
+            item["price_status"] = PriceStatus.INVALID
+            continue
+
+        item["display_price"] = format_cad_from_cents(cents)
+        item["price_status"] = PriceStatus.OK
+        processed.append(item)
+
+    record["menu"] = processed
     return RestaurantOut(**record)
 
 def delete_restaurant_by_id(restaurant_id: int) -> None:
@@ -280,12 +285,22 @@ def get_restaurant_menu_paginated(
         raise HTTPException(status_code=404, detail="Restaurant not found")
 
     menu = record.get("menu", [])
-
     sorted_menu = sort_menu_items(menu, sort_by, order)
 
-    total = len(sorted_menu)
+    valid_menu = []
+    for item in sorted_menu:
+        cents = item.get("price_cents", None)
+        visible = item.get("is_available", True)
+        active = item.get("is_active", True)
+        if not (visible and active):
+            valid_menu.append(item)
+            continue
+        if cents is None or cents < 0:
+            continue
+        valid_menu.append(item)
 
-    items = paginate(sorted_menu, page, limit)
+    total = len(valid_menu)
+    items = paginate(valid_menu, page, limit)
 
     for item in items:
         item["restaurant_id"] = restaurant_id

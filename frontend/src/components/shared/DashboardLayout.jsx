@@ -7,7 +7,8 @@ import {
 import {
   PersonOutlined, StoreOutlined, TwoWheelerOutlined,
   DashboardOutlined, GroupOutlined, ConfirmationNumberOutlined,
-  LogoutOutlined, MenuOutlined,
+  LogoutOutlined, MenuOutlined, RestaurantOutlined,
+  FavoriteOutlined, MenuBookOutlined,
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 
@@ -19,9 +20,19 @@ const ROLE_NAV = {
     { label: 'Users', to: '/admin/users', icon: <GroupOutlined fontSize="small" /> },
     { label: 'Coupons', to: '/admin/coupons', icon: <ConfirmationNumberOutlined fontSize="small" /> },
   ],
-  customer: [{ label: 'My Profile', to: '/profile/customer', icon: <PersonOutlined fontSize="small" /> }],
-  manager: [{ label: 'Restaurant Profile', to: '/profile/manager', icon: <StoreOutlined fontSize="small" /> }],
-  driver: [{ label: 'Driver Profile', to: '/profile/driver', icon: <TwoWheelerOutlined fontSize="small" /> }],
+  customer: [
+    { label: 'My Profile', to: '/profile/customer', icon: <PersonOutlined fontSize="small" /> },
+    { label: 'Restaurants', to: '/restaurants', icon: <RestaurantOutlined fontSize="small" /> },
+    { label: 'Favourites', to: '/favourites', icon: <FavoriteOutlined fontSize="small" /> },
+  ],
+  manager: [
+    { label: 'Restaurant Profile', to: '/profile/manager', icon: <StoreOutlined fontSize="small" /> },
+    { label: 'Manage Restaurant', to: '/manager/restaurant', icon: <RestaurantOutlined fontSize="small" /> },
+    { label: 'Manage Menu', to: '/manager/restaurant/menu', icon: <MenuBookOutlined fontSize="small" /> },
+  ],
+  driver: [
+    { label: 'Driver Profile', to: '/profile/driver', icon: <TwoWheelerOutlined fontSize="small" /> },
+  ],
 };
 
 const ROLE_META = {
@@ -51,30 +62,45 @@ function SidebarContent({ user, onLogout }) {
         </Avatar>
         <Box sx={{ minWidth: 0 }}>
           <Typography variant="body2" fontWeight={600} noWrap sx={{ maxWidth: 130 }}>{user?.email}</Typography>
-          <Chip label={`${meta.emoji} ${meta.label}`} size="small"
-            sx={{ height: 18, fontSize: '0.65rem', bgcolor: `${meta.color}18`, color: meta.color, fontWeight: 600, border: 'none' }} />
+          <Chip
+            label={`${meta.emoji} ${meta.label}`}
+            size="small"
+            sx={{ height: 18, fontSize: '0.65rem', bgcolor: `${meta.color}18`, color: meta.color, fontWeight: 600, border: 'none' }}
+          />
         </Box>
       </Box>
 
       <Divider sx={{ mb: 1.5 }} />
 
-      <Typography variant="caption" color="text.secondary"
-        sx={{ px: 1, mb: 0.5, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ px: 1, mb: 0.5, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}
+      >
         {sectionLabel}
       </Typography>
 
       {navItems.map((item) => (
         <NavLink key={item.to} to={item.to} style={{ textDecoration: 'none' }}>
           {({ isActive }) => (
-            <Box sx={{
-              display: 'flex', alignItems: 'center', gap: 1.5,
-              px: 1.5, py: 1, borderRadius: 2, mb: 0.5,
-              bgcolor: isActive ? 'rgba(192,57,43,0.08)' : 'transparent',
-              color: isActive ? '#C0392B' : 'text.secondary',
-              fontFamily: '"Lora", serif', fontSize: '0.875rem',
-              fontWeight: isActive ? 600 : 400, transition: 'all 0.15s',
-              '&:hover': { bgcolor: 'rgba(192,57,43,0.05)', color: '#C0392B' },
-            }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                px: 1.5,
+                py: 1,
+                borderRadius: 2,
+                mb: 0.5,
+                bgcolor: isActive ? 'rgba(192,57,43,0.08)' : 'transparent',
+                color: isActive ? '#C0392B' : 'text.secondary',
+                fontFamily: '"Lora", serif',
+                fontSize: '0.875rem',
+                fontWeight: isActive ? 600 : 400,
+                transition: 'all 0.15s',
+                '&:hover': { bgcolor: 'rgba(192,57,43,0.05)', color: '#C0392B' },
+              }}
+            >
               {item.icon}
               {item.label}
             </Box>
@@ -85,14 +111,24 @@ function SidebarContent({ user, onLogout }) {
       <Box sx={{ flex: 1 }} />
       <Divider sx={{ mb: 1.5 }} />
 
-      <Box onClick={onLogout} sx={{
-        display: 'flex', alignItems: 'center', gap: 1.5,
-        px: 1.5, py: 1, borderRadius: 2, color: 'error.main',
-        cursor: 'pointer', fontSize: '0.875rem',
-        fontFamily: '"Lora", serif', fontWeight: 500,
-        transition: 'all 0.15s',
-        '&:hover': { bgcolor: 'rgba(192,57,43,0.06)' },
-      }}>
+      <Box
+        onClick={onLogout}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+          px: 1.5,
+          py: 1,
+          borderRadius: 2,
+          color: 'error.main',
+          cursor: 'pointer',
+          fontSize: '0.875rem',
+          fontFamily: '"Lora", serif',
+          fontWeight: 500,
+          transition: 'all 0.15s',
+          '&:hover': { bgcolor: 'rgba(192,57,43,0.06)' },
+        }}
+      >
         <LogoutOutlined fontSize="small" />
         Sign out
       </Box>
@@ -117,18 +153,26 @@ export default function DashboardLayout({ children, contentMaxWidth = 720 }) {
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#F5F0EB' }}>
       {!isMobile && (
-        <Box sx={{
-          width: SIDEBAR_WIDTH, flexShrink: 0, bgcolor: 'background.paper',
-          borderRight: '0.5px solid', borderColor: 'divider',
-          position: 'fixed', top: 0, left: 0, height: '100vh', overflowY: 'auto',
-        }}>
+        <Box
+          sx={{
+            width: SIDEBAR_WIDTH,
+            flexShrink: 0,
+            bgcolor: 'background.paper',
+            borderRight: '0.5px solid',
+            borderColor: 'divider',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            height: '100vh',
+            overflowY: 'auto',
+          }}
+        >
           {sidebar}
         </Box>
       )}
 
       {isMobile && (
-        <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}
-          PaperProps={{ sx: { width: SIDEBAR_WIDTH } }}>
+        <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} PaperProps={{ sx: { width: SIDEBAR_WIDTH } }}>
           {sidebar}
         </Drawer>
       )}
@@ -136,7 +180,9 @@ export default function DashboardLayout({ children, contentMaxWidth = 720 }) {
       <Box sx={{ flex: 1, ml: isMobile ? 0 : `${SIDEBAR_WIDTH}px`, display: 'flex', flexDirection: 'column' }}>
         {isMobile && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.5, bgcolor: 'background.paper', borderBottom: '0.5px solid', borderColor: 'divider' }}>
-            <IconButton size="small" onClick={() => setDrawerOpen(true)}><MenuOutlined /></IconButton>
+            <IconButton size="small" onClick={() => setDrawerOpen(true)}>
+              <MenuOutlined />
+            </IconButton>
             <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, color: '#C0392B' }}>
               Chow
             </Typography>

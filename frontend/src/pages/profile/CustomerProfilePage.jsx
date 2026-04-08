@@ -49,7 +49,6 @@ export default function CustomerProfilePage() {
           <Typography variant="body2" color="text.secondary">{user?.email}</Typography>
         </Box>
       </Box>
-
       {saved && (
         <ProfileSection title="Current info" description="Last saved values from the server">
           <Box>
@@ -62,7 +61,6 @@ export default function CustomerProfilePage() {
           </Box>
         </ProfileSection>
       )}
-
       <ProfileSection title="Update profile" description="Leave a field blank to keep its current value">
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {feedback && <Alert severity={feedback.type}>{feedback.message}</Alert>}
