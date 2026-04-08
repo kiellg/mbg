@@ -11,9 +11,9 @@ import { profileApi } from '../../api/profile';
 import { useAuth } from '../../context/AuthContext';
 
 const DELIVERY_METHODS = [
+  { value: 'walk',       label: '� Walking'     },
   { value: 'bike',       label: '🚴 Bicycle'    },
   { value: 'car',        label: '🚗 Car'         },
-  { value: 'scooter',    label: '🛵 Scooter'     },
 ];
 
 export default function DriverProfilePage() {
