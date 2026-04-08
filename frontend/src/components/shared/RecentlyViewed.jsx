@@ -46,8 +46,8 @@ export default function RecentlyViewed() {
             <Skeleton key={i} variant="rounded" width={120} height={40}
               sx={{ borderRadius: 2, flexShrink: 0 }} />
           ))
-          : items.slice(0, 8).map((item, i) => (
-            <Paper key={i} elevation={0} onClick={() => handleClick(item)}
+          : enriched.map((item) => (
+            <Paper key={`${item.type}-${item.id}`} elevation={0} onClick={() => handleClick(item)}
               sx={{
                 px: 1.5, py: 1, borderRadius: 2, flexShrink: 0,
                 border: '0.5px solid', borderColor: 'divider',
