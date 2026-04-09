@@ -14,7 +14,8 @@ Chow is a food delivery application that allows customers to browse restaurants,
 -   **Scheduled orders**: toggle "Schedule for later", pick a future datetime; backend validates the time falls within the restaurant's opening hours
 -   **Payment flow**: post-checkout payment page with order summary
 -   **Delivery tracking**: track active deliveries
--   **Reviews & Favourites**: rate restaurants and save favourites
+-   **Rating & Reviews**: rate restaurants and give a review comment (optional)
+-   **Favourites**: save restaurant and/or menu item as favourites
 -   **Admin panel**: manage restaurants, users, orders
 -   **Notifications**: in-app notification feed
 -   **Session-based auth**: login/register with session cookies
