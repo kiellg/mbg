@@ -62,7 +62,6 @@ mbg/
 │   │   ├── utils/               # Helper utilities
 │   │   ├── dependencies.py      # FastAPI dependency injection
 │   │   └── __init__.py
-│   ├── mbg2/                    # (legacy/unused directory)
 │   ├── tests/                   # pytest test suite
 │   ├── main.py                  # FastAPI app entry point
 │   ├── requirements.txt         # Python dependencies
