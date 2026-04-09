@@ -44,7 +44,7 @@ export function NotificationsProvider({ children }) {
     setError(null);
   }, []);
 
-  const refreshNotifications = useCallback(async ({ force = true } = {}) => {
+  const refreshNotifications = useCallback(async ({ force = true, silent = false } = {}) => {
     const role = user?.role;
     const userId = user?.user_id;
 
@@ -65,7 +65,9 @@ export function NotificationsProvider({ children }) {
     const requestId = latestRequestIdRef.current + 1;
     latestRequestIdRef.current = requestId;
     inFlightUserKeyRef.current = nextUserKey;
-    setLoading(true);
+    if (!silent) {
+      setLoading(true);
+    }
     setError(null);
 
     const request = notificationsApi.listNotifications()
@@ -91,7 +93,9 @@ export function NotificationsProvider({ children }) {
       })
       .finally(() => {
         if (latestRequestIdRef.current === requestId) {
-          setLoading(false);
+          if (!silent) {
+            setLoading(false);
+          }
           inFlightRequestRef.current = null;
           inFlightUserKeyRef.current = null;
         }
@@ -142,11 +146,45 @@ export function NotificationsProvider({ children }) {
 
     const nextUserKey = `${role}:${userId}`;
     if (loadedUserKeyRef.current === nextUserKey) {
-      return;
+      return undefined;
     }
 
     refreshNotifications({ force: false });
   }, [clearNotifications, refreshNotifications, user?.role, user?.user_id]);
+
+  useEffect(() => {
+    const role = user?.role;
+    const userId = user?.user_id;
+
+    if (!userId || !SUPPORTED_ROLES.has(role)) {
+      return undefined;
+    }
+
+    const refreshInBackground = () => {
+      refreshNotifications({ force: true, silent: true });
+    };
+
+    const intervalId = window.setInterval(refreshInBackground, 15000);
+
+    const handleFocus = () => {
+      refreshInBackground();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshInBackground();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [refreshNotifications, user?.role, user?.user_id]);
 
   const unreadCount = notifications.reduce((count, notification) => (
     notification.is_read ? count : count + 1
