@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
   Alert,
@@ -61,14 +61,21 @@ export default function NotificationsPage() {
   } = useNotifications();
   const [busyNotificationId, setBusyNotificationId] = useState(null);
 
+  useEffect(() => {
+    refreshNotifications({ force: true });
+  }, [refreshNotifications]);
+
   const handleRefresh = async () => {
     await refreshNotifications();
   };
 
   const handleMarkAsRead = async (notificationId) => {
     setBusyNotificationId(notificationId);
-    await markNotificationAsRead(notificationId);
-    setBusyNotificationId(null);
+    try {
+      await markNotificationAsRead(notificationId);
+    } finally {
+      setBusyNotificationId(null);
+    }
   };
 
   return (
@@ -102,7 +109,7 @@ export default function NotificationsPage() {
           <Paper elevation={0} sx={{ p: 4, borderRadius: 3, display: 'flex', justifyContent: 'center' }}>
             <CircularProgress />
           </Paper>
-        ) : notifications.length === 0 ? (
+        ) : !error && notifications.length === 0 ? (
           <Paper elevation={0} sx={{ p: 5, borderRadius: 3, border: '1px solid', borderColor: 'divider', textAlign: 'center' }}>
             <NotificationsOutlined sx={{ fontSize: 44, color: 'text.disabled', mb: 1 }} />
             <Typography variant="h6" sx={{ mb: 1 }}>
@@ -112,7 +119,7 @@ export default function NotificationsPage() {
               Notifications will appear here after order, payment, and delivery activity.
             </Typography>
           </Paper>
-        ) : (
+        ) : notifications.length > 0 ? (
           <Stack spacing={2}>
             {notifications.map((notification) => {
               const destination = getNotificationDestination(user?.role, notification);
@@ -182,6 +189,15 @@ export default function NotificationsPage() {
               );
             })}
           </Stack>
+        ) : (
+          <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="body1" sx={{ mb: 1 }}>
+              Notifications could not be loaded right now.
+            </Typography>
+            <Typography color="text.secondary">
+              Try refreshing to fetch the latest updates.
+            </Typography>
+          </Paper>
         )}
       </Box>
     </DashboardLayout>

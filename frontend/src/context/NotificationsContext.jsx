@@ -27,10 +27,18 @@ export function NotificationsProvider({ children }) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const notificationsRef = useRef([]);
   const loadedUserKeyRef = useRef(null);
+  const latestRequestIdRef = useRef(0);
+  const inFlightRequestRef = useRef(null);
+  const inFlightUserKeyRef = useRef(null);
 
   const clearNotifications = useCallback(() => {
+    latestRequestIdRef.current += 1;
+    notificationsRef.current = [];
     loadedUserKeyRef.current = null;
+    inFlightRequestRef.current = null;
+    inFlightUserKeyRef.current = null;
     setNotifications([]);
     setLoading(false);
     setError(null);
@@ -47,25 +55,50 @@ export function NotificationsProvider({ children }) {
 
     const nextUserKey = `${role}:${userId}`;
     if (!force && loadedUserKeyRef.current === nextUserKey) {
-      return { success: true };
+      return { success: true, data: notificationsRef.current };
     }
 
+    if (inFlightRequestRef.current && inFlightUserKeyRef.current === nextUserKey) {
+      return inFlightRequestRef.current;
+    }
+
+    const requestId = latestRequestIdRef.current + 1;
+    latestRequestIdRef.current = requestId;
+    inFlightUserKeyRef.current = nextUserKey;
     setLoading(true);
     setError(null);
 
-    try {
-      const { data } = await notificationsApi.listNotifications();
-      const nextNotifications = sortNotifications(data || []);
-      loadedUserKeyRef.current = nextUserKey;
-      setNotifications(nextNotifications);
-      return { success: true, data: nextNotifications };
-    } catch (err) {
-      const message = getApiError(err, 'Failed to load notifications');
-      setError(message);
-      return { success: false, message };
-    } finally {
-      setLoading(false);
-    }
+    const request = notificationsApi.listNotifications()
+      .then(({ data }) => {
+        if (latestRequestIdRef.current !== requestId) {
+          return { success: false, stale: true };
+        }
+
+        const nextNotifications = sortNotifications(data || []);
+        notificationsRef.current = nextNotifications;
+        loadedUserKeyRef.current = nextUserKey;
+        setNotifications(nextNotifications);
+        return { success: true, data: nextNotifications };
+      })
+      .catch((err) => {
+        const message = getApiError(err, 'Failed to load notifications');
+
+        if (latestRequestIdRef.current === requestId) {
+          setError(message);
+        }
+
+        return { success: false, message };
+      })
+      .finally(() => {
+        if (latestRequestIdRef.current === requestId) {
+          setLoading(false);
+          inFlightRequestRef.current = null;
+          inFlightUserKeyRef.current = null;
+        }
+      });
+
+    inFlightRequestRef.current = request;
+    return request;
   }, [clearNotifications, user?.role, user?.user_id]);
 
   const markNotificationAsRead = useCallback(async (notificationId) => {
@@ -81,11 +114,15 @@ export function NotificationsProvider({ children }) {
 
     try {
       const { data } = await notificationsApi.markAsRead(notificationId);
-      setNotifications((currentNotifications) => currentNotifications.map((notification) => (
-        notification.notification_id === notificationId
-          ? { ...notification, ...data }
-          : notification
-      )));
+      setNotifications((currentNotifications) => {
+        const nextNotifications = currentNotifications.map((notification) => (
+          notification.notification_id === notificationId
+            ? { ...notification, ...data }
+            : notification
+        ));
+        notificationsRef.current = nextNotifications;
+        return nextNotifications;
+      });
       return { success: true, data };
     } catch (err) {
       const message = getApiError(err, 'Failed to update notification');

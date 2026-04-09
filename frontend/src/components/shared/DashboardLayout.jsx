@@ -5,6 +5,7 @@ import {
   Typography,
   Avatar,
   Chip,
+  Badge,
   Divider,
   IconButton,
   Drawer,
@@ -12,7 +13,7 @@ import {
   useTheme,
 } from "@mui/material";
 import {
-  PersonOutlined, StoreOutlined, TwoWheelerOutlined,
+  PersonOutlined, TwoWheelerOutlined,
   DashboardOutlined, GroupOutlined, ConfirmationNumberOutlined,
   LogoutOutlined, MenuOutlined, RestaurantOutlined,
   FavoriteOutlined, MenuBookOutlined, HomeOutlined, SearchOutlined,
@@ -259,26 +260,17 @@ function SidebarContent({ user, onLogout, unreadCount }) {
                 },
               }}
             >
-              {item.icon}
+              {item.to === '/notifications' ? (
+                <Badge badgeContent={unreadCount} color="error" max={99}>
+                  {item.icon}
+                </Badge>
+              ) : (
+                item.icon
+              )}
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 1, minWidth: 0 }}>
                 <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {item.label}
                 </Box>
-                {item.to === '/notifications' && unreadCount > 0 && (
-                  <Chip
-                    label={unreadCount > 99 ? '99+' : unreadCount}
-                    size="small"
-                    sx={{
-                      height: 18,
-                      fontSize: '0.65rem',
-                      bgcolor: isActive ? 'rgba(192,57,43,0.12)' : 'rgba(192,57,43,0.08)',
-                      color: '#C0392B',
-                      fontWeight: 700,
-                      border: 'none',
-                      flexShrink: 0,
-                    }}
-                  />
-                )}
               </Box>
             </Box>
           )}
