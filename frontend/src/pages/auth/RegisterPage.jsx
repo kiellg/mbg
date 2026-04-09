@@ -37,7 +37,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <AuthLayout title="Create account" subtitle="Join Bitewave — it only takes a moment">
+    <AuthLayout title="Create account" subtitle="Join Chow — it only takes a moment">
       <Box component="form" onSubmit={handleSubmit} noValidate sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {feedback && <Alert severity={feedback.type}>{feedback.message}</Alert>}
 
