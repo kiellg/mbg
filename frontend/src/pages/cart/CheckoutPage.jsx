@@ -28,7 +28,10 @@ const DELIVERY_FEE_LABELS = {
 
 function getMinDateTime() {
   const d = new Date(Date.now() + 5 * 60 * 1000);
-  return d.toISOString().slice(0, 16);
+  const pad = (value) => String(value).padStart(2, '0');
+
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+    + `T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 export default function CheckoutPage() {
@@ -39,7 +42,6 @@ export default function CheckoutPage() {
   const [deliveryMethod, setDeliveryMethod] = useState('walk');
   const [couponCode, setCouponCode]         = useState('');
   const [couponApplied, setCouponApplied]   = useState(false);
-  const [order, setOrder]                   = useState(null);
   const [loading, setLoading]               = useState(false);
   const [error, setError]                   = useState(null);
 
@@ -86,7 +88,7 @@ export default function CheckoutPage() {
         delivery_method: deliveryMethod,
         ...(couponCode && { coupon_code: couponCode }),
         ...(isScheduled && scheduledTime && {
-          scheduled_time: new Date(scheduledTime).toISOString(),
+          scheduled_time: scheduledTime,
         }),
       });
       if (couponCode) setCouponApplied(true);
