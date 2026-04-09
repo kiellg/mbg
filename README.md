@@ -123,62 +123,7 @@ git clone https://github.com/kiellg/mbg.git
 cd mbg
 ```
 
-### Step 2: Create a `docker-compose.yml`
-
-The repository does not include a `docker-compose.yml`. Create one in the project root:
-
-``` bash
-cat > docker-compose.yml <<'EOF'
-version: "3.9"
-
-services:
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: mbg-backend
-    ports:
-      - "8000:8000"
-    environment:
-      - PYTHONUNBUFFERED=1
-    restart: unless-stopped
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: mbg-frontend
-    ports:
-      - "1573:1573"
-    depends_on:
-      - backend
-    restart: unless-stopped
-EOF
-```
-
-### Step 3: Create a Frontend Dockerfile
-
-The frontend does not yet have a `Dockerfile`. Create one at `frontend/Dockerfile`:
-
-``` bash
-cat > frontend/Dockerfile <<'EOF'
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-FROM node:20-alpine
-WORKDIR /app
-RUN npm install -g serve
-COPY --from=builder /app/dist ./dist
-EXPOSE 1573
-CMD ["serve", "-s", "dist", "-l", "1573"]
-EOF
-```
-
-### Step 4: Build and Start All Services
+### Step 2: Build and Start All Services
 
 ``` bash
 docker compose up --build
@@ -194,7 +139,7 @@ mbg-backend   | INFO:     Uvicorn running on http://0.0.0.0:8000
 mbg-frontend  | INFO:     Accepting connections at http://localhost:1573
 ```
 
-### Step 5: Access the App
+### Step 3: Access the App
 
 | Service                  | URL                            |
 |--------------------------|--------------------------------|
