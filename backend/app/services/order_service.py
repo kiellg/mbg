@@ -130,6 +130,8 @@ def _build_order_response(order: dict) -> OrderResponse:
         status=order["status"],
         customer_id=order["customer_id"],
         restaurant_id=order["restaurant_id"],
+        driver_id=order.get("driver_id") or None,
+        driver_name=order.get("driver_name") or None,
         delivery_address=order["delivery_address"],
         delivery_method=DeliveryMethod(order["delivery_method"]),
         items=item_responses,

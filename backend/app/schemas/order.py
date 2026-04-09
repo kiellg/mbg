@@ -124,6 +124,8 @@ class OrderResponse(OrderBase):
 
     order_id: str
     created_at: datetime
+    driver_id: Optional[str] = None
+    driver_name: Optional[str] = None
     items: list[OrderItemResponse] = Field(default_factory=list)
     coupon_code: Optional[str] = None
     subtotal: Decimal = Field(..., ge=0)

@@ -72,6 +72,22 @@ def assign_driver_to_order(order_id: str, driver_id: str,
                    f"Current status is '{order['status']}'.",
         )
 
+    existing_driver_id = order.get("driver_id")
+    if existing_driver_id:
+        if existing_driver_id == driver_id:
+            return {
+                "order_id": order["order_id"],
+                "driver_id": existing_driver_id,
+                "driver_name": order.get("driver_name") or "",
+                "delivery_method": order.get("delivery_method"),
+                "message": "Driver is already assigned to this order.",
+            }
+
+        raise HTTPException(
+            status_code=400,
+            detail="A driver is already assigned to this order.",
+        )
+
     driver_user = user_repo.get_user_by_id(driver_id)
     if driver_user is None:
         raise HTTPException(status_code=404, detail="Driver not found")
