@@ -29,10 +29,7 @@ def _validate_scheduled_time_within_hours(
     """Validate that scheduled_time falls within restaurant opening hours"""
     if not opening_hours:
         return
-
-    if scheduled_time.tzinfo is not None:
-        scheduled_time = scheduled_time.replace(tzinfo=None)
-
+    
     scheduled_hour_minute = scheduled_time.hour * 60 + scheduled_time.minute
 
     segments = [s.strip() for s in opening_hours.split(',')]
