@@ -24,6 +24,14 @@ function getRoleChipColor(role) {
   return 'default';
 }
 
+function requireArray(data, label) {
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  throw new Error(`Unexpected ${label} response format.`);
+}
+
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +52,7 @@ export default function AdminUsersPage() {
           return;
         }
 
-        setUsers(data || []);
+        setUsers(requireArray(data, 'users'));
       } catch (err) {
         if (!active) {
           return;

@@ -85,6 +85,14 @@ function buildPayload(form, isEditing) {
   return payload;
 }
 
+function requireArray(data, label) {
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  throw new Error(`Unexpected ${label} response format.`);
+}
+
 export default function AdminCouponsPage() {
   const [coupons, setCoupons] = useState([]);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -115,7 +123,7 @@ export default function AdminCouponsPage() {
           return;
         }
 
-        setCoupons(data || []);
+        setCoupons(requireArray(data, 'coupons'));
       } catch (err) {
         if (!active) {
           return;
@@ -142,7 +150,7 @@ export default function AdminCouponsPage() {
 
   const refreshCoupons = async () => {
     const { data } = await adminApi.listCoupons();
-    setCoupons(data || []);
+    setCoupons(requireArray(data, 'coupons'));
   };
 
   const handleFieldChange = (field) => (event) => {
