@@ -16,9 +16,10 @@ import {
   DashboardOutlined, GroupOutlined, ConfirmationNumberOutlined,
   LogoutOutlined, MenuOutlined, RestaurantOutlined,
   FavoriteOutlined, MenuBookOutlined, HomeOutlined, SearchOutlined,
-  ReceiptLongOutlined, LocalShippingOutlined
+  ReceiptLongOutlined, LocalShippingOutlined, NotificationsOutlined,
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
+import { useNotifications } from '../../context/NotificationsContext';
 
 const SIDEBAR_WIDTH = 240;
 
@@ -66,6 +67,11 @@ const ROLE_NAV = {
     to: "/orders",
     icon: <ReceiptLongOutlined fontSize="small" />,
     },
+    {
+      label: "Notifications",
+      to: "/notifications",
+      icon: <NotificationsOutlined fontSize="small" />,
+    },
   ],
   manager: [
     {
@@ -93,6 +99,11 @@ const ROLE_NAV = {
       to: "/manager/kitchen-queue",
       icon: <LocalShippingOutlined fontSize="small" />,
     },
+    {
+      label: "Notifications",
+      to: "/notifications",
+      icon: <NotificationsOutlined fontSize="small" />,
+    },
   ],
   driver: [
     {
@@ -115,6 +126,11 @@ const ROLE_NAV = {
       to: "/deliveries",
       icon: <LocalShippingOutlined fontSize="small" />,
     },
+    {
+      label: "Notifications",
+      to: "/notifications",
+      icon: <NotificationsOutlined fontSize="small" />,
+    },
   ],
 };
 
@@ -125,7 +141,7 @@ const ROLE_META = {
   driver: { label: 'Driver', color: '#1E8449' },
 };
 
-function SidebarContent({ user, onLogout }) {
+function SidebarContent({ user, onLogout, unreadCount }) {
   const meta = ROLE_META[user?.role] || {
     label: "User",
     emoji: "U",
@@ -244,7 +260,26 @@ function SidebarContent({ user, onLogout }) {
               }}
             >
               {item.icon}
-              {item.label}
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 1, minWidth: 0 }}>
+                <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {item.label}
+                </Box>
+                {item.to === '/notifications' && unreadCount > 0 && (
+                  <Chip
+                    label={unreadCount > 99 ? '99+' : unreadCount}
+                    size="small"
+                    sx={{
+                      height: 18,
+                      fontSize: '0.65rem',
+                      bgcolor: isActive ? 'rgba(192,57,43,0.12)' : 'rgba(192,57,43,0.08)',
+                      color: '#C0392B',
+                      fontWeight: 700,
+                      border: 'none',
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+              </Box>
             </Box>
           )}
         </NavLink>
@@ -280,6 +315,7 @@ function SidebarContent({ user, onLogout }) {
 
 export default function DashboardLayout({ children, contentMaxWidth = 720 }) {
   const { user, logout } = useAuth();
+  const { unreadCount } = useNotifications();
   const navigate = useNavigate();
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("md"));
@@ -290,7 +326,7 @@ export default function DashboardLayout({ children, contentMaxWidth = 720 }) {
     navigate("/login");
   };
 
-  const sidebar = <SidebarContent user={user} onLogout={handleLogout} />;
+  const sidebar = <SidebarContent user={user} onLogout={handleLogout} unreadCount={unreadCount} />;
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#F5F0EB" }}>
