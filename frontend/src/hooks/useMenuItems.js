@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { restaurantApi } from '../api/restaurant';
 
 export function useMenuItems(restaurantId) {
@@ -10,8 +10,10 @@ export function useMenuItems(restaurantId) {
   const [order, setOrder] = useState('asc');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const resetKey = `${restaurantId ?? ''}|${sortBy}|${order}`;
+  const previousResetKeyRef = useRef(resetKey);
 
-  const fetch = useCallback(async (pageToFetch) => {
+  const fetchPage = useCallback(async (pageToFetch) => {
     if (!restaurantId) return;
     setLoading(true);
     setError(null);
@@ -26,17 +28,19 @@ export function useMenuItems(restaurantId) {
     } finally {
       setLoading(false);
     }
-  }, [restaurantId, page, limit, sortBy, order]);
+  }, [restaurantId, limit, sortBy, order]);
 
   useEffect(() => {
-    setPage(1);
-    fetchPage(1);
-  }, [restaurantId, sortBy, order]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (previousResetKeyRef.current !== resetKey) {
+      previousResetKeyRef.current = resetKey;
+      if (page !== 1) {
+        setPage(1);
+        return;
+      }
+    }
 
-
-  useEffect(() => {
     fetchPage(page);
-  }, [page]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchPage, page, resetKey]);
 
   const totalPages = Math.ceil(total / limit);
 
