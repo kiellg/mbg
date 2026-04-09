@@ -28,9 +28,11 @@ export default function SearchBar({ onSearch }) {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  useEffect(() => {
-    setOpen(suggestions.length > 0);
-  }, [suggestions]);
+  const getGlobalIndex = (targetSuggestion) => suggestions.findIndex((suggestion) => (
+    suggestion.id === targetSuggestion.id
+      && suggestion.suggestion_type === targetSuggestion.suggestion_type
+      && suggestion.restaurant_id === targetSuggestion.restaurant_id
+  ));
 
   const handleKeyDown = (e) => {
     if (e.key === 'ArrowDown') {
@@ -69,7 +71,11 @@ export default function SearchBar({ onSearch }) {
         fullWidth
         placeholder="Search restaurants or dishes…"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setActiveIndex(-1);
+          setOpen(Boolean(e.target.value.trim()));
+        }}
         onKeyDown={handleKeyDown}
         onFocus={() => suggestions.length > 0 && setOpen(true)}
         size="small"
@@ -84,7 +90,12 @@ export default function SearchBar({ onSearch }) {
           ),
           endAdornment: query && (
             <InputAdornment position="end">
-              <IconButton size="small" onClick={() => { clear(); onSearch?.(''); }}>
+              <IconButton size="small" onClick={() => {
+                clear();
+                setOpen(false);
+                setActiveIndex(-1);
+                onSearch?.('');
+              }}>
                 <CloseOutlined sx={{ fontSize: 16 }} />
               </IconButton>
             </InputAdornment>

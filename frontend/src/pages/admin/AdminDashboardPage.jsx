@@ -34,6 +34,22 @@ function CountCard({ label, value, helper }) {
   );
 }
 
+function requireArray(data, label) {
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  throw new Error(`Unexpected ${label} response format.`);
+}
+
+function requireObject(data, label) {
+  if (data && typeof data === 'object' && !Array.isArray(data)) {
+    return data;
+  }
+
+  throw new Error(`Unexpected ${label} response format.`);
+}
+
 export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -60,16 +76,18 @@ export default function AdminDashboardPage() {
           return;
         }
 
-        const users = usersResponse.data || [];
+        const analyticsData = requireObject(analyticsResponse.data, 'analytics');
+        const users = requireArray(usersResponse.data, 'users');
+        const coupons = requireArray(couponsResponse.data, 'coupons');
         const roleBreakdown = users.reduce((counts, user) => {
           const role = user.role || 'unknown';
           counts[role] = (counts[role] || 0) + 1;
           return counts;
         }, {});
 
-        setAnalytics(analyticsResponse.data);
+        setAnalytics(analyticsData);
         setUserCount(users.length);
-        setCouponCount((couponsResponse.data || []).length);
+        setCouponCount(coupons.length);
         setRoleCounts(roleBreakdown);
       } catch (err) {
         if (!active) {

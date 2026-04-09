@@ -19,6 +19,21 @@ from app.schemas.order import (
 from app.services import notification_service
 from app.services.pricing_service import PricingService
 
+
+def _get_local_timezone():
+    """Return the server's local timezone, falling back to UTC."""
+    return datetime.now().astimezone().tzinfo or timezone.utc
+
+
+def _normalize_scheduled_time(scheduled_time: datetime) -> datetime:
+    """Interpret scheduled datetimes in the server's local timezone."""
+    local_tz = _get_local_timezone()
+
+    if scheduled_time.tzinfo is None:
+        return scheduled_time.replace(tzinfo=local_tz)
+
+    return scheduled_time.astimezone(local_tz)
+
 def _validate_order_is_pending(order: dict) -> None:
     """Raise an HTTPException when an order is not editable."""
     if order["status"] != "Pending":
@@ -152,10 +167,8 @@ def create_order(payload: OrderCreate) -> OrderResponse:
     scheduled_time = payload.scheduled_time
 
     if scheduled_time:
-        now = datetime.now(timezone.utc)
-
-        if scheduled_time.tzinfo is None:
-            scheduled_time = scheduled_time.replace(tzinfo=timezone.utc)
+        scheduled_time = _normalize_scheduled_time(scheduled_time)
+        now = datetime.now(scheduled_time.tzinfo)
 
         if scheduled_time <= now:
             raise HTTPException(
@@ -302,14 +315,17 @@ def cancel_order(order_id: str) -> OrderResponse:
 
 def _process_scheduled_orders():
     """Activate scheduled orders when their scheduled_time is reached"""
-    now = datetime.now(timezone.utc)
+    local_tz = _get_local_timezone()
+    now = datetime.now(local_tz)
 
     for order in order_repo.list_order_records():
         if order.get("is_scheduled") and order.get("scheduled_time"):
             scheduled_time = datetime.fromisoformat(order["scheduled_time"])
 
             if scheduled_time.tzinfo is None:
-                scheduled_time = scheduled_time.replace(tzinfo=timezone.utc)
+                scheduled_time = scheduled_time.replace(tzinfo=local_tz)
+            else:
+                scheduled_time = scheduled_time.astimezone(local_tz)
 
             if scheduled_time <= now:
                 order_repo.update_order_record(
