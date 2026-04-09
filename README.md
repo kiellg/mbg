@@ -114,6 +114,7 @@ Ensure the following are installed before proceeding:
 | **Git**            | Any             |
 
 ## Step-by-step Setup
+> No environment variables are required. All configuration uses defaults.
 
 ### Step 1: Clone the Repository
 
@@ -201,6 +202,12 @@ mbg-frontend  | INFO:     Accepting connections at http://localhost:1573
 | **Backend API**          | <http://localhost:8000>        |
 | **API Health Check**     | <http://localhost:8000/health> |
 | **Interactive API Docs** | <http://localhost:8000/docs>   |
+
+### How to stop
+
+``` bash
+docker compose up down
+```
 
 ## Running Tests
 
