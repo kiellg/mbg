@@ -30,11 +30,6 @@ def _validate_scheduled_time_within_hours(
     if not opening_hours:
         return
 
-    if scheduled_time.tzinfo is not None:
-        # Compare restaurant hours against the server's local wall-clock time.
-        local_tz = datetime.now().astimezone().tzinfo
-        scheduled_time = scheduled_time.astimezone(local_tz).replace(tzinfo=None)
-
     scheduled_hour_minute = scheduled_time.hour * 60 + scheduled_time.minute
 
     segments = [s.strip() for s in opening_hours.split(',')]

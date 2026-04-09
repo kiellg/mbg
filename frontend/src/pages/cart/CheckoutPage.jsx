@@ -28,10 +28,9 @@ const DELIVERY_FEE_LABELS = {
 
 function getMinDateTime() {
   const d = new Date(Date.now() + 5 * 60 * 1000);
-  const pad = (value) => String(value).padStart(2, '0');
-
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-    + `T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  // Use local time for the min value
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 export default function CheckoutPage() {
@@ -45,10 +44,9 @@ export default function CheckoutPage() {
   const [loading, setLoading]               = useState(false);
   const [error, setError]                   = useState(null);
 
-  // scheduled order state
-  const [isScheduled, setIsScheduled]       = useState(false);
-  const [scheduledTime, setScheduledTime]   = useState('');
-  const [scheduleError, setScheduleError]   = useState(null);
+  const [isScheduled, setIsScheduled]     = useState(false);
+  const [scheduledTime, setScheduledTime] = useState('');
+  const [scheduleError, setScheduleError] = useState(null);
 
   const handleScheduleToggle = (e) => {
     setIsScheduled(e.target.checked);
@@ -88,7 +86,9 @@ export default function CheckoutPage() {
         delivery_method: deliveryMethod,
         ...(couponCode && { coupon_code: couponCode }),
         ...(isScheduled && scheduledTime && {
-          scheduled_time: scheduledTime,
+          // Send local time without UTC conversion so backend
+          // compares against opening hours correctly
+          scheduled_time: scheduledTime + ':00',
         }),
       });
       if (couponCode) setCouponApplied(true);
@@ -238,9 +238,7 @@ export default function CheckoutPage() {
               )}
               {isScheduled && scheduledTime && (
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Scheduled for
-                  </Typography>
+                  <Typography variant="body2" color="text.secondary">Scheduled for</Typography>
                   <Typography variant="body2" color="primary.main" fontWeight={500}>
                     {new Date(scheduledTime).toLocaleString()}
                   </Typography>

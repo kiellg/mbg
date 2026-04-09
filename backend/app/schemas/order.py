@@ -30,6 +30,7 @@ class OrderStatus(str, Enum):
     """Valid statuses for an order."""
 
     PENDING = "Pending"
+    SCHEDULED = "Scheduled"
     COOKING = "Cooking"
     OUT_FOR_DELIVERY = "Out for Delivery"
     DELIVERED = "Delivered"
